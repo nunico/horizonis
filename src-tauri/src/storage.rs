@@ -20,6 +20,11 @@ impl StorageManager {
         Ok(Self { file_path })
     }
 
+    #[cfg(test)]
+    pub fn from_path(file_path: PathBuf) -> Self {
+        Self { file_path }
+    }
+
     pub fn load(&self) -> Result<StarCluster, String> {
         if !self.file_path.exists() {
             return Ok(self.create_default_cluster());
@@ -77,5 +82,35 @@ impl StorageManager {
                 }
             ],
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_save_load() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("cluster.json");
+        let storage = StorageManager::from_path(file_path);
+
+        let cluster = storage.create_default_cluster();
+        storage.save(&cluster).unwrap();
+
+        let loaded = storage.load().unwrap();
+        assert_eq!(loaded.name, cluster.name);
+        assert_eq!(loaded.systems.len(), cluster.systems.len());
+    }
+
+    #[test]
+    fn test_load_default() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("nonexistent.json");
+        let storage = StorageManager::from_path(file_path);
+
+        let cluster = storage.load().unwrap();
+        assert_eq!(cluster.name, "Default Sector");
     }
 }
