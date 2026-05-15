@@ -44,44 +44,13 @@ impl StorageManager {
     }
 
     fn create_default_cluster(&self) -> StarCluster {
-        use uuid::Uuid;
-        use crate::models::{SolarSystem, Star, BodyType, OrbitalBody};
-
-        let sol_id = Uuid::new_v4();
-        let star_id = Uuid::new_v4();
-        let earth_id = Uuid::new_v4();
-
-        StarCluster {
-            name: "Default Sector".to_string(),
-            systems: vec![
-                SolarSystem {
-                    id: sol_id,
-                    name: "Sol".to_string(),
-                    x: 0.0,
-                    y: 0.0,
-                    stars: vec![
-                        Star {
-                            id: star_id,
-                            name: "Sol".to_string(),
-                            spectral_class: "G2V".to_string(),
-                            radius_sol: 1.0,
-                        }
-                    ],
-                    orbital_bodies: vec![
-                        OrbitalBody {
-                            id: earth_id,
-                            name: "Earth".to_string(),
-                            body_type: BodyType::Planet,
-                            orbit_au: 1.0,
-                            satellites: vec![],
-                            tags: vec!["Habitable".to_string()],
-                        }
-                    ],
-                    orbital_regions: vec![],
-                    portals: vec![],
-                }
-            ],
-        }
+        let default_json = include_str!("default_cluster.json");
+        serde_json::from_str(default_json).unwrap_or_else(|_| {
+            StarCluster {
+                name: "Default Sector".to_string(),
+                systems: vec![],
+            }
+        })
     }
 }
 
@@ -111,6 +80,7 @@ mod tests {
         let storage = StorageManager::from_path(file_path);
 
         let cluster = storage.load().unwrap();
-        assert_eq!(cluster.name, "Default Sector");
+        assert_eq!(cluster.name, "Horizonis Sector");
+        assert_eq!(cluster.systems.len(), 15);
     }
 }

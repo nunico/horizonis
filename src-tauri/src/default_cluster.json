@@ -1,0 +1,3036 @@
+{
+  "name": "Horizonis Sector",
+  "systems": [
+    {
+      "id": "b2892e25-47a6-4554-b6dc-158cdfe6201d",
+      "name": "Alpha Centauri",
+      "x": -613.7459744661281,
+      "y": -720.682985818356,
+      "stars": [
+        {
+          "id": "07c56606-7433-47a2-bd7e-7ddc4c6c964a",
+          "name": "Alpha Centauri A",
+          "spectral_class": "B1V",
+          "radius_sol": 0.5933579594757122
+        },
+        {
+          "id": "9a1d0780-6f85-42c9-883b-35150184c6cb",
+          "name": "Alpha Centauri B",
+          "spectral_class": "K0V",
+          "radius_sol": 1.8801207084423686
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "3d950107-c9cf-4596-a501-7a407beddfe9",
+          "name": "New Ceres",
+          "body_type": "Moon",
+          "orbit_au": 1.7134433556755742,
+          "satellites": [
+            {
+              "id": "8175119d-e719-4723-8abc-565ee8f238ec",
+              "name": "New Ceres a",
+              "body_type": "Moon",
+              "orbit_au": 0.016207571626932104,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "8f81961e-b076-4858-905b-336a04708c46",
+              "name": "New Ceres b",
+              "body_type": "Moon",
+              "orbit_au": 0.014085094847726343,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "17fbb8c5-8f65-4273-8939-8c9b6b61daae",
+              "name": "New Ceres c",
+              "body_type": "Moon",
+              "orbit_au": 0.014044044837287356,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "4bf0aafd-ebad-403d-aee8-93e50ad8eecb",
+              "name": "New Ceres d",
+              "body_type": "Moon",
+              "orbit_au": 0.013746811547118886,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "fec87566-c9e2-408d-a943-b72a0177188a",
+          "name": "Inner Ceres",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 5.1166314204170105,
+          "satellites": [],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "7149d4f6-76c6-462c-b180-f4e00720714b",
+          "name": "New Terra",
+          "body_type": "Moon",
+          "orbit_au": 7.459622331272977,
+          "satellites": [],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "865a66e9-8008-47f8-9285-b0b6bf8a58b7",
+          "name": "Inner Vesta",
+          "body_type": "Comet",
+          "orbit_au": 8.546685216152802,
+          "satellites": [
+            {
+              "id": "821befb0-6b88-4d20-ad10-c66384c248a0",
+              "name": "Inner Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.005637566755937353,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "f695cc4d-10ba-414c-87b3-ae5a621e6381",
+              "name": "Inner Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.011758037435257097,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "60d99948-7663-4e1b-a399-0c28a51fe136",
+              "name": "Inner Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.0061526305640970756,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "43ac4b34-1e47-4716-a427-9f19cdfe4df0",
+              "name": "Inner Vesta d",
+              "body_type": "Moon",
+              "orbit_au": 0.01490383881039023,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "4187fc78-d58b-4859-b931-0aebdeed3e1f",
+          "name": "New Pallas",
+          "body_type": "Comet",
+          "orbit_au": 12.116257483584963,
+          "satellites": [
+            {
+              "id": "b40fd12b-05d5-463d-9b32-c48d2c7bb25e",
+              "name": "New Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.010538749519443471,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "8a0530c4-1e3f-476b-84ac-24baf1c2d1cb",
+              "name": "New Pallas b",
+              "body_type": "Moon",
+              "orbit_au": 0.014315578472579103,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "82b586a7-2dbe-45ab-b64a-b38a329c1b3b",
+              "name": "New Pallas c",
+              "body_type": "Moon",
+              "orbit_au": 0.006237837527873514,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "49ca678a-fb41-409f-b89c-74092fdac71b",
+          "name": "Old Pallas",
+          "body_type": "SpaceStation",
+          "orbit_au": 12.332463086361793,
+          "satellites": [],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "f965b54c-c4ab-4c15-8aac-b6bdd377f949",
+          "name": "New Vesta",
+          "body_type": "Planet",
+          "orbit_au": 16.496440873493764,
+          "satellites": [
+            {
+              "id": "50982887-8d11-48ad-ac1a-9f80d1230a6f",
+              "name": "New Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.005164116803565595,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "bf3da3ae-541c-48de-a630-312c76f0d571",
+              "name": "New Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.019705220041167676,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "b90ebc4c-a24e-4a3b-a45a-5b923e67c80d",
+              "name": "New Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.006753352655179595,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "da907a26-0c9f-4459-b233-24181f6c2c87",
+              "name": "New Vesta d",
+              "body_type": "Moon",
+              "orbit_au": 0.011185695723541679,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "aa7a6d95-24b9-4eba-82eb-f6730385bd9f",
+          "name": "Inner Ceres",
+          "body_type": "Moon",
+          "orbit_au": 24.568416458556694,
+          "satellites": [
+            {
+              "id": "13d4ba4b-e955-440f-ac90-717cd76d601f",
+              "name": "Inner Ceres a",
+              "body_type": "Moon",
+              "orbit_au": 0.01712652470959721,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "66d8fd13-010c-4745-aeee-e291a4781054",
+              "name": "Inner Ceres b",
+              "body_type": "Moon",
+              "orbit_au": 0.013115317501441227,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "e3615f44-649a-4b78-9126-d3bb1021094b",
+              "name": "Inner Ceres c",
+              "body_type": "Moon",
+              "orbit_au": 0.012839260623428557,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "d7459832-0612-4dec-b931-0074ca888e43",
+          "name": "New Pallas",
+          "body_type": "Planet",
+          "orbit_au": 28.96739419119006,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "aa4afd79-fa2d-4917-954f-d5737b7c8f35",
+          "name": "New Ceres",
+          "body_type": "Moon",
+          "orbit_au": 32.213295259117906,
+          "satellites": [
+            {
+              "id": "6ba9bd0a-3016-4998-821e-8cfb0dcfa874",
+              "name": "New Ceres a",
+              "body_type": "Moon",
+              "orbit_au": 0.013960001427333609,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "e803bfcb-9c40-4e58-b512-90f78fb45bbb",
+              "name": "New Ceres b",
+              "body_type": "Moon",
+              "orbit_au": 0.011986234035265652,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "5c7257a5-1745-4d30-bcfa-5693592babee",
+          "name": "New Ceres",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 33.94430223450612,
+          "satellites": [],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "e09c0d30-34de-4dca-92b5-50f5ff29d712",
+          "name": "Inner Terra",
+          "body_type": "Planet",
+          "orbit_au": 39.47338194780881,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Dust Cloud",
+          "inner_radius_au": 56.257334130493504,
+          "outer_radius_au": 59.022269475534486,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Scattered Disk",
+          "inner_radius_au": 7.814153069051778,
+          "outer_radius_au": 10.215530489250366,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "21a4a693-994a-400a-a221-6745d6539553",
+          "name": "Jump to Sirius",
+          "target_system_id": "b12d475c-c559-476f-878a-f832316a2f6c"
+        },
+        {
+          "id": "c509a077-1038-4560-a01a-1b283304f24c",
+          "name": "Jump to 61 Cygni",
+          "target_system_id": "ca2b4706-01df-46d9-a2d4-d5eb534dfcd8"
+        }
+      ]
+    },
+    {
+      "id": "b12d475c-c559-476f-878a-f832316a2f6c",
+      "name": "Sirius",
+      "x": 1009.4338760517339,
+      "y": -618.1542602554746,
+      "stars": [
+        {
+          "id": "a65a0ef2-5e1c-42cd-b47a-bf6cd81fb99f",
+          "name": "Sirius A",
+          "spectral_class": "K0V",
+          "radius_sol": 0.5992477473280007
+        },
+        {
+          "id": "f75118b8-5231-447d-b80a-a5f120990c4a",
+          "name": "Sirius B",
+          "spectral_class": "M5V",
+          "radius_sol": 2.8550096358870936
+        },
+        {
+          "id": "a7ba7eaf-f522-463c-8849-f586383d2996",
+          "name": "Sirius C",
+          "spectral_class": "A0V",
+          "radius_sol": 1.086046214966289
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "de840069-9587-46b2-8f8c-d0b3512b7b31",
+          "name": "Minor Pallas",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 10.347015195079626,
+          "satellites": [
+            {
+              "id": "2b72cfd3-8b6f-4f13-8c0b-437f7a9baef6",
+              "name": "Minor Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.012201084881749421,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "0e62521b-c4bf-4b3c-9932-5c28c3f3d9ed",
+              "name": "Minor Pallas b",
+              "body_type": "Moon",
+              "orbit_au": 0.018893073977258878,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "3759b3b6-5318-443a-bc86-d5748c27b810",
+          "name": "New Pallas",
+          "body_type": "Moon",
+          "orbit_au": 11.177088990748999,
+          "satellites": [
+            {
+              "id": "f469a888-9cff-49a9-b147-d25344756f09",
+              "name": "New Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.012166686085400027,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "2662d378-54be-4775-8b21-60f95949c92d",
+          "name": "Great Terra",
+          "body_type": "Planet",
+          "orbit_au": 14.014145072832601,
+          "satellites": [
+            {
+              "id": "7a38a8a8-3902-46ba-9c58-e0ee551204d8",
+              "name": "Great Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.007443032452354884,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "103588c8-d19a-492c-bb7b-33fc085e758a",
+              "name": "Great Terra b",
+              "body_type": "Moon",
+              "orbit_au": 0.018894729285481304,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "539be8b5-0a9d-4d14-ae24-4033d9525736",
+          "name": "Inner Pallas",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 17.498266903662874,
+          "satellites": [
+            {
+              "id": "cbf6a769-df8b-4cc3-9a1d-afbfbc0d0c87",
+              "name": "Inner Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.012892674989905924,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "2e830e37-90f5-480f-836e-f4e40186b99f",
+          "name": "Minor Juno",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 18.772333682587416,
+          "satellites": [
+            {
+              "id": "fc7fde18-bf84-4917-98b6-53abe5f5d6a1",
+              "name": "Minor Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.019102591558809525,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "1e09ae11-b9aa-400a-82ec-35c2ef23cda9",
+              "name": "Minor Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.013626448273445758,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "b40f628d-64f9-4f5b-acf9-fb7ff7740391",
+              "name": "Minor Juno c",
+              "body_type": "Moon",
+              "orbit_au": 0.014226216099745535,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "bcb78854-dcf6-4ab2-beb4-0f8e323b93ac",
+          "name": "Old Vesta",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 25.078211010247156,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "14500a3f-5089-411b-b3ea-56a2c24cc8f9",
+          "name": "Minor Juno",
+          "body_type": "SpaceStation",
+          "orbit_au": 27.029576650939173,
+          "satellites": [
+            {
+              "id": "ae70f09c-65bb-41c9-bdb7-e1b2e2036f8e",
+              "name": "Minor Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.010160305243958698,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "1e079f90-6401-41a1-9be8-5741ed584cf9",
+              "name": "Minor Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.014148709626855674,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "5681121d-202f-42be-9054-781644bcb06b",
+          "name": "New Pallas",
+          "body_type": "Comet",
+          "orbit_au": 28.872316303732948,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "b6c1b695-77a7-4a1e-abbc-03527c02f7a2",
+          "name": "Great Juno",
+          "body_type": "Planet",
+          "orbit_au": 43.76173361690487,
+          "satellites": [
+            {
+              "id": "6893b34b-132e-4541-ae18-2f15347e6f99",
+              "name": "Great Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.01774855270258589,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "561ce544-f5c4-4755-8539-7a22698be0c2",
+          "name": "Outer Terra",
+          "body_type": "Comet",
+          "orbit_au": 43.80352325839867,
+          "satellites": [
+            {
+              "id": "ea5db40c-5ada-4430-b890-d40dc9fc05bc",
+              "name": "Outer Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.008210568237421391,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "ad3e2d3f-fc1e-42cf-8136-7eac4afaa20c",
+              "name": "Outer Terra b",
+              "body_type": "Moon",
+              "orbit_au": 0.009563472328647862,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "702b88b6-a2ad-45e6-bb3c-f1d69efdd233",
+              "name": "Outer Terra c",
+              "body_type": "Moon",
+              "orbit_au": 0.016311585744490806,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "327bccaa-707e-4392-a47a-734f45bc48e2",
+          "name": "Old Ceres",
+          "body_type": "Moon",
+          "orbit_au": 45.86277135010274,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Kuiper Belt",
+          "inner_radius_au": 25.39075548910349,
+          "outer_radius_au": 29.910322000320107,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Kuiper Belt",
+          "inner_radius_au": 11.842612937550026,
+          "outer_radius_au": 16.62654553349745,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "1473e971-4880-4b29-b29d-26727ddd9467",
+          "name": "Jump to Epsilon Eridani",
+          "target_system_id": "74b42f6c-3836-427f-ae71-d90bacd048c2"
+        },
+        {
+          "id": "94da4f56-91c0-4405-ba59-16b8b354df6b",
+          "name": "Jump to Regulus",
+          "target_system_id": "2f0cc6f8-531e-4e5a-8b0e-932bf1a605b7"
+        }
+      ]
+    },
+    {
+      "id": "74b42f6c-3836-427f-ae71-d90bacd048c2",
+      "name": "Epsilon Eridani",
+      "x": -944.3168326884377,
+      "y": 374.6831913048129,
+      "stars": [
+        {
+          "id": "2573999c-42cb-4b8a-8ee0-f4d8854618a1",
+          "name": "Epsilon Eridani A",
+          "spectral_class": "A0V",
+          "radius_sol": 1.0356827177308165
+        },
+        {
+          "id": "0d025f88-d696-4082-885d-7e17f6ea524b",
+          "name": "Epsilon Eridani B",
+          "spectral_class": "F5V",
+          "radius_sol": 0.8233528851636847
+        },
+        {
+          "id": "a2c12fe2-a86d-41a1-8a14-14e734352f35",
+          "name": "Epsilon Eridani C",
+          "spectral_class": "G2V",
+          "radius_sol": 2.2389356672389114
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "604d50ce-c5c3-4473-aebd-4dbeb4e0e499",
+          "name": "New Terra",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 5.5771340967454845,
+          "satellites": [
+            {
+              "id": "88ffea26-6156-40ae-9c67-c36e4f000854",
+              "name": "New Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.013720783590146127,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "dcd339a6-1931-4b26-8996-87e3379c2dbb",
+              "name": "New Terra b",
+              "body_type": "Moon",
+              "orbit_au": 0.016298095541361395,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "a1e7dfe9-1d9b-4ce8-9682-4e22ad4e6423",
+              "name": "New Terra c",
+              "body_type": "Moon",
+              "orbit_au": 0.011043947387208259,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "8b6b532b-8e28-4937-b63c-282a4d09a73f",
+              "name": "New Terra d",
+              "body_type": "Moon",
+              "orbit_au": 0.006480575107132405,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "cbbc9420-ece5-4504-a24b-1d426e4973d8",
+          "name": "Old Pallas",
+          "body_type": "Moon",
+          "orbit_au": 10.089463339902451,
+          "satellites": [],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "dd0e6bee-daa4-42f9-a26b-a7ebb3892325",
+          "name": "Inner Pallas",
+          "body_type": "Moon",
+          "orbit_au": 13.361195854064013,
+          "satellites": [],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "8356c84e-4a59-4e84-b358-23725ae4b7c0",
+          "name": "Old Ceres",
+          "body_type": "SpaceStation",
+          "orbit_au": 18.349615953682342,
+          "satellites": [],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "29ec2ac4-fd77-459b-b8b0-252c0d427da7",
+          "name": "Outer Juno",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 22.538835866166792,
+          "satellites": [],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "ba26be00-5b7d-485f-8dfb-d1fed56b0666",
+          "name": "New Juno",
+          "body_type": "SpaceStation",
+          "orbit_au": 35.12878658069712,
+          "satellites": [
+            {
+              "id": "b654a935-6b66-4b69-bd44-ad4f9347d6c8",
+              "name": "New Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.007913400115184505,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "eb6e2d20-ed63-45be-b5ce-ff6c90381a71",
+          "name": "New Ceres",
+          "body_type": "SpaceStation",
+          "orbit_au": 36.30881302570604,
+          "satellites": [],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "a470f576-b8f9-4894-8d9a-d82b019fc802",
+          "name": "Inner Pallas",
+          "body_type": "Comet",
+          "orbit_au": 41.18623289395412,
+          "satellites": [
+            {
+              "id": "d3c27a5f-4231-44a8-8dbe-d32fb9170d51",
+              "name": "Inner Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.0077442932218053095,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Kuiper Belt",
+          "inner_radius_au": 38.630464295628244,
+          "outer_radius_au": 41.069805180276994,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Scattered Disk",
+          "inner_radius_au": 13.378707493951296,
+          "outer_radius_au": 14.665220509843577,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Kuiper Belt",
+          "inner_radius_au": 6.825446170417064,
+          "outer_radius_au": 11.027557354902822,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "18a6edfd-0d5c-40f3-b315-20b04107a54d",
+          "name": "Jump to Procyon",
+          "target_system_id": "487a9b88-a199-4513-85ab-e2bb7316302f"
+        },
+        {
+          "id": "2df122a2-a848-49c3-ac1d-05a1eab3348b",
+          "name": "Jump to Tau Ceti",
+          "target_system_id": "b65e6ffc-e0e6-4b2c-ae0b-42931ac19ab9"
+        }
+      ]
+    },
+    {
+      "id": "487a9b88-a199-4513-85ab-e2bb7316302f",
+      "name": "Procyon",
+      "x": 451.3419756673818,
+      "y": -1444.5355495115177,
+      "stars": [
+        {
+          "id": "dfdbb758-d4cd-4a3c-800c-2bf69ef7abad",
+          "name": "Procyon A",
+          "spectral_class": "B1V",
+          "radius_sol": 2.760759916979577
+        },
+        {
+          "id": "83d9af20-4c0b-4863-aad7-bb2d481f9dd2",
+          "name": "Procyon B",
+          "spectral_class": "G2V",
+          "radius_sol": 1.8637621062092198
+        },
+        {
+          "id": "1528f7e4-cc6b-4a11-92b0-6287e00a96ac",
+          "name": "Procyon C",
+          "spectral_class": "F5V",
+          "radius_sol": 0.817923951909248
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "ce2ecf21-340a-408c-a57e-cb5b25dbe2ee",
+          "name": "Inner Pallas",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 11.828232169937255,
+          "satellites": [
+            {
+              "id": "98703e12-21ad-4804-b444-e4f4822bc331",
+              "name": "Inner Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.017601194550040743,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "6fbb9212-7aff-4030-80ce-4d5dc289a40a",
+          "name": "Great Vesta",
+          "body_type": "Comet",
+          "orbit_au": 12.347249773868853,
+          "satellites": [
+            {
+              "id": "dbcdeb67-3d57-4c73-990c-4db1a8ff169a",
+              "name": "Great Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.012556427674725994,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "ed736e31-21df-455c-860a-caa900d7a445",
+              "name": "Great Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.01922044025475375,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "17c01672-d78c-4471-80e3-9c2ecdbda92d",
+              "name": "Great Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.011890872158525766,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "bc513e08-587a-4fde-8359-e55f7f5160aa",
+              "name": "Great Vesta d",
+              "body_type": "Moon",
+              "orbit_au": 0.01988046380006057,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "6a9e18f8-0abe-40ba-970d-21aba5a8638a",
+          "name": "Great Pallas",
+          "body_type": "SpaceStation",
+          "orbit_au": 18.241750159346676,
+          "satellites": [
+            {
+              "id": "2bbd4759-f3f4-4a2c-9b1a-a3eb4ce0a885",
+              "name": "Great Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.00932067054303245,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "52a69c2f-9bcc-40b1-bb00-737f606933fc",
+              "name": "Great Pallas b",
+              "body_type": "Moon",
+              "orbit_au": 0.00588239034427589,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "a817481a-6740-4b11-8110-7c8b217abfa7",
+              "name": "Great Pallas c",
+              "body_type": "Moon",
+              "orbit_au": 0.013982847267855734,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "b5aea9b8-1644-4b70-8e3d-5ed3452ea39c",
+          "name": "Minor Terra",
+          "body_type": "SpaceStation",
+          "orbit_au": 33.03832794760625,
+          "satellites": [
+            {
+              "id": "44514815-50b3-428c-b390-6a8ead06f3f1",
+              "name": "Minor Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.01651105233711255,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "95cd02e7-e3c2-4015-ac97-c01b69d7d7d6",
+          "name": "Inner Vesta",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 46.75650454643399,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        }
+      ],
+      "orbital_regions": [],
+      "portals": [
+        {
+          "id": "5b286dd7-c106-484d-bbc5-254b76ddaf67",
+          "name": "Jump to 61 Cygni",
+          "target_system_id": "ca2b4706-01df-46d9-a2d4-d5eb534dfcd8"
+        },
+        {
+          "id": "75f30f45-7ae0-4dfb-89c9-76a94140c9c7",
+          "name": "Jump to Sirius",
+          "target_system_id": "b12d475c-c559-476f-878a-f832316a2f6c"
+        }
+      ]
+    },
+    {
+      "id": "ca2b4706-01df-46d9-a2d4-d5eb534dfcd8",
+      "name": "61 Cygni",
+      "x": 582.3149400978241,
+      "y": -446.4478603256084,
+      "stars": [
+        {
+          "id": "7520df4c-2caa-40a9-97c4-b8e77d494fd6",
+          "name": "61 Cygni A",
+          "spectral_class": "M5V",
+          "radius_sol": 1.8901148813485893
+        },
+        {
+          "id": "338cf8c5-7613-4dff-9887-2e7bf803c2d8",
+          "name": "61 Cygni B",
+          "spectral_class": "O5V",
+          "radius_sol": 1.1334159353378352
+        },
+        {
+          "id": "46fdd87c-492d-491c-a7a1-e62a93238d89",
+          "name": "61 Cygni C",
+          "spectral_class": "B1V",
+          "radius_sol": 2.9631976965912634
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "b1c89cde-7e71-4a4d-97db-b3ebf0d6a3e7",
+          "name": "Old Pallas",
+          "body_type": "Comet",
+          "orbit_au": 2.0699694973377865,
+          "satellites": [
+            {
+              "id": "f5715ca3-88b9-434c-8586-ff937f127e7e",
+              "name": "Old Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.011741179380894936,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "5d95669f-8193-4f53-b648-8ca765413fd8",
+              "name": "Old Pallas b",
+              "body_type": "Moon",
+              "orbit_au": 0.011500831119137817,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "c30dd322-4017-4d74-99d6-5f71c45ac904",
+              "name": "Old Pallas c",
+              "body_type": "Moon",
+              "orbit_au": 0.009562965999303022,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "469e8141-95fb-4def-ac70-b254eb7206db",
+          "name": "Outer Pallas",
+          "body_type": "SpaceStation",
+          "orbit_au": 14.140242694587682,
+          "satellites": [],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "4b607b0a-d1ac-41e0-b9a2-f2b754e5abdb",
+          "name": "New Vesta",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 17.63544427393914,
+          "satellites": [],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "b878615a-7dd3-456c-9e4f-af05aa99d94b",
+          "name": "Inner Juno",
+          "body_type": "Moon",
+          "orbit_au": 26.795390509666,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "7508a368-08b9-4d41-aaf1-40c9882b8294",
+          "name": "Minor Terra",
+          "body_type": "SpaceStation",
+          "orbit_au": 30.727350492658612,
+          "satellites": [],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "40651f69-a5d4-4075-bb4e-278be3c5e968",
+          "name": "Minor Terra",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 39.594128436231145,
+          "satellites": [],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "5db6f1f7-8833-484a-980e-8e0087c1d6d4",
+          "name": "Minor Terra",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 40.04253806724225,
+          "satellites": [],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "e11b1248-5072-4b60-9fce-3fdc0dc2f4e2",
+          "name": "Outer Terra",
+          "body_type": "Comet",
+          "orbit_au": 47.76119520128501,
+          "satellites": [
+            {
+              "id": "e079b88b-31a1-4fb7-bd98-111a0b546f2f",
+              "name": "Outer Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.012870642449980475,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Dust Cloud",
+          "inner_radius_au": 59.75449251370872,
+          "outer_radius_au": 60.80512469481705,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "d0af9a66-b328-40e3-b74f-351115d2635b",
+          "name": "Jump to Tau Ceti",
+          "target_system_id": "b65e6ffc-e0e6-4b2c-ae0b-42931ac19ab9"
+        },
+        {
+          "id": "06439b49-cc82-4eb9-88cf-529c9957dcea",
+          "name": "Jump to Arcturus",
+          "target_system_id": "148f81de-2205-45b9-8c4c-be4987c13a91"
+        }
+      ]
+    },
+    {
+      "id": "b65e6ffc-e0e6-4b2c-ae0b-42931ac19ab9",
+      "name": "Tau Ceti",
+      "x": 561.693332426793,
+      "y": 1136.1964519304088,
+      "stars": [
+        {
+          "id": "40d97433-2cd6-4845-bd12-b7e389e66655",
+          "name": "Tau Ceti",
+          "spectral_class": "A0V",
+          "radius_sol": 0.5534870623332356
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "8eee404e-5f69-42e4-bd3d-a9e535683de0",
+          "name": "Minor Ceres",
+          "body_type": "Planet",
+          "orbit_au": 14.261255152886248,
+          "satellites": [
+            {
+              "id": "a22a0081-cec1-40f9-aabb-914e89f882a3",
+              "name": "Minor Ceres a",
+              "body_type": "Moon",
+              "orbit_au": 0.005106253994515323,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "dcd7dead-7b1f-411a-829a-3810ccd7054b",
+              "name": "Minor Ceres b",
+              "body_type": "Moon",
+              "orbit_au": 0.018707669020592035,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "eb93c04d-bcab-407c-a335-365f3349a788",
+              "name": "Minor Ceres c",
+              "body_type": "Moon",
+              "orbit_au": 0.013630298139814277,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "9dcc7026-50db-451e-b646-10c1cec79bdd",
+              "name": "Minor Ceres d",
+              "body_type": "Moon",
+              "orbit_au": 0.010723224555399419,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "3a7db0f7-6de6-4f26-94ba-4c5f3ce706eb",
+          "name": "Old Vesta",
+          "body_type": "Planet",
+          "orbit_au": 33.45444838795699,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "d6a17051-f728-4877-a926-66e168d9fc5a",
+          "name": "Outer Juno",
+          "body_type": "Moon",
+          "orbit_au": 37.51704698282863,
+          "satellites": [
+            {
+              "id": "188f100e-8d6b-4371-aa98-a4058498dcae",
+              "name": "Outer Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.016708683438410327,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "0778096d-31a4-4732-a94f-06c238f1b05f",
+              "name": "Outer Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.009097198559222648,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "e0ee7dd1-4380-44f9-9aa4-e83a9ea2ff5f",
+              "name": "Outer Juno c",
+              "body_type": "Moon",
+              "orbit_au": 0.008897351284983404,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "63396cdb-c6f4-442f-b48c-3cbc0ae93c3d",
+              "name": "Outer Juno d",
+              "body_type": "Moon",
+              "orbit_au": 0.014384528822264282,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "c4a364f5-edf3-4fdb-bc99-9f8800e0e497",
+          "name": "Great Vesta",
+          "body_type": "Moon",
+          "orbit_au": 42.346228076833754,
+          "satellites": [
+            {
+              "id": "2e8f96ba-c8bf-4605-ac2c-f2b42ab8da90",
+              "name": "Great Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.010937687892318025,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "57da04f0-e6e1-47d1-9640-55f997c30dc2",
+              "name": "Great Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.018979117670648755,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "9b948f63-2cc4-4efd-b2a0-741dd343c4ac",
+              "name": "Great Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.006856733530321516,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "6d5ad4e6-2fb5-4eb7-a054-39873a5f7e25",
+          "name": "Minor Juno",
+          "body_type": "Planet",
+          "orbit_au": 42.827601605409825,
+          "satellites": [
+            {
+              "id": "e055a4ac-6ff6-4c0f-9199-fd4dc8e5bf49",
+              "name": "Minor Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.011091330296101182,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "4f79ae3e-7fcc-4d67-bb88-b6b92c95b601",
+              "name": "Minor Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.015456558921379121,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "1638cb4b-5c8c-4dc3-99f5-789c666558cc",
+          "name": "Minor Terra",
+          "body_type": "Moon",
+          "orbit_au": 44.81488470914413,
+          "satellites": [
+            {
+              "id": "55751a91-6a3a-4883-b552-02cab73d84f5",
+              "name": "Minor Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.006024656616536597,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "aa144d7e-ad6a-42d9-8b8b-8a5b6a4e6925",
+              "name": "Minor Terra b",
+              "body_type": "Moon",
+              "orbit_au": 0.017636591053103223,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Scattered Disk",
+          "inner_radius_au": 20.91005029138452,
+          "outer_radius_au": 23.93903156025082,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Kuiper Belt",
+          "inner_radius_au": 21.712778328921406,
+          "outer_radius_au": 24.250151178654523,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "a2b609b2-4dc0-44ee-a91b-a80ebd8a6c49",
+          "name": "Jump to Vega",
+          "target_system_id": "d320e5aa-c025-427f-a49f-a14d56a7b2c9"
+        },
+        {
+          "id": "518c8218-92dd-438d-87d2-86007496e372",
+          "name": "Jump to Castor",
+          "target_system_id": "74ee432f-3f58-45a5-ab8c-eadde6680f64"
+        }
+      ]
+    },
+    {
+      "id": "d320e5aa-c025-427f-a49f-a14d56a7b2c9",
+      "name": "Vega",
+      "x": -411.71417875503107,
+      "y": -310.2773571291398,
+      "stars": [
+        {
+          "id": "d42e6295-690e-4c2f-a015-e8d820539e86",
+          "name": "Vega",
+          "spectral_class": "B1V",
+          "radius_sol": 2.864577309496964
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "caffac08-60ff-431d-9a22-97cd48453ed1",
+          "name": "Minor Vesta",
+          "body_type": "SpaceStation",
+          "orbit_au": 2.644817251056894,
+          "satellites": [
+            {
+              "id": "54f1142c-c76e-4be8-a24a-0e48d95a9185",
+              "name": "Minor Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.008927782130359382,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "09f74548-99c5-475a-b3f3-da118c763578",
+          "name": "Inner Pallas",
+          "body_type": "Planet",
+          "orbit_au": 7.118913725899234,
+          "satellites": [],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "2eb7a34e-0152-473a-b848-3c18555d0012",
+          "name": "Minor Juno",
+          "body_type": "SpaceStation",
+          "orbit_au": 9.606790114774052,
+          "satellites": [],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "a11ef1fd-9051-413b-83ec-e181d11a23ba",
+          "name": "Inner Juno",
+          "body_type": "SpaceStation",
+          "orbit_au": 11.238890746458587,
+          "satellites": [
+            {
+              "id": "605dacc1-48d5-44af-98be-ddb954188ea1",
+              "name": "Inner Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.007501431345443796,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "1b536b55-be0c-4353-a0db-8bc2cb3fe03a",
+              "name": "Inner Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.0121890916368201,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "6c1b51fb-5200-45e8-b262-fc88fde80f50",
+          "name": "Minor Ceres",
+          "body_type": "Planet",
+          "orbit_au": 30.535415987840793,
+          "satellites": [],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "42a5d026-04b9-4575-b4cc-346bfa19d1c0",
+          "name": "Old Juno",
+          "body_type": "Comet",
+          "orbit_au": 36.97547958980531,
+          "satellites": [],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "a0ece1ef-5a40-4529-9489-bdf80eed3d52",
+          "name": "New Juno",
+          "body_type": "Planet",
+          "orbit_au": 38.79820608273352,
+          "satellites": [
+            {
+              "id": "33ec53ac-b821-49d4-8c83-bcde77ca1acf",
+              "name": "New Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.009914375703563794,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "3cb913dc-3936-4d3a-a999-393a425d0b88",
+          "name": "Old Ceres",
+          "body_type": "Comet",
+          "orbit_au": 41.8117105184895,
+          "satellites": [
+            {
+              "id": "c4decea8-6eed-4c62-a9f2-8be88cd80b65",
+              "name": "Old Ceres a",
+              "body_type": "Moon",
+              "orbit_au": 0.005374811683909301,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "540c903b-c3dd-4fea-9102-1dd6833be419",
+          "name": "Outer Vesta",
+          "body_type": "Planet",
+          "orbit_au": 41.96851761193155,
+          "satellites": [],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "7f01d697-6d4c-4ceb-ba34-6afe871856fb",
+          "name": "Minor Juno",
+          "body_type": "Moon",
+          "orbit_au": 45.09318190355076,
+          "satellites": [],
+          "tags": [
+            "Frozen"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Kuiper Belt",
+          "inner_radius_au": 56.61461575888352,
+          "outer_radius_au": 59.97273180398532,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "5ab790df-9d11-44ba-9b3e-c21a745f8ec5",
+          "name": "Jump to Altair",
+          "target_system_id": "889fbae9-b559-43fa-b3ca-2ef6d2380b79"
+        },
+        {
+          "id": "0aba8032-dc15-46f0-9008-ef9a26d28f97",
+          "name": "Jump to Alpha Centauri",
+          "target_system_id": "b2892e25-47a6-4554-b6dc-158cdfe6201d"
+        }
+      ]
+    },
+    {
+      "id": "889fbae9-b559-43fa-b3ca-2ef6d2380b79",
+      "name": "Altair",
+      "x": -462.64558407315326,
+      "y": -799.0041143163965,
+      "stars": [
+        {
+          "id": "78e74cd7-0d8e-46be-a155-5b011b1ad0c2",
+          "name": "Altair",
+          "spectral_class": "K0V",
+          "radius_sol": 0.6504599309298129
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "06ae2c3d-7fa0-4508-85c5-49e65c6c1063",
+          "name": "Outer Juno",
+          "body_type": "Comet",
+          "orbit_au": 1.9758755507421149,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "1545d8f0-f495-415e-858d-bd750a14d8d8",
+          "name": "Old Vesta",
+          "body_type": "SpaceStation",
+          "orbit_au": 18.88982637532525,
+          "satellites": [
+            {
+              "id": "95eed9d5-3e78-4a7d-9c41-a7ec0e3bfb55",
+              "name": "Old Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.01156947124276728,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "d6b32a83-9344-464d-89a9-fddd296efafa",
+              "name": "Old Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.01670500829557459,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "4fa4dda9-bb99-497b-a085-2725dcd75173",
+              "name": "Old Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.017379698523077997,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "dc916239-d6df-4536-9bd4-38fe07a0a9ad",
+          "name": "Inner Ceres",
+          "body_type": "Moon",
+          "orbit_au": 26.205462194933375,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "09a3369d-541f-4e0d-b355-7f65f8318f75",
+          "name": "Outer Terra",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 29.398750751310992,
+          "satellites": [
+            {
+              "id": "5f0abb96-5010-405a-9e99-745820b6cec7",
+              "name": "Outer Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.011182492881042916,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "cc4442e5-dbaf-4c24-b3e9-837b3f47496c",
+          "name": "Minor Vesta",
+          "body_type": "SpaceStation",
+          "orbit_au": 41.26865652396068,
+          "satellites": [],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "6d2ec0b5-390b-484f-8063-798915186e78",
+          "name": "Great Juno",
+          "body_type": "Moon",
+          "orbit_au": 49.382111734088824,
+          "satellites": [
+            {
+              "id": "ed2029a4-bb5c-4c8d-9a12-07bfac0f83ce",
+              "name": "Great Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.008245961506658888,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "46119ee2-349f-4757-b849-6e957b6836c1",
+              "name": "Great Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.00889395419639449,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "7b949397-ed7f-491f-95fc-be46df5d52f6",
+              "name": "Great Juno c",
+              "body_type": "Moon",
+              "orbit_au": 0.01366261596665819,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "bfccb183-1db7-49eb-9109-204686240a1d",
+              "name": "Great Juno d",
+              "body_type": "Moon",
+              "orbit_au": 0.01188530231913083,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Kuiper Belt",
+          "inner_radius_au": 28.54578129273111,
+          "outer_radius_au": 30.02417956978404,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Dust Cloud",
+          "inner_radius_au": 20.549653383373514,
+          "outer_radius_au": 24.47393470060316,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "3bbaf202-db5b-487d-91f7-acc4687a242f",
+          "name": "Jump to Fomalhaut",
+          "target_system_id": "73ad83dd-ed34-4670-8b4a-f833ad94e437"
+        },
+        {
+          "id": "f4347e2d-1406-4165-8b18-1ae8a9c599e9",
+          "name": "Jump to 61 Cygni",
+          "target_system_id": "ca2b4706-01df-46d9-a2d4-d5eb534dfcd8"
+        }
+      ]
+    },
+    {
+      "id": "73ad83dd-ed34-4670-8b4a-f833ad94e437",
+      "name": "Fomalhaut",
+      "x": -190.3684796024247,
+      "y": -859.8101804077168,
+      "stars": [
+        {
+          "id": "0e777632-29ce-42e3-867a-d4c53bd78e2b",
+          "name": "Fomalhaut",
+          "spectral_class": "M5V",
+          "radius_sol": 0.730815004379564
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "fface74a-588c-42a6-ae9d-d25405c7475a",
+          "name": "Outer Ceres",
+          "body_type": "Moon",
+          "orbit_au": 7.986537054811777,
+          "satellites": [],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "fbdbb028-91bc-42db-9f26-2f235097d7c2",
+          "name": "Great Pallas",
+          "body_type": "SpaceStation",
+          "orbit_au": 10.761512904219458,
+          "satellites": [
+            {
+              "id": "75d76084-6fbe-46bc-98aa-468d3b6bfc9f",
+              "name": "Great Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.012959397647834478,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "f1f40169-fe41-41f4-bec9-4f69a22d143e",
+              "name": "Great Pallas b",
+              "body_type": "Moon",
+              "orbit_au": 0.007755630117581935,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "9f1bcf0a-ec8a-4858-a803-9a4c19371bf2",
+          "name": "New Terra",
+          "body_type": "Planet",
+          "orbit_au": 13.405230497594555,
+          "satellites": [
+            {
+              "id": "4e66d6e7-651c-4560-95b4-e320b11c382d",
+              "name": "New Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.01717868868703996,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "3a1691db-67d7-4150-90ec-c22c5d26f67e",
+          "name": "Outer Ceres",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 25.002524728968687,
+          "satellites": [],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "bff2449b-90e7-41cf-9158-c19fdce11d69",
+          "name": "New Vesta",
+          "body_type": "Comet",
+          "orbit_au": 47.82007862647113,
+          "satellites": [
+            {
+              "id": "ac95f71d-b261-4cf6-8e45-6098020a3965",
+              "name": "New Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.015286941468442151,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Asteroid Belt",
+          "inner_radius_au": 56.40903878556778,
+          "outer_radius_au": 60.803086784529775,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Asteroid Belt",
+          "inner_radius_au": 54.10413070618856,
+          "outer_radius_au": 57.91760989889327,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "a85784a4-2d6c-42dc-82a1-9a7a4bc1d90a",
+          "name": "Jump to Arcturus",
+          "target_system_id": "148f81de-2205-45b9-8c4c-be4987c13a91"
+        },
+        {
+          "id": "cb9d7821-7c14-4133-98e3-b4c943d900e8",
+          "name": "Jump to Castor",
+          "target_system_id": "74ee432f-3f58-45a5-ab8c-eadde6680f64"
+        }
+      ]
+    },
+    {
+      "id": "148f81de-2205-45b9-8c4c-be4987c13a91",
+      "name": "Arcturus",
+      "x": -1459.192128503756,
+      "y": 435.894789103025,
+      "stars": [
+        {
+          "id": "f8900133-57c7-435f-8207-4debaf7bebfc",
+          "name": "Arcturus",
+          "spectral_class": "K0V",
+          "radius_sol": 2.9131538232501377
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "95ccae21-1685-4603-b708-dfafce199079",
+          "name": "New Pallas",
+          "body_type": "Planet",
+          "orbit_au": 3.1856929646061625,
+          "satellites": [
+            {
+              "id": "84ea8bf8-e495-4667-b020-f951dda7565d",
+              "name": "New Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.00876204486344101,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "052676ef-b003-4527-a57c-b857e6f8b334",
+          "name": "Minor Vesta",
+          "body_type": "SpaceStation",
+          "orbit_au": 7.106345664585851,
+          "satellites": [
+            {
+              "id": "36275f80-aba5-4bbf-91b2-38e713944b41",
+              "name": "Minor Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.018399595172111774,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "6f2b5f88-1742-43b9-b8d5-b056ac758305",
+              "name": "Minor Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.016674067308990653,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "646b53ad-8f72-47ba-847e-9aa733c4a714",
+              "name": "Minor Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.00826073147414625,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "794ddec6-d2be-4a34-b510-3c73431caddd",
+              "name": "Minor Vesta d",
+              "body_type": "Moon",
+              "orbit_au": 0.012975807965671667,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "f7756f88-9ad4-4d8d-a90c-e1bc8f7ce7b1",
+          "name": "Inner Ceres",
+          "body_type": "Moon",
+          "orbit_au": 13.41526448718306,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "3ed046ec-ba66-49b3-8bb1-40b293334f38",
+          "name": "Old Juno",
+          "body_type": "Planet",
+          "orbit_au": 24.291509271430456,
+          "satellites": [
+            {
+              "id": "3c6d73a9-3ca5-4923-be5b-d94f1955083c",
+              "name": "Old Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.006643986781305543,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "6de4ad78-0961-4416-ae36-35ea131d6839",
+              "name": "Old Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.018163138814110608,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "7293dec9-4a12-4371-b662-59b1f0582b10",
+              "name": "Old Juno c",
+              "body_type": "Moon",
+              "orbit_au": 0.011718547890278283,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "f863f016-c3b2-4484-b4db-399aaf9ef072",
+              "name": "Old Juno d",
+              "body_type": "Moon",
+              "orbit_au": 0.005711735771835825,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "115ceca8-15f3-4930-9285-7b862c45c860",
+          "name": "Great Juno",
+          "body_type": "Comet",
+          "orbit_au": 26.65284781922752,
+          "satellites": [],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "d52021b8-8e60-4c8d-86df-ce848dcf0840",
+          "name": "Great Terra",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 29.41815248922118,
+          "satellites": [
+            {
+              "id": "20aeae3d-89ba-4f97-8edb-da9a5d1fc2f3",
+              "name": "Great Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.017239974628824765,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "dc1d6101-b096-449c-b0ec-fa35e9040561",
+              "name": "Great Terra b",
+              "body_type": "Moon",
+              "orbit_au": 0.01876263176848755,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "eddc8577-820e-43ef-9e0a-20f543797be0",
+          "name": "Minor Juno",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 37.88187299268233,
+          "satellites": [
+            {
+              "id": "e81ffdfc-f5f1-470b-8278-8152be8e5682",
+              "name": "Minor Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.019461992519810147,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "6ae1dbc9-1a47-4695-9bc0-d933236434b1",
+              "name": "Minor Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.009245506321202118,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Dust Cloud",
+          "inner_radius_au": 45.34664325241956,
+          "outer_radius_au": 47.13315840489988,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "1ad6c32b-e92e-4ce0-9492-5f16b4768d4f",
+          "name": "Jump to Pollux",
+          "target_system_id": "d453eadc-7895-47a0-8572-3ce838cfbffe"
+        },
+        {
+          "id": "44f4b0b6-5d09-483a-abfc-adfc797e241f",
+          "name": "Jump to 61 Cygni",
+          "target_system_id": "ca2b4706-01df-46d9-a2d4-d5eb534dfcd8"
+        }
+      ]
+    },
+    {
+      "id": "d453eadc-7895-47a0-8572-3ce838cfbffe",
+      "name": "Pollux",
+      "x": -735.7074214666382,
+      "y": -183.41314576180662,
+      "stars": [
+        {
+          "id": "3fbb93e7-2814-4e89-9124-adc56fc65393",
+          "name": "Pollux",
+          "spectral_class": "A0V",
+          "radius_sol": 1.5232559456422872
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "d5dc9f0a-977d-40b2-b83f-e313f4b70d18",
+          "name": "New Vesta",
+          "body_type": "SpaceStation",
+          "orbit_au": 5.560921040305629,
+          "satellites": [
+            {
+              "id": "3ca0b97c-01ef-4980-b710-3a304606eee5",
+              "name": "New Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.015454267418490115,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "48ca35f6-9879-4759-b22f-9a956a117d5f",
+              "name": "New Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.016322105034136017,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "84619ebd-c237-4482-8a2d-2d61db2c0ace",
+              "name": "New Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.007629946856404685,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "e9dfd6c6-6935-4fcc-b0bb-9dc59e6a3ddd",
+          "name": "Minor Juno",
+          "body_type": "Planet",
+          "orbit_au": 44.0794431041795,
+          "satellites": [
+            {
+              "id": "2cd01e05-9203-443b-bec0-d1575629d0fe",
+              "name": "Minor Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.008118288146644871,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "eb13425d-f99e-4474-8af9-abf4dc444f9e",
+              "name": "Minor Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.015405404344435939,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "5500bb1f-6688-473f-ab7c-ba9a3c45889d",
+          "name": "Old Juno",
+          "body_type": "Planet",
+          "orbit_au": 48.41959396762931,
+          "satellites": [
+            {
+              "id": "211f57ef-932a-441c-88b7-5b6a4a322704",
+              "name": "Old Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.016743119932627813,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "f73d5224-1131-42ac-9664-02b607786c38",
+              "name": "Old Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.007539936194260787,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "e6de7fad-7af3-4ca6-8d35-085b499e8288",
+              "name": "Old Juno c",
+              "body_type": "Moon",
+              "orbit_au": 0.018727173072517707,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "de5b7ab2-d7cd-48f2-8443-b888e2817fcd",
+              "name": "Old Juno d",
+              "body_type": "Moon",
+              "orbit_au": 0.018652761573132025,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "b3134c39-0fd5-426c-9b3e-1812de5cf64f",
+          "name": "Minor Juno",
+          "body_type": "Planet",
+          "orbit_au": 48.735276523781096,
+          "satellites": [
+            {
+              "id": "a5538521-6f28-481a-99cc-972ca081a5de",
+              "name": "Minor Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.0057560803185243165,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "c29ebb3b-1fcf-4aec-8df5-25175bb6957f",
+              "name": "Minor Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.019444963227236416,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Scattered Disk",
+          "inner_radius_au": 24.067532979751995,
+          "outer_radius_au": 25.23393323885022,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Kuiper Belt",
+          "inner_radius_au": 57.18307749746908,
+          "outer_radius_au": 60.137623147545874,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "25559b9e-27bd-4867-b53e-1509b2ae9f97",
+          "name": "Jump to Capella",
+          "target_system_id": "75944674-5d0e-4eb5-a1dc-5126ac960db2"
+        },
+        {
+          "id": "5eb7c3e4-6ce3-4a2a-9874-2382875541c2",
+          "name": "Jump to Sirius",
+          "target_system_id": "b12d475c-c559-476f-878a-f832316a2f6c"
+        }
+      ]
+    },
+    {
+      "id": "75944674-5d0e-4eb5-a1dc-5126ac960db2",
+      "name": "Capella",
+      "x": 311.2310080735665,
+      "y": 364.4639629159585,
+      "stars": [
+        {
+          "id": "e881d465-03bc-46fb-bcd3-4e230f1ac50b",
+          "name": "Capella",
+          "spectral_class": "G2V",
+          "radius_sol": 1.9564697121577985
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "8669a799-a1f2-42a5-ab85-a4937f4557f8",
+          "name": "Minor Pallas",
+          "body_type": "Planet",
+          "orbit_au": 14.311157356277066,
+          "satellites": [
+            {
+              "id": "b2fe1159-c116-47b0-91aa-7f752f1d92e1",
+              "name": "Minor Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.01942604177971012,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "ff208660-c22d-4a1f-b521-c84e7e8f1c5a",
+              "name": "Minor Pallas b",
+              "body_type": "Moon",
+              "orbit_au": 0.019990789230700894,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "fbf1cb08-8f58-4aa5-bf9f-4529ea2f7889",
+              "name": "Minor Pallas c",
+              "body_type": "Moon",
+              "orbit_au": 0.013986005385716344,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "7d79199b-750b-4a4e-871c-cd4b5c6192e7",
+              "name": "Minor Pallas d",
+              "body_type": "Moon",
+              "orbit_au": 0.006886875980257909,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "de9fbcfe-47b5-4193-b3fc-e210f6184413",
+          "name": "Inner Pallas",
+          "body_type": "Planet",
+          "orbit_au": 14.533141553014213,
+          "satellites": [
+            {
+              "id": "d28c0e1a-29e3-4a3f-80ff-dc1fe3aae835",
+              "name": "Inner Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.006594002862586329,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "c62c853b-1866-4dcc-aa4d-fad5b2cade3a",
+              "name": "Inner Pallas b",
+              "body_type": "Moon",
+              "orbit_au": 0.010663160619832232,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "a091c486-1421-4273-a9a2-0a32e129ddd7",
+              "name": "Inner Pallas c",
+              "body_type": "Moon",
+              "orbit_au": 0.008924656995609126,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "edadb680-1d4a-4155-bde1-cc5b25ff33a9",
+          "name": "Minor Vesta",
+          "body_type": "Moon",
+          "orbit_au": 17.94895696490945,
+          "satellites": [
+            {
+              "id": "25b1c23d-e5b5-4a44-8bd7-5ea1188f8c7c",
+              "name": "Minor Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.017061254283922387,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "0f81184e-9813-4a42-a5e8-56b43885c306",
+              "name": "Minor Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.017393674994682452,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "32dc98f9-affa-4de1-9e36-6b6426287ab5",
+          "name": "Great Juno",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 18.41241879549819,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "ce20324c-301d-473e-ba5a-207b8d786115",
+          "name": "Outer Pallas",
+          "body_type": "Moon",
+          "orbit_au": 25.873353964531304,
+          "satellites": [
+            {
+              "id": "f4b86e32-48ff-49c2-bfd2-6f72354bc023",
+              "name": "Outer Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.017616212025851428,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "7e29de9e-874c-4538-8996-1bbf6a6c5437",
+          "name": "Inner Juno",
+          "body_type": "Comet",
+          "orbit_au": 42.617230694120394,
+          "satellites": [
+            {
+              "id": "fe43990d-fb35-4615-a902-7bdfcd5c31c6",
+              "name": "Inner Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.01631886095703411,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "a115b664-6dea-41e8-a8e6-4ca8d512d245",
+              "name": "Inner Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.017893216103742404,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "56ffbdd5-47e0-4e03-b230-82eadc9361e4",
+              "name": "Inner Juno c",
+              "body_type": "Moon",
+              "orbit_au": 0.008946198501014177,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "1b94a597-2461-4912-af45-112a1e9b49d6",
+              "name": "Inner Juno d",
+              "body_type": "Moon",
+              "orbit_au": 0.011074348689151593,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Scattered Disk",
+          "inner_radius_au": 50.151834482112065,
+          "outer_radius_au": 54.738335590032364,
+          "region_type": "Asteroid Belt"
+        },
+        {
+          "name": "Dust Cloud",
+          "inner_radius_au": 25.293064286970218,
+          "outer_radius_au": 29.879899777815716,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "b445374e-dd51-4722-9fd8-179ac51d3045",
+          "name": "Jump to Regulus",
+          "target_system_id": "2f0cc6f8-531e-4e5a-8b0e-932bf1a605b7"
+        },
+        {
+          "id": "606b61cd-3b9d-4c5e-95cd-832d3f1aacda",
+          "name": "Jump to Vega",
+          "target_system_id": "d320e5aa-c025-427f-a49f-a14d56a7b2c9"
+        }
+      ]
+    },
+    {
+      "id": "2f0cc6f8-531e-4e5a-8b0e-932bf1a605b7",
+      "name": "Regulus",
+      "x": -153.71470824402581,
+      "y": 1279.1614077734653,
+      "stars": [
+        {
+          "id": "670836bf-f695-4793-93ef-048217c82f98",
+          "name": "Regulus",
+          "spectral_class": "G2V",
+          "radius_sol": 2.26964141794253
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "627b6264-5696-41f8-bfa0-fbcb9161fd08",
+          "name": "Great Vesta",
+          "body_type": "Comet",
+          "orbit_au": 0.1883073845521991,
+          "satellites": [],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "f905c8f3-0606-4fb1-8d59-8b711bd946ae",
+          "name": "Minor Juno",
+          "body_type": "Planet",
+          "orbit_au": 14.271806543160263,
+          "satellites": [
+            {
+              "id": "3a499d4b-7872-4ac6-819d-ff0fd79acc88",
+              "name": "Minor Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.006260800172431795,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "d8ad9001-372a-4a1e-9787-b6d4a65148f9",
+          "name": "Old Terra",
+          "body_type": "Planet",
+          "orbit_au": 24.187111782688472,
+          "satellites": [
+            {
+              "id": "de226ce8-edea-4b0e-8a56-76563782d070",
+              "name": "Old Terra a",
+              "body_type": "Moon",
+              "orbit_au": 0.014481282152895198,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "6c23a03d-fe7c-4844-8749-120ce775ff6b",
+          "name": "New Ceres",
+          "body_type": "Moon",
+          "orbit_au": 32.448291436514026,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "ea12a27f-c9a6-4ffa-8bbd-c7139ec7dd39",
+          "name": "New Ceres",
+          "body_type": "Comet",
+          "orbit_au": 40.43877226211736,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "1fb6eee3-697d-42e0-8d5e-7ea1c80f59a3",
+          "name": "Great Juno",
+          "body_type": "Planet",
+          "orbit_au": 44.526541715898006,
+          "satellites": [
+            {
+              "id": "6d2d1193-9179-4fe7-a45d-f5398472dc43",
+              "name": "Great Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.010429379549076672,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "eade3807-37cd-4d23-af5f-9e518c0b4bfe",
+              "name": "Great Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.019477804915067936,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "896d936f-ab60-4802-a540-3a06efaa0368",
+              "name": "Great Juno c",
+              "body_type": "Moon",
+              "orbit_au": 0.008117837888076303,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "0155f584-b2a9-4904-8f9c-4b29611f6a38",
+          "name": "Old Ceres",
+          "body_type": "SpaceStation",
+          "orbit_au": 45.072780024179416,
+          "satellites": [],
+          "tags": [
+            "Frozen"
+          ]
+        },
+        {
+          "id": "c1c66020-0b1d-48d5-a676-9eb2d88cdba3",
+          "name": "Minor Ceres",
+          "body_type": "SpaceStation",
+          "orbit_au": 45.689423876895255,
+          "satellites": [
+            {
+              "id": "0ea5eb11-db77-4d2b-af0a-2ea565ee8556",
+              "name": "Minor Ceres a",
+              "body_type": "Moon",
+              "orbit_au": 0.013219591538440996,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "efccec55-a1ed-48d6-b741-11071bb319dd",
+          "name": "New Vesta",
+          "body_type": "Moon",
+          "orbit_au": 47.3236122165237,
+          "satellites": [
+            {
+              "id": "dad35fe9-288c-4c67-bba1-410482b29d7f",
+              "name": "New Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.013475324837488104,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "e6a203ad-b96a-4df4-bbfc-da3e1eb87b40",
+              "name": "New Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.012858344557565241,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Asteroid Belt",
+          "inner_radius_au": 12.879221681378446,
+          "outer_radius_au": 14.126848777588629,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "b685c05f-bbbd-465d-a454-2e55c7811f4f",
+          "name": "Jump to Castor",
+          "target_system_id": "74ee432f-3f58-45a5-ab8c-eadde6680f64"
+        }
+      ]
+    },
+    {
+      "id": "74ee432f-3f58-45a5-ab8c-eadde6680f64",
+      "name": "Castor",
+      "x": -1163.1665822224336,
+      "y": 231.89047129632468,
+      "stars": [
+        {
+          "id": "d57bc2a4-ada3-4625-a9e6-8e0fce39c0ff",
+          "name": "Castor",
+          "spectral_class": "M5V",
+          "radius_sol": 1.7217892470916134
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "11924c1a-596f-4ca3-8376-f5c94274e96c",
+          "name": "New Pallas",
+          "body_type": "SpaceStation",
+          "orbit_au": 2.2629444895462907,
+          "satellites": [
+            {
+              "id": "4c423906-0267-4244-a568-aca2d7224559",
+              "name": "New Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.010513999254838724,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "1540d42a-4935-4143-a05e-ad7172fea2e1",
+          "name": "New Juno",
+          "body_type": "Comet",
+          "orbit_au": 3.2868283195217396,
+          "satellites": [
+            {
+              "id": "7ac1045d-0f8c-4d1c-bf86-c5711845705c",
+              "name": "New Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.008770420615862156,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "cadfa340-b908-450f-8c7d-814f3a0a0f76",
+              "name": "New Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.005561181655615923,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "72f91593-7b10-4e6e-8cc3-a4a58a36de17",
+              "name": "New Juno c",
+              "body_type": "Moon",
+              "orbit_au": 0.007339611559640099,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "9709a620-6551-4f6e-a84b-0145baa4c1fa",
+          "name": "New Vesta",
+          "body_type": "Moon",
+          "orbit_au": 20.986509652882003,
+          "satellites": [
+            {
+              "id": "b7fa38c3-732f-4d5b-9bfa-1d3f4cc0dbc3",
+              "name": "New Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.005736251890216924,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "554c3a82-ff0c-42bb-b8d8-664aa35854e3",
+              "name": "New Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.014469238436982605,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        },
+        {
+          "id": "a0ee6223-9a37-4686-810a-6d1af3e01a50",
+          "name": "Great Ceres",
+          "body_type": "Comet",
+          "orbit_au": 27.42159161151666,
+          "satellites": [
+            {
+              "id": "f49cc701-3a93-40ae-ae32-1235ba86542e",
+              "name": "Great Ceres a",
+              "body_type": "Moon",
+              "orbit_au": 0.009852219171013138,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "c71eb6fd-b263-4cd7-984b-989f4fa9dea8",
+              "name": "Great Ceres b",
+              "body_type": "Moon",
+              "orbit_au": 0.01316330610040229,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "9618b478-8bb0-4ee9-b4d6-4a8890538d48",
+              "name": "Great Ceres c",
+              "body_type": "Moon",
+              "orbit_au": 0.017277411844044775,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Atmospheric"
+          ]
+        }
+      ],
+      "orbital_regions": [
+        {
+          "name": "Asteroid Belt",
+          "inner_radius_au": 29.545682719396904,
+          "outer_radius_au": 33.764967282698905,
+          "region_type": "Asteroid Belt"
+        }
+      ],
+      "portals": [
+        {
+          "id": "219ea5d3-63c7-46c7-80a4-a48829e872a5",
+          "name": "Jump to Spica",
+          "target_system_id": "8d2e9fa7-a6e7-46e9-b25a-89d78da94587"
+        },
+        {
+          "id": "4e559d39-0694-42b0-b378-34ced0bc6bd0",
+          "name": "Jump to Vega",
+          "target_system_id": "d320e5aa-c025-427f-a49f-a14d56a7b2c9"
+        }
+      ]
+    },
+    {
+      "id": "8d2e9fa7-a6e7-46e9-b25a-89d78da94587",
+      "name": "Spica",
+      "x": -1462.475801258158,
+      "y": 587.3176798234067,
+      "stars": [
+        {
+          "id": "ef0725f3-2b9f-481e-bf49-e21b1e347cba",
+          "name": "Spica",
+          "spectral_class": "K0V",
+          "radius_sol": 1.5985586743645426
+        }
+      ],
+      "orbital_bodies": [
+        {
+          "id": "e4a3c586-457a-4478-aaec-cc2bab08a365",
+          "name": "Inner Vesta",
+          "body_type": "Moon",
+          "orbit_au": 2.53268478929646,
+          "satellites": [],
+          "tags": [
+            "Volcanic"
+          ]
+        },
+        {
+          "id": "97f5f55c-bc93-4acc-8976-cb252ecf9398",
+          "name": "Outer Ceres",
+          "body_type": "Planet",
+          "orbit_au": 17.4527672664862,
+          "satellites": [],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "3c200db2-1936-4703-a883-98609d560437",
+          "name": "Minor Pallas",
+          "body_type": "SpaceStation",
+          "orbit_au": 21.841671946404134,
+          "satellites": [
+            {
+              "id": "e927bb4b-aa2c-4def-b6c2-848bf73165e5",
+              "name": "Minor Pallas a",
+              "body_type": "Moon",
+              "orbit_au": 0.01486397646029319,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "f6a25ca5-b04c-467f-be63-52f41888da97",
+              "name": "Minor Pallas b",
+              "body_type": "Moon",
+              "orbit_au": 0.01422497038463601,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "8d591484-af4b-4824-86fc-ccf6ad4cccc0",
+              "name": "Minor Pallas c",
+              "body_type": "Moon",
+              "orbit_au": 0.007270422088970892,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "247ab4d5-a1f5-4608-830c-5e2697a6334c",
+              "name": "Minor Pallas d",
+              "body_type": "Moon",
+              "orbit_au": 0.013265802837490518,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "da676fb4-5ddf-49d5-885e-9568ef762ee3",
+          "name": "Outer Vesta",
+          "body_type": "Planet",
+          "orbit_au": 22.024885797571585,
+          "satellites": [
+            {
+              "id": "2011ec0d-bcd9-4235-ac58-f659076c142a",
+              "name": "Outer Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.015570373474533345,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "5e277688-1017-4830-8220-076fdef85ab1",
+              "name": "Outer Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.01459708395400032,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "b41842aa-00de-4c8a-ae90-eed8a3ddf601",
+              "name": "Outer Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.013666134426691887,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "1bcc02b5-0def-4650-8f75-f6206f11c291",
+              "name": "Outer Vesta d",
+              "body_type": "Moon",
+              "orbit_au": 0.01813154179603006,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "c8c6144f-07cc-4387-b57d-5316bae7060b",
+          "name": "New Vesta",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 22.92237930972171,
+          "satellites": [
+            {
+              "id": "23a7af39-b4ac-4631-baa5-eb564c3e0135",
+              "name": "New Vesta a",
+              "body_type": "Moon",
+              "orbit_au": 0.01220478304387147,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "6308fbc2-b003-45b3-b3cc-9b3634a37e9c",
+              "name": "New Vesta b",
+              "body_type": "Moon",
+              "orbit_au": 0.008768675919832698,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "6bfc1934-ef20-4bd4-8ab8-07fea5de1ac5",
+              "name": "New Vesta c",
+              "body_type": "Moon",
+              "orbit_au": 0.007836007920814956,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "e531df7c-eb7b-4aeb-aac9-4dcff641f471",
+              "name": "New Vesta d",
+              "body_type": "Moon",
+              "orbit_au": 0.007436712273451618,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Mineral Rich"
+          ]
+        },
+        {
+          "id": "e772dd1b-43f7-49a7-aa34-2a25cbbacd7a",
+          "name": "Inner Ceres",
+          "body_type": "Planet",
+          "orbit_au": 31.19796450357998,
+          "satellites": [
+            {
+              "id": "c2383853-e6e9-4422-ab4c-2536dda9ae3e",
+              "name": "Inner Ceres a",
+              "body_type": "Moon",
+              "orbit_au": 0.007288635684269481,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "96243eb7-45a5-465c-bc8a-4b635de2f608",
+              "name": "Inner Ceres b",
+              "body_type": "Moon",
+              "orbit_au": 0.006006711579692911,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Barren"
+          ]
+        },
+        {
+          "id": "915c5489-a630-41f5-9511-46985d999040",
+          "name": "Old Juno",
+          "body_type": "DwarfPlanet",
+          "orbit_au": 38.528372772142916,
+          "satellites": [
+            {
+              "id": "dfd246b5-df9b-40e6-a909-dc794e85b356",
+              "name": "Old Juno a",
+              "body_type": "Moon",
+              "orbit_au": 0.008406614386171206,
+              "satellites": [],
+              "tags": []
+            },
+            {
+              "id": "e8cce012-2054-48db-8572-4987d52d4df3",
+              "name": "Old Juno b",
+              "body_type": "Moon",
+              "orbit_au": 0.017094622045202092,
+              "satellites": [],
+              "tags": []
+            }
+          ],
+          "tags": [
+            "Volcanic"
+          ]
+        }
+      ],
+      "orbital_regions": [],
+      "portals": [
+        {
+          "id": "20ecf7b9-7c47-4563-aa3e-590046e87e35",
+          "name": "Jump to Alpha Centauri",
+          "target_system_id": "b2892e25-47a6-4554-b6dc-158cdfe6201d"
+        },
+        {
+          "id": "f526a7b5-c07b-4fa8-a4f1-9b6beaa3460e",
+          "name": "Jump to Procyon",
+          "target_system_id": "487a9b88-a199-4513-85ab-e2bb7316302f"
+        }
+      ]
+    }
+  ]
+}
