@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import { viewMode, selectedEntity } from '../lib/stores/appState';
+	import { viewMode, selectedEntity } from '$lib/stores/appState';
 	let { children } = $props();
 
 	onMount(() => {

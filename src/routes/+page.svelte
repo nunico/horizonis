@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadCluster, cluster } from '../lib/stores/clusterData';
-	import { viewMode } from '../lib/stores/appState';
-	import StarMap from '../lib/components/StarMap.svelte';
-	import SolarSystemMap from '../lib/components/SolarSystemMap.svelte';
-	import Inspector from '../lib/components/Inspector.svelte';
+	import { loadCluster, cluster } from '$lib/stores/clusterData';
+	import { viewMode } from '$lib/stores/appState';
+	import StarMap from '$lib/components/StarMap.svelte';
+	import SolarSystemMap from '$lib/components/SolarSystemMap.svelte';
+	import Inspector from '$lib/components/Inspector.svelte';
 
 	onMount(async () => {
 		await loadCluster();
