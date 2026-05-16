@@ -2,6 +2,14 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Satellite Scaling Refinement
+- **Summary**: Increased the visual size difference between satellites and their parent objects for better hierarchical clarity.
+- **Changes**:
+  - Adjusted `getVisualRadius` formula to `4 + Math.log10(radius_km) * 6` to increase the visual spread between bodies of different physical sizes.
+  - Stiffened the hierarchical size constraint in `getClampedScale`, reducing the maximum satellite-to-parent radius ratio from `0.8` to `0.4`.
+  - Updated unit tests to reflect the new scaling constants and ensure consistent hierarchy enforcement.
+- **Files Affected**: `src/lib/pixi/scaling.ts`, `src/lib/pixi/scaling.test.ts`.
+
 ### [2026-05-16] - Satellite Scaling Fix
 - **Summary**: Fixed a bug where satellites (moons) could appear larger than their parent objects when zoomed out.
 - **Changes**:

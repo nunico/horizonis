@@ -20,7 +20,7 @@ export function getVisualRadius(radius_km: number): number {
 	// Logarithmic scaling ensures small moons are visible and large stars
 	// don't dominate the screen too much.
 	// radius_km can be very small for stations, but usually > 0.
-	return 5 + Math.log10(Math.max(radius_km, 1)) * 4;
+	return 4 + Math.log10(Math.max(radius_km, 1)) * 6;
 }
 
 export function getClampedScale(
@@ -43,7 +43,7 @@ export function getClampedScale(
 
 	if (parentVisualRadius !== undefined) {
 		// Enforce parent visual radius constraint: satellite must be smaller than parent
-		const maxVisRadius = parentVisualRadius * 0.8;
+		const maxVisRadius = parentVisualRadius * 0.4;
 		if (baseRadius * targetScale > maxVisRadius) {
 			targetScale = maxVisRadius / baseRadius;
 		}

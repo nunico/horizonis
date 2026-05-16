@@ -106,3 +106,10 @@ Perform a final check of the UX, run existing tests, and update the changelog.
 - Run `deno task test` (or equivalent) to ensure no regressions.
 - Verify the Zoom UX manually or via existing E2E tests if possible.
 - Update `CHANGELOG.md` with the new improvements.
+
+### ✓ Step 5: Further reduce maximum allowed satellite-to-parent radius ratio
+Refine the hierarchical size constraint to make the size difference between satellites and parents even more significant.
+- Update `getClampedScale` in `src/lib/pixi/scaling.ts` to reduce the ratio from `0.5` to `0.4`.
+- Update unit tests in `src/lib/pixi/scaling.test.ts` to reflect this change.
+- Verify with `deno task test`.
+- Update `CHANGELOG.md`.

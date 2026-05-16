@@ -21,13 +21,13 @@ describe('auToPixels', () => {
 
 describe('getVisualRadius', () => {
 	it('calculates radius correctly using log scale', () => {
-		expect(getVisualRadius(1)).toBe(5);
-		expect(getVisualRadius(10)).toBe(9);
-		expect(getVisualRadius(10000)).toBe(21);
+		expect(getVisualRadius(1)).toBe(4);
+		expect(getVisualRadius(10)).toBe(10);
+		expect(getVisualRadius(10000)).toBe(28);
 	});
 
 	it('handles very small radii', () => {
-		expect(getVisualRadius(0.1)).toBe(5);
+		expect(getVisualRadius(0.1)).toBe(4);
 	});
 });
 
@@ -55,21 +55,21 @@ describe('getClampedScale', () => {
 
 	it('enforces parent visual radius constraint (Satellite Size Bug)', () => {
 		// Parent visual radius = 10.
-		// Max satellite visual radius = 10 * 0.8 = 8.
+		// Max satellite visual radius = 10 * 0.4 = 4.
 		// Satellite baseRadius = 10.
 		// Target scale = 1.0.
-		// Resulting visual radius would be 10, which is > 8.
-		// So target scale should be clamped to 8 / 10 = 0.8.
+		// Resulting visual radius would be 10, which is > 4.
+		// So target scale should be clamped to 4 / 10 = 0.4.
 		const scale = getClampedScale(10, 100, 1.0, undefined, 10);
-		expect(scale).toBeCloseTo(0.8);
-		expect(10 * scale).toBeLessThanOrEqual(10 * 0.8);
+		expect(scale).toBeCloseTo(0.4);
+		expect(10 * scale).toBeLessThanOrEqual(10 * 0.4);
 	});
 
 	it('does not clamp if satellite is already smaller than parent', () => {
-		// Parent visual radius = 10. Max satellite visual radius = 8.
-		// Satellite baseRadius = 5. Target scale = 1.0.
-		// Visual radius = 5, which is < 8.
-		const scale = getClampedScale(5, 100, 1.0, undefined, 10);
+		// Parent visual radius = 10. Max satellite visual radius = 4.
+		// Satellite baseRadius = 3. Target scale = 1.0.
+		// Visual radius = 3, which is < 4.
+		const scale = getClampedScale(3, 100, 1.0, undefined, 10);
 		expect(scale).toBe(1.0);
 	});
 });
