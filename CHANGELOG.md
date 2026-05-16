@@ -2,6 +2,18 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-16] - Advanced Map Highlighting & UI/UX Refinement
+
+- **Summary**: Implemented interactive highlighting for orbits and portals, and finalized overall UI/UX improvements.
+- **Changes**:
+  - Added interactive ring-hit-area orbits in `SolarSystemMap`.
+  - Added interactive line-hit-area portals in `StarMap`.
+  - Implemented bidirectional highlighting for hovered and selected entities and their orbits/portals.
+  - Verified and refined Navigation, Search, Inspector, and Help overlay components.
+  - Ensured comprehensive unit test coverage for all new UI components.
+- **Files Affected**: `src/lib/components/SolarSystemMap.svelte`, `src/lib/components/StarMap.svelte`, `src/lib/components/Navigation.svelte`, `src/lib/components/Inspector.svelte`, `src/lib/components/HelpOverlay.svelte`, `src/routes/+page.svelte`, `src/routes/+layout.svelte`, `src/lib/components/Navigation.test.ts`, `src/lib/components/Inspector.test.ts`, `src/lib/components/HelpOverlay.test.ts`.
+- **Context**: None.
+
 ###### [2026-05-16] - UI & UX Improvements
 
 - **Summary**: Enhanced navigation, editing interface, and visual feedback to improve overall usability and accessibility.
@@ -12,7 +24,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
   - Added visual feedback for hover and selection in PIXI maps.
   - Integrated Navigation and HelpOverlay into the main application layout.
   - Added unit tests for Navigation, Inspector, and HelpOverlay components.
-- **Files Affected**: src/lib/components/Navigation.svelte, src/lib/components/HelpOverlay.svelte, src/lib/components/Inspector.svelte, src/lib/components/StarMap.svelte, src/lib/components/SolarSystemMap.svelte, src/routes/+page.svelte, src/routes/+layout.svelte, src/lib/components/Navigation.test.ts, src/lib/components/Inspector.test.ts, src/lib/components/HelpOverlay.test.ts.
+- **Files Affected**: `src/lib/components/Navigation.svelte`, `src/lib/components/HelpOverlay.svelte`, `src/lib/components/Inspector.svelte`, `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`, `src/routes/+page.svelte`, `src/routes/+layout.svelte`, `src/lib/components/Navigation.test.ts`, `src/lib/components/Inspector.test.ts`, `src/lib/components/HelpOverlay.test.ts`.
 - **Context**: None.
 
 ### [2026-05-16] - Lint Task & Issue Fixes

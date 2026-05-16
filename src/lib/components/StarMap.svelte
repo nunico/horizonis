@@ -9,8 +9,18 @@
 	let app: PIXI.Application;
 	let viewport: Viewport;
 	let resizeHandler: () => void;
-	let systemNodes: PIXI.Container[] = [];
-	let portalGraphics: PIXI.Graphics;
+	let systemNodes: PIXI.Graphics[] = [];
+	let portalNodes: {
+		graphics: PIXI.Graphics;
+		fromId: string;
+		toId: string;
+		fromPos: { x: number; y: number };
+		toPos: { x: number; y: number };
+		key: string;
+	}[] = [];
+	let hoveredSystemId: string | null = null;
+	let hoveredPortalKey: string | null = null;
+
 	let focusedSystem: { x: number; y: number; id: string } | null = null;
 	let lastScale = 1;
 	let lastMinScale = 0;
@@ -84,7 +94,36 @@
 			node.scale.set(s);
 		}
 		drawPortals();
+		drawSystemHighlights();
 		drawSelection();
+	}
+
+	function drawSystemHighlights() {
+		if (!hoverGraphics || !viewport) return;
+		hoverGraphics.clear();
+		const s = 1 / viewport.scale.x;
+
+		// If a portal is hovered, highlight its systems
+		if (hoveredPortalKey) {
+			const portal = portalNodes.find((p) => p.key === hoveredPortalKey);
+			if (portal) {
+				[portal.fromPos, portal.toPos].forEach((pos) => {
+					hoverGraphics
+						.circle(pos.x, pos.y, 14 * s)
+						.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.6 });
+				});
+			}
+		}
+
+		// If a system is hovered, highlight it
+		if (hoveredSystemId) {
+			const system = $cluster?.systems.find((s) => s.id === hoveredSystemId);
+			if (system) {
+				hoverGraphics
+					.circle(system.x, system.y, 14 * s)
+					.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+			}
+		}
 	}
 
 	function drawSelection() {
@@ -163,21 +202,43 @@
 	}
 
 	function drawPortals() {
-		if (!$cluster || !portalGraphics || !viewport) return;
+		if (!$cluster || !viewport) return;
 
-		portalGraphics.clear();
 		const s = 1 / viewport.scale.x;
+		const selectedId = $selectedEntity?.id;
 
-		for (const system of $cluster.systems) {
-			for (const portal of system.portals) {
-				const target = $cluster.systems.find((s) => s.id === portal.target_system_id);
-				if (target) {
-					portalGraphics
-						.moveTo(system.x, system.y)
-						.lineTo(target.x, target.y)
-						.stroke({ width: 2 * s, color: 0x334155, alpha: 0.5 });
+		for (const portal of portalNodes) {
+			const isHovered = hoveredPortalKey === portal.key;
+			const isConnectedToHoveredSystem =
+				hoveredSystemId === portal.fromId || hoveredSystemId === portal.toId;
+			const isConnectedToSelectedSystem = selectedId === portal.fromId || selectedId === portal.toId;
+
+			const isHighlighted = isHovered || isConnectedToHoveredSystem || isConnectedToSelectedSystem;
+
+			const color = isHighlighted ? 0x38bdf8 : 0x334155;
+			const alpha = isHighlighted ? 0.8 : 0.5;
+			const width = (isHighlighted ? 3 : 2) * s;
+
+			portal.graphics
+				.clear()
+				.moveTo(portal.fromPos.x, portal.fromPos.y)
+				.lineTo(portal.toPos.x, portal.toPos.y)
+				.stroke({ width, color, alpha });
+
+			// Custom hit area for the line
+			const hitWidth = Math.max(10, 5 / viewport.scale.x);
+			portal.graphics.hitArea = {
+				contains(x: number, y: number) {
+					const { x: x1, y: y1 } = portal.fromPos;
+					const { x: x2, y: y2 } = portal.toPos;
+					const L2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+					if (L2 === 0) return Math.hypot(x - x1, y - y1) < hitWidth;
+					let t = ((x - x1) * (x2 - x1) + (y - y1) * (y2 - y1)) / L2;
+					t = Math.max(0, Math.min(1, t));
+					const dist = Math.hypot(x - (x1 + t * (x2 - x1)), y - (y1 + t * (y2 - y1)));
+					return dist < hitWidth;
 				}
-			}
+			} as PIXI.IHitArea;
 		}
 	}
 
@@ -186,12 +247,50 @@
 
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
 		systemNodes = [];
+		portalNodes = [];
 		maxClusterRadius = 0;
 
-		// Render portals first (background)
-		portalGraphics = new PIXI.Graphics();
-		viewport.addChild(portalGraphics);
-		drawPortals();
+		// Deduplicate and Create Portal Nodes
+		const uniquePortals = new Map<string, { from: string; to: string }>();
+		for (const system of $cluster.systems) {
+			for (const portal of system.portals) {
+				const id1 = system.id;
+				const id2 = portal.target_system_id;
+				const key = [id1, id2].sort().join('-');
+				if (!uniquePortals.has(key)) {
+					uniquePortals.set(key, { from: id1, to: id2 });
+				}
+			}
+		}
+
+		for (const [key, pair] of uniquePortals) {
+			const sys1 = $cluster.systems.find((s) => s.id === pair.from);
+			const sys2 = $cluster.systems.find((s) => s.id === pair.to);
+			if (sys1 && sys2) {
+				const g = new PIXI.Graphics();
+				g.eventMode = 'static';
+				g.cursor = 'pointer';
+
+				g.on('pointerover', () => {
+					hoveredPortalKey = key;
+					updateScales();
+				});
+				g.on('pointerout', () => {
+					hoveredPortalKey = null;
+					updateScales();
+				});
+
+				viewport.addChild(g);
+				portalNodes.push({
+					graphics: g,
+					fromId: pair.from,
+					toId: pair.to,
+					fromPos: { x: sys1.x, y: sys1.y },
+					toPos: { x: sys2.x, y: sys2.y },
+					key
+				});
+			}
+		}
 
 		// Selection and Hover graphics
 		selectionGraphics = new PIXI.Graphics();
@@ -219,15 +318,13 @@
 			});
 
 			node.on('pointerover', () => {
-				const s = 1 / viewport.scale.x;
-				hoverGraphics
-					.clear()
-					.circle(system.x, system.y, 14 * s)
-					.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+				hoveredSystemId = system.id;
+				updateScales();
 			});
 
 			node.on('pointerout', () => {
-				hoverGraphics.clear();
+				hoveredSystemId = null;
+				updateScales();
 			});
 
 			// Double click logic

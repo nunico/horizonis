@@ -5,21 +5,25 @@ sessionId: session-260516-141900-1ivb
 # Requirements
 
 ### Overview & Goals
-The goal of this task is to improve the User Interface (UI) and User Experience (UX) of the Horizonis application. Currently, the application has a functional but minimal UI. Navigation is mainly driven by hidden keyboard shortcuts, and the Inspector lacks common UX patterns like keyboard saving and auto-focus.
+The goal of this task is to improve the visual feedback for navigation and selection in the Star Map and Solar System Map. By highlighting orbits and portal connections, users can better understand the relationship between celestial bodies and systems.
 
 ### Scope
-- **Navigation**: Add a visible navigation bar with breadcrumbs and a back button.
-- **Search**: Implement a search feature to quickly find and jump to solar systems and celestial bodies.
-- **Inspector**: Improve the editing experience with keyboard shortcuts, better focus management, and polished visuals.
-- **Visual Feedback**: Add hover effects and selection highlights to the interactive maps.
-- **Help**: Add a discoverable way to learn about keyboard shortcuts.
-- **Accessibility**: Ensure components are usable with a keyboard and have proper labels.
+- **Navigation & Search**: (Previously implemented) Navigation bar, breadcrumbs, and search functionality.
+- **Inspector**: (Previously implemented) Keyboard shortcuts and auto-focus.
+- **Advanced Map Highlighting**:
+    - **Solar System Map**:
+        - Highlight orbits when an object (star, planet, etc.) is hovered or selected.
+        - Highlight the object itself when its orbit is hovered.
+        - Make orbits interactive (hoverable and clickable).
+    - **Star Map**:
+        - Highlight portal connections when a system is hovered or selected.
+        - Highlight both connected systems when a portal connection is hovered.
+        - Make portal connections interactive (hoverable).
 
 ### User Stories
-- **As a user**, I want to see where I am in the stellar map so that I don't get lost.
-- **As a user**, I want to search for a specific system by name so that I can find it quickly.
-- **As a user**, I want to save my changes in the Inspector by pressing Enter, instead of having to click the Save button.
-- **As a user**, I want to know what keyboard shortcuts are available so that I can use the app more efficiently.
+- **As a user**, I want to see which orbit belongs to which planet when I hover over it.
+- **As a user**, I want to easily see all portal connections for a selected system in the star map.
+- **As a user**, I want to identify which systems are connected by a portal by hovering over the portal line.
 
 # Technical Design
 
@@ -30,41 +34,28 @@ The goal of this task is to improve the User Interface (UI) and User Experience 
 
 ### Proposed Changes
 
-#### 1. Navigation Component (`src/lib/components/Navigation.svelte`)
-- Positioned at the top of the screen.
-- **Breadcrumbs**: `Cluster` > `[System]` > `[Entity]`.
-- **Search**: A text input with a dropdown for filtered system results.
-- **Back Button**: Icon-only button to return to the cluster view.
+#### 1. Interactive Orbits (`SolarSystemMap.svelte`)
+- **Orbit Graphics**: Convert orbits into interactive `PIXI.Graphics` objects.
+- **Custom Hit Area**: Implement a ring-shaped hit area for orbits to support accurate hover detection on the orbit line.
+- **Bidirectional Highlighting**: 
+    - Hovering a body highlights its orbit.
+    - Hovering an orbit highlights the corresponding body.
+- **Selection**: Keep the orbit highlighted if the body is selected.
 
-#### 2. Inspector Enhancements (`src/lib/components/Inspector.svelte`)
-- **Focus**: Use a Svelte action or `onMount` to focus the name input when the component is rendered.
-- **Keybindings**: 
-    - `Enter` -> `handleSave()`
-    - `Escape` -> `selectedEntity.set(null)`
-- **Visuals**: Use `lucide-svelte` icons consistently and improve Tailwind grouping.
+#### 2. Interactive Portal Connections (`StarMap.svelte`)
+- **Portal Graphics**: Change portal rendering from a single graphics object to individual interactive objects.
+- **Connection Highlighting**:
+    - Hovering/selecting a system highlights all its connected portals.
+    - Hovering a portal line highlights both connected systems.
+- **Deduplication**: Ensure portal connections are only rendered once per unique edge.
 
-#### 3. Help Overlay (`src/lib/components/HelpOverlay.svelte`)
-- A simple backdrop-blur modal.
-- Shows a list of keys and their actions.
-- Toggled by a global `keydown` listener for `?`.
+#### 3. State Management
+- Use local Svelte state (e.g., `hoveredEntityId`, `hoveredPortalId`) to drive the PIXI rendering of highlights.
+- Ensure `updateScales` and `drawPortals` react to hover/selection state changes.
 
-#### 4. Search Logic
-- Search will operate on the `cluster` store.
-- It will match system and orbital body names using a simple case-insensitive substring match.
-- Selecting a result will:
-    - For systems: set `viewMode = 'system'`, `activeSystemId = system.id`, and `selectedEntity = null`.
-    - For bodies: set `viewMode = 'system'`, `activeSystemId = system.id`, and `selectedEntity = body`.
-
-#### 5. Map Visual Feedback
-- **Selection Highlight**: A persistent ring/glow around the `selectedEntity` in both `StarMap` and `SolarSystemMap`.
-- **Hover Tooltips**: A small, floating label near the mouse showing the name of the system or body being hovered.
-- **Cursor**: Change cursor to `pointer` when hovering over clickable objects.
-
-#### 6. Accessibility & Keyboard Support
-- **Navigation**: Keyboard focusable buttons with `aria-label`.
-- **Search**: `/` to focus, arrow keys to navigate results, `Enter` to select, `Esc` to close.
-- **Inspector**: `Tab` order optimization, auto-focus on name input, keyboard shortcuts for primary actions.
-- **Help**: Modal with proper focus trapping and `Esc` to close.
+### File Structure
+- `src/lib/components/StarMap.svelte` (Modified)
+- `src/lib/components/SolarSystemMap.svelte` (Modified)
 
 ### Testing Stack
 - **Unit Tests**: `Vitest` with `@testing-library/svelte` for component verification and store logic.
@@ -115,7 +106,7 @@ A new navigation bar with unit tests and breadcrumb logic.
 - Create `src/lib/components/Navigation.test.ts` to verify breadcrumb rendering and back button behavior.
 - Integrate the `Navigation` component into `src/routes/+page.svelte`.
 
-### * Step 2: Add Search Functionality
+### ✓ Step 2: Add Search Functionality
 Search feature with keyboard support and unit tests, covering systems and bodies.
 
 - Add a search input to `Navigation.svelte`.
@@ -157,9 +148,15 @@ Full integration tests covering the new UI/UX features. (Skipped due to environm
 - Test opening the Help overlay via `?` and closing it.
 - Test Inspector keyboard shortcuts in an E2E context.
 
-### ✓ Step 7: UI Polish & Final Refinement
-Final touches to the UI and documentation.
+### ✓ Step 7: Implement Advanced Map Highlighting (Orbits & Portals)
+Highlighting of orbits and portal connections when objects are hovered or selected.
 
-- Improve the initial loading screen in `src/routes/+page.svelte` with a more engaging animation.
-- Ensure consistent color usage and typography across all UI components.
-- Update `CHANGELOG.md` with all improvements and testing additions.
+- **SolarSystemMap**:
+    - Update `orbitNodes` to include entity IDs.
+    - Implement ring-shaped hit areas for orbits.
+    - Add hover/selection logic to orbit stroke styles.
+    - Connect orbit hover to body highlighting.
+- **StarMap**:
+    - Refactor portal rendering to use individual interactive objects.
+    - Implement line hit areas for portals.
+    - Add highlight logic for systems and their connected portals.

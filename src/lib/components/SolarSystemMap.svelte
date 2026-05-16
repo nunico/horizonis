@@ -35,7 +35,8 @@
 		parentId?: string;
 	}[] = [];
 	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
-	let orbitNodes: { graphics: PIXI.Graphics; radius: number }[] = [];
+	let orbitNodes: { graphics: PIXI.Graphics; radius: number; entityId: string }[] = [];
+	let hoveredEntityId: string | null = null;
 
 	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'log' };
 	let focusedObject: {
@@ -207,10 +208,25 @@
 		}
 
 		for (const orbit of orbitNodes) {
+			const isHovered = hoveredEntityId === orbit.entityId;
+			const isSelected = $selectedEntity?.id === orbit.entityId;
+			const color = isSelected ? 0x38bdf8 : isHovered ? 0xf1f5f9 : 0x334155;
+			const alpha = isSelected || isHovered ? 0.8 : 0.4;
+			const width = (isSelected || isHovered ? 2 : 1) * s;
+
 			orbit.graphics
 				.clear()
 				.circle(0, 0, orbit.radius)
-				.stroke({ width: s, color: 0x334155, alpha: 0.4 });
+				.stroke({ width, color, alpha });
+
+			// Update hit area to be at least 10px in screen space
+			const hitWidth = Math.max(10, 5 / viewport.scale.x);
+			orbit.graphics.hitArea = {
+				contains(x: number, y: number) {
+					const dist = Math.hypot(x, y);
+					return Math.abs(dist - orbit.radius) < hitWidth;
+				}
+			} as PIXI.IHitArea;
 		}
 		drawSelection();
 	}
@@ -438,10 +454,23 @@
 
 		if (star.orbit_au > 0) {
 			const orbit = new PIXI.Graphics();
-			const s = 1 / viewport.scale.x;
-			orbit.circle(0, 0, radius).stroke({ width: s, color: 0x334155, alpha: 0.4 });
+			orbit.eventMode = 'static';
+			orbit.cursor = 'pointer';
+			orbit.on('pointerover', () => {
+				hoveredEntityId = star.id;
+				updateScales();
+			});
+			orbit.on('pointerout', () => {
+				hoveredEntityId = null;
+				updateScales();
+			});
+			orbit.on('pointerdown', (e) => {
+				e.stopPropagation();
+				selectedEntity.set(star);
+			});
+
 			orbitContainer.addChild(orbit);
-			orbitNodes.push({ graphics: orbit, radius });
+			orbitNodes.push({ graphics: orbit, radius, entityId: star.id });
 		}
 
 		const starCenter = new PIXI.Container();
@@ -470,6 +499,8 @@
 		});
 
 		starVisual.on('pointerover', () => {
+			hoveredEntityId = star.id;
+			updateScales();
 			const s = 1 / viewport.scale.x;
 			hoverGraphics
 				.clear()
@@ -478,6 +509,8 @@
 		});
 
 		starVisual.on('pointerout', () => {
+			hoveredEntityId = null;
+			updateScales();
 			hoverGraphics.clear();
 		});
 
@@ -543,10 +576,23 @@
 
 		// Orbit Path
 		const orbit = new PIXI.Graphics();
-		const s = 1 / viewport.scale.x;
-		orbit.circle(0, 0, radius).stroke({ width: s, color: 0x334155, alpha: 0.4 });
+		orbit.eventMode = 'static';
+		orbit.cursor = 'pointer';
+		orbit.on('pointerover', () => {
+			hoveredEntityId = body.id;
+			updateScales();
+		});
+		orbit.on('pointerout', () => {
+			hoveredEntityId = null;
+			updateScales();
+		});
+		orbit.on('pointerdown', (e) => {
+			e.stopPropagation();
+			selectedEntity.set(body);
+		});
+
 		orbitContainer.addChild(orbit);
-		orbitNodes.push({ graphics: orbit, radius });
+		orbitNodes.push({ graphics: orbit, radius, entityId: body.id });
 
 		// The Body Node
 		const bodyCenter = new PIXI.Container();
@@ -577,6 +623,8 @@
 		});
 
 		bodyVisual.on('pointerover', () => {
+			hoveredEntityId = body.id;
+			updateScales();
 			const s = 1 / viewport.scale.x;
 			hoverGraphics
 				.clear()
@@ -585,6 +633,8 @@
 		});
 
 		bodyVisual.on('pointerout', () => {
+			hoveredEntityId = null;
+			updateScales();
 			hoverGraphics.clear();
 		});
 
