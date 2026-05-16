@@ -38,6 +38,8 @@
 	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'linear' };
 	let focusedObject: { id: string; worldX: number; worldY: number; maxSatRadius: number } | null = null;
 	let lastScale = 1;
+	let lastMinScale = 0;
+	let lastMaxScale = 0;
 	let maxSystemRadius = 0;
 
 	function getVisualRadius(radius_km: number): number {
@@ -77,9 +79,10 @@
 		app.renderer.on('resize', resizeHandler);
 		viewport.on('zoomed', () => {
 			const currentScale = viewport.scale.x;
-			const zoomingIn = currentScale > lastScale;
+			// Use a small epsilon to avoid jitter at limits
+			const zoomingIn = currentScale > lastScale * 1.0001;
 
-			updateFocus();
+			updateFocus(currentScale);
 			updateZoomLimits();
 			updateScales();
 
@@ -223,7 +226,7 @@
 		return maxR;
 	}
 
-	function updateFocus() {
+	function updateFocus(currentScale: number) {
 		if (!viewport || !app) return;
 		const mouseGlobal = app.renderer.events.pointer.global;
 		if (!mouseGlobal) return;
@@ -260,10 +263,13 @@
 		if (closest) {
 			// Hysteresis: only switch focus if the new one is significantly closer
 			// than the current one to the mouse, preventing flip-flopping jitter.
+			const threshold = currentScale > lastScale * 1.001 ? 0.5 : 0.8;
 			if (
 				!focusedObject ||
 				closest.id === focusedObject.id ||
-				minDist < Math.hypot(focusedObject.worldX - mouseWorld.x, focusedObject.worldY - mouseWorld.y) * 0.8
+				minDist <
+					Math.hypot(focusedObject.worldX - mouseWorld.x, focusedObject.worldY - mouseWorld.y) *
+						threshold
 			) {
 				focusedObject = closest;
 			}
@@ -285,7 +291,14 @@
 			maxScale = minViewportSize / 2 / Math.max(focusedObject.maxSatRadius, 1);
 		}
 
-		viewport.clampZoom({ minScale, maxScale });
+		if (
+			Math.abs(minScale - lastMinScale) > 0.0001 ||
+			Math.abs(maxScale - lastMaxScale) > 0.0001
+		) {
+			viewport.clampZoom({ minScale, maxScale });
+			lastMinScale = minScale;
+			lastMaxScale = maxScale;
+		}
 
 		if (viewport.scale.x <= minScale * 1.01) {
 			viewport.moveCenter(0, 0);

@@ -13,6 +13,8 @@
 	let portalGraphics: PIXI.Graphics;
 	let focusedSystem: { x: number; y: number; id: string } | null = null;
 	let lastScale = 1;
+	let lastMinScale = 0;
+	let lastMaxScale = 0;
 	let snapTargetId: string | null = null;
 	let maxClusterRadius = 0;
 
@@ -49,15 +51,14 @@
 		app.renderer.on('resize', resizeHandler);
 		viewport.on('zoomed', () => {
 			const currentScale = viewport.scale.x;
-			const zoomingIn = currentScale > lastScale;
+			// Use a small epsilon to avoid jitter at limits
+			const zoomingIn = currentScale > lastScale * 1.0001;
 
-			updateFocus();
+			updateFocus(currentScale);
 			updateZoomLimits();
 			updateScales();
 
 			if (zoomingIn && focusedSystem && currentScale > 0.5) {
-				// Smoothly nudge towards focused system instead of using a long snap plugin
-				// that fights with the wheel interaction.
 				const dx = (focusedSystem.x - viewport.center.x) * 0.1;
 				const dy = (focusedSystem.y - viewport.center.y) * 0.1;
 				viewport.moveCenter(viewport.center.x + dx, viewport.center.y + dy);
@@ -84,7 +85,7 @@
 		drawPortals();
 	}
 
-	function updateFocus() {
+	function updateFocus(currentScale: number) {
 		if (!viewport || !app || !$cluster) return;
 		const mouseGlobal = app.renderer.events.pointer.global;
 		if (!mouseGlobal) return;
@@ -104,10 +105,12 @@
 		if (closest) {
 			// Hysteresis: only switch focus if the new one is significantly closer
 			// than the current one to the mouse, preventing flip-flopping jitter.
+			const threshold = currentScale > lastScale * 1.001 ? 0.6 : 0.8;
 			if (
 				!focusedSystem ||
 				closest.id === focusedSystem.id ||
-				minDist < Math.hypot(focusedSystem.x - mouseWorld.x, focusedSystem.y - mouseWorld.y) * 0.8
+				minDist <
+					Math.hypot(focusedSystem.x - mouseWorld.x, focusedSystem.y - mouseWorld.y) * threshold
 			) {
 				focusedSystem = { x: closest.x, y: closest.y, id: closest.id };
 			}
@@ -130,7 +133,14 @@
 			maxScale = minViewportSize / 2 / 20;
 		}
 
-		viewport.clampZoom({ minScale, maxScale });
+		if (
+			Math.abs(minScale - lastMinScale) > 0.0001 ||
+			Math.abs(maxScale - lastMaxScale) > 0.0001
+		) {
+			viewport.clampZoom({ minScale, maxScale });
+			lastMinScale = minScale;
+			lastMaxScale = maxScale;
+		}
 
 		if (viewport.scale.x <= minScale * 1.01) {
 			viewport.moveCenter(0, 0);

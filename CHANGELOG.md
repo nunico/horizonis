@@ -2,6 +2,15 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Zoom Flicker Fix
+- **Summary**: Resolved UI flickering and jitter when reaching zoom limits in StarMap and SolarSystemMap.
+- **Changes**:
+  - Implemented a small epsilon threshold for `zoomingIn` detection to prevent floating-point oscillation at boundaries.
+  - Added caching for zoom limits to avoid redundant and expensive `clampZoom` plugin re-configurations.
+  - Increased focus "stickiness" (hysteresis) during active zoom-in to prevent target flip-flopping.
+  - Fixed scope errors where `currentScale` was missing in `updateFocus` calls.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`.
+
 ### [2026-05-16] - Fluent Zoom Jitter Fix
 - **Summary**: Resolved "jumping" UI behavior during zoom by replacing conflicting snap animations with a direct viewport nudge.
 - **Changes**:
