@@ -1,9 +1,9 @@
 ---
-name: "bug-detective"
-description: "Analyze a bug report, error, or stack trace and identify the root cause"
-tools: ["Read", "Glob", "Grep", "Bash"]
-model: "grok"
-reasoningLevel: "high"
+name: 'bug-detective'
+description: 'Analyze a bug report, error, or stack trace and identify the root cause'
+tools: ['Read', 'Glob', 'Grep', 'Bash']
+model: 'grok'
+reasoningLevel: 'high'
 allowPromptArgument: true
 ---
 

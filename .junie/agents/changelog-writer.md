@@ -1,9 +1,9 @@
 ---
-name: "changelog-writer"
-description: "Append a structured changelog entry to CHANGELOG.md after a task or major step"
-tools: ["Read", "Edit"]
-model: "gemini-flash"
-reasoningLevel: "low"
+name: 'changelog-writer'
+description: 'Append a structured changelog entry to CHANGELOG.md after a task or major step'
+tools: ['Read', 'Edit']
+model: 'gemini-flash'
+reasoningLevel: 'low'
 allowPromptArgument: true
 ---
 

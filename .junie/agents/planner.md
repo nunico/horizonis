@@ -1,9 +1,9 @@
 ---
-name: "planner"
-description: "Break down a high-level coding task into a scoped, phased implementation plan"
-tools: ["Read", "Glob", "Grep"]
-model: "sonnet"
-reasoningLevel: "high"
+name: 'planner'
+description: 'Break down a high-level coding task into a scoped, phased implementation plan'
+tools: ['Read', 'Glob', 'Grep']
+model: 'sonnet'
+reasoningLevel: 'high'
 allowPromptArgument: true
 ---
 
@@ -17,6 +17,7 @@ Given a task description and the relevant parts of the codebase you discover, pr
 4. **Definition of done**: How to verify the task is complete.
 
 Rules:
+
 - Read relevant files to understand current patterns before planning.
 - Keep the plan concise — no more than 20 bullet points total.
 - Do NOT suggest refactors outside the task scope.

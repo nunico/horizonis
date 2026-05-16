@@ -2,6 +2,18 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-16] - Resolve UI Linting and Accessibility Issues
+
+- **Summary**: Resolved multiple linting and accessibility issues across core UI components to improve code quality and reactivity.
+- **Changes**:
+  - Replaced plain `Map` with `SvelteMap` in `StarMap.svelte` to resolve Svelte 5 reactivity warnings.
+  - Fixed missing keys in `{#each}` blocks within `HelpOverlay.svelte` and `Inspector.svelte`.
+  - Removed unused variables and cleaned up dead code in `Navigation.svelte` and `StarMap.svelte`.
+  - Enhanced ARIA roles and accessibility attributes in `Inspector.svelte` and `HelpOverlay.svelte`.
+  - Verified all changes using `npm run lint`, `npm run check`, and unit tests.
+- **Files Affected**: `src/lib/components/HelpOverlay.svelte`, `src/lib/components/Navigation.svelte`, `src/lib/components/StarMap.svelte`, `src/lib/components/Inspector.svelte`.
+- **Context**: None.
+
 ###### [2026-05-16] - Improve Map Viewport UX
 
 - **Summary**: Enhanced the star map and solar system map by ensuring content visibility, maintaining 60% viewport coverage, and implementing robust panning constraints.

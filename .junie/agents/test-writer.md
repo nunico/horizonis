@@ -1,9 +1,9 @@
 ---
-name: "test-writer"
-description: "Generate unit or integration tests for a given function, class, or module"
-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash"]
-model: "gpt-codex"
-reasoningLevel: "medium"
+name: 'test-writer'
+description: 'Generate unit or integration tests for a given function, class, or module'
+tools: ['Read', 'Glob', 'Grep', 'Write', 'Edit', 'Bash']
+model: 'gpt-codex'
+reasoningLevel: 'medium'
 allowPromptArgument: true
 ---
 

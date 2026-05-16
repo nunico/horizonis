@@ -1,9 +1,9 @@
 ---
-name: "devops-engineer"
-description: "Create or update CI/CD pipelines, Dockerfiles, deployment configs, and infrastructure scripts"
-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash"]
-model: "gpt-codex"
-reasoningLevel: "medium"
+name: 'devops-engineer'
+description: 'Create or update CI/CD pipelines, Dockerfiles, deployment configs, and infrastructure scripts'
+tools: ['Read', 'Glob', 'Grep', 'Write', 'Edit', 'Bash']
+model: 'gpt-codex'
+reasoningLevel: 'medium'
 allowPromptArgument: true
 ---
 

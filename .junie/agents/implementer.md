@@ -1,9 +1,9 @@
 ---
-name: "implementer"
-description: "Execute a specific implementation plan or coding task in the codebase"
-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash"]
-model: "gpt-codex"
-reasoningLevel: "medium"
+name: 'implementer'
+description: 'Execute a specific implementation plan or coding task in the codebase'
+tools: ['Read', 'Glob', 'Grep', 'Write', 'Edit', 'Bash']
+model: 'gpt-codex'
+reasoningLevel: 'medium'
 allowPromptArgument: true
 ---
 

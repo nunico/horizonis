@@ -1,10 +1,10 @@
 ---
-name: "dependency-auditor"
-description: "Audit project dependencies for outdated packages, vulnerabilities, and licensing issues"
-tools: ["Read", "Glob", "Bash"]
-disallowedTools: ["Write", "Edit"]
-model: "gemini-flash"
-reasoningLevel: "low"
+name: 'dependency-auditor'
+description: 'Audit project dependencies for outdated packages, vulnerabilities, and licensing issues'
+tools: ['Read', 'Glob', 'Bash']
+disallowedTools: ['Write', 'Edit']
+model: 'gemini-flash'
+reasoningLevel: 'low'
 allowPromptArgument: false
 ---
 

@@ -54,19 +54,19 @@ Documenting changes is mandatory for all agent-led tasks to provide a clear audi
 
 All subagents are installed at `~/.junie/agents/`. Use them to delegate specialized tasks and keep the main agent context lean.
 
-| Subagent | Model | When to Use |
-|---|---|---|
-| `planner` | `sonnet` | Decompose any non-trivial task into a phased plan before implementing |
-| `implementer` | `gpt-codex` | Execute a plan or scoped coding task against the codebase |
-| `librarian` | `gemini-flash` | Look up library or API docs and return a compact usage summary |
-| `code-reviewer` | `sonnet` | Review a diff or file for bugs, security issues, and performance |
-| `test-writer` | `gpt-codex` | Generate unit/integration tests for a function or module |
-| `bug-detective` | `grok` | Trace a bug, error, or stack trace to its root cause |
-| `devops-engineer` | `gpt-codex` | Create or update CI/CD pipelines, Dockerfiles, and deployment configs |
-| `migration-agent` | `sonnet` | Plan and execute database schema or API version migrations |
+| Subagent             | Model          | When to Use                                                               |
+| -------------------- | -------------- | ------------------------------------------------------------------------- |
+| `planner`            | `sonnet`       | Decompose any non-trivial task into a phased plan before implementing     |
+| `implementer`        | `gpt-codex`    | Execute a plan or scoped coding task against the codebase                 |
+| `librarian`          | `gemini-flash` | Look up library or API docs and return a compact usage summary            |
+| `code-reviewer`      | `sonnet`       | Review a diff or file for bugs, security issues, and performance          |
+| `test-writer`        | `gpt-codex`    | Generate unit/integration tests for a function or module                  |
+| `bug-detective`      | `grok`         | Trace a bug, error, or stack trace to its root cause                      |
+| `devops-engineer`    | `gpt-codex`    | Create or update CI/CD pipelines, Dockerfiles, and deployment configs     |
+| `migration-agent`    | `sonnet`       | Plan and execute database schema or API version migrations                |
 | `dependency-auditor` | `gemini-flash` | Audit packages for vulnerabilities, outdated versions, and license issues |
-| `doc-writer` | `gemini-flash` | Write or update docstrings, inline comments, and README sections |
-| `changelog-writer` | `gemini-flash` | Append a structured entry to `CHANGELOG.md` after each task |
+| `doc-writer`         | `gemini-flash` | Write or update docstrings, inline comments, and README sections          |
+| `changelog-writer`   | `gemini-flash` | Append a structured entry to `CHANGELOG.md` after each task               |
 
 ### Standard Workflow
 

@@ -1,9 +1,9 @@
 ---
-name: "librarian"
-description: "Research a library, API, or SDK and return a compact usage summary"
-tools: ["WebSearch", "Read"]
-model: "gemini-flash"
-reasoningLevel: "low"
+name: 'librarian'
+description: 'Research a library, API, or SDK and return a compact usage summary'
+tools: ['WebSearch', 'Read']
+model: 'gemini-flash'
+reasoningLevel: 'low'
 allowPromptArgument: true
 ---
 

@@ -1,10 +1,10 @@
 ---
-name: "doc-writer"
-description: "Write or update inline code comments, docstrings, README sections, or API documentation"
-tools: ["Read", "Glob", "Grep", "Edit"]
-disallowedTools: ["Bash", "WebSearch"]
-model: "gemini-flash"
-reasoningLevel: "low"
+name: 'doc-writer'
+description: 'Write or update inline code comments, docstrings, README sections, or API documentation'
+tools: ['Read', 'Glob', 'Grep', 'Edit']
+disallowedTools: ['Bash', 'WebSearch']
+model: 'gemini-flash'
+reasoningLevel: 'low'
 allowPromptArgument: true
 ---
 
