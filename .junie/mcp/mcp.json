@@ -1,8 +1,11 @@
 {
-	"mcpServers": {
-		"Chrome DevTools Service": {
-			"command": "npx",
-			"args": ["-y", "chrome-devtools-mcp@latest"]
-		}
-	}
+    "mcpServers": {
+        "Chrome DevTools Service": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "chrome-devtools-mcp@latest"
+            ]
+        }
+    }
 }
