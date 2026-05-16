@@ -215,10 +215,7 @@
 			const alpha = isSelected || isHovered ? 0.8 : 0.4;
 			const width = (isSelected || isHovered ? 2 : 1) * s;
 
-			orbit.graphics
-				.clear()
-				.circle(0, 0, orbit.radius)
-				.stroke({ width, color, alpha });
+			orbit.graphics.clear().circle(0, 0, orbit.radius).stroke({ width, color, alpha });
 
 			// Update hit area to be at least 10px in screen space
 			const hitWidth = Math.max(10, 5 / viewport.scale.x);

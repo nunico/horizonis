@@ -1,7 +1,7 @@
 describe('Navigation Flow', () => {
 	it('should search for a system and navigate to it', async () => {
 		await browser.url('http://localhost:1420');
-		
+
 		const nav = await $('nav');
 		await nav.waitForDisplayed();
 
@@ -30,7 +30,7 @@ describe('Navigation Flow', () => {
 
 		const viewMode = await browser.execute(() => {
 			let val;
-			window.stores.viewMode.subscribe(v => val = v)();
+			window.stores.viewMode.subscribe((v) => (val = v))();
 			return val;
 		});
 		expect(viewMode).toBe('cluster');
@@ -38,7 +38,7 @@ describe('Navigation Flow', () => {
 
 	it('should open and close help overlay', async () => {
 		await browser.keys(['?']);
-		
+
 		const helpTitle = await $('#help-title');
 		await helpTitle.waitForDisplayed();
 		expect(await helpTitle.getText()).toBe('Keyboard Shortcuts');
@@ -52,7 +52,7 @@ describe('Navigation Flow', () => {
 		await browser.execute(() => {
 			const c = window.stores.cluster;
 			let data;
-			c.subscribe(v => data = v)();
+			c.subscribe((v) => (data = v))();
 			window.stores.selectedEntity.set(data.systems[0]);
 		});
 
@@ -69,7 +69,7 @@ describe('Navigation Flow', () => {
 		// Verify save
 		const systemName = await browser.execute(() => {
 			let data;
-			window.stores.cluster.subscribe(v => data = v)();
+			window.stores.cluster.subscribe((v) => (data = v))();
 			return data.systems[0].name;
 		});
 		expect(systemName).toBe('Renamed System');

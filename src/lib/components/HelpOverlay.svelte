@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { X } from 'lucide-svelte';
-	import { onMount } from 'svelte';
 
 	export let show = false;
 
@@ -49,7 +48,7 @@
 			</div>
 
 			<div class="p-6 space-y-4">
-				{#each shortcuts as shortcut}
+				{#each shortcuts as shortcut (shortcut.key)}
 					<div class="flex items-center justify-between">
 						<span class="text-sm text-slate-400">{shortcut.description}</span>
 						<kbd

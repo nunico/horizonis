@@ -92,6 +92,7 @@
 	<div
 		on:keydown={handleKeydown}
 		role="dialog"
+		tabindex="-1"
 		aria-labelledby="inspector-title"
 		class="absolute top-4 right-4 w-80 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]"
 	>

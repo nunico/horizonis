@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
 	import { cluster } from '../stores/clusterData';
@@ -81,7 +82,7 @@
 		viewport.on('moved', updateScales);
 
 		if (typeof window !== 'undefined') {
-			(window as any).starMapDebug = {
+			(window as unknown as Record<string, unknown>).starMapDebug = {
 				viewport,
 				get lastMinScale() {
 					return lastMinScale;
@@ -227,7 +228,8 @@
 			const isHovered = hoveredPortalKey === portal.key;
 			const isConnectedToHoveredSystem =
 				hoveredSystemId === portal.fromId || hoveredSystemId === portal.toId;
-			const isConnectedToSelectedSystem = selectedId === portal.fromId || selectedId === portal.toId;
+			const isConnectedToSelectedSystem =
+				selectedId === portal.fromId || selectedId === portal.toId;
 
 			const isHighlighted = isHovered || isConnectedToHoveredSystem || isConnectedToSelectedSystem;
 
@@ -267,7 +269,7 @@
 		maxClusterRadius = 0;
 
 		// Deduplicate and Create Portal Nodes
-		const uniquePortals = new Map<string, { from: string; to: string }>();
+		const uniquePortals = new SvelteMap<string, { from: string; to: string }>();
 		for (const system of $cluster.systems) {
 			for (const portal of system.portals) {
 				const id1 = system.id;

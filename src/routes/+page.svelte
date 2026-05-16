@@ -40,7 +40,9 @@
 				<div class="absolute inset-4 border-4 border-sky-500 rounded-full animate-pulse"></div>
 			</div>
 			<h1 class="text-sky-500 font-bold tracking-[0.3em] uppercase text-sm mb-2">Horizonis</h1>
-			<p class="text-slate-500 text-xs animate-pulse tracking-widest">Initializing Stellar Data...</p>
+			<p class="text-slate-500 text-xs animate-pulse tracking-widest">
+				Initializing Stellar Data...
+			</p>
 		</div>
 	{/if}
 </main>

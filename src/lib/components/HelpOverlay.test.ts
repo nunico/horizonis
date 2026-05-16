@@ -16,8 +16,8 @@ describe('HelpOverlay component', () => {
 	});
 
 	it('toggles on "?" keydown', async () => {
-		const { component } = render(HelpOverlay, { show: false });
-		
+		render(HelpOverlay, { show: false });
+
 		await fireEvent.keyDown(window, { key: '?' });
 		expect(screen.getByText('Keyboard Shortcuts')).toBeInTheDocument();
 
@@ -27,14 +27,14 @@ describe('HelpOverlay component', () => {
 
 	it('closes on Escape keydown', async () => {
 		render(HelpOverlay, { show: true });
-		
+
 		await fireEvent.keyDown(window, { key: 'Escape' });
 		expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument();
 	});
 
 	it('closes on close button click', async () => {
 		render(HelpOverlay, { show: true });
-		
+
 		const closeButton = screen.getByLabelText('Close');
 		await fireEvent.click(closeButton);
 		expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument();

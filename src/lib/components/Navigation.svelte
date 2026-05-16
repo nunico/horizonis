@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { viewMode, activeSystemId, selectedEntity } from '$lib/stores/appState';
 	import { cluster } from '$lib/stores/clusterData';
+	import type { Star, OrbitalBody } from '$lib/types/stellar';
 	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle } from 'lucide-svelte';
 
 	export let showHelp = false;
@@ -17,7 +18,7 @@
 		name: string;
 		type: 'system' | 'star' | 'body';
 		systemId: string;
-		entity: any;
+		entity: Star | OrbitalBody | null;
 	}
 
 	$: searchResults = searchQuery.length > 1 ? getSearchResults(searchQuery) : [];
@@ -29,12 +30,24 @@
 
 		$cluster.systems.forEach((sys) => {
 			if (sys.name.toLowerCase().includes(q)) {
-				results.push({ id: sys.id, name: sys.name, type: 'system', systemId: sys.id, entity: null });
+				results.push({
+					id: sys.id,
+					name: sys.name,
+					type: 'system',
+					systemId: sys.id,
+					entity: null
+				});
 			}
 
 			sys.stars.forEach((star) => {
 				if (star.name.toLowerCase().includes(q)) {
-					results.push({ id: star.id, name: star.name, type: 'star', systemId: sys.id, entity: star });
+					results.push({
+						id: star.id,
+						name: star.name,
+						type: 'star',
+						systemId: sys.id,
+						entity: star
+					});
 				}
 				flattenBodies(star.satellites, sys.id, q, results);
 			});
@@ -45,7 +58,12 @@
 		return results.slice(0, 10);
 	}
 
-	function flattenBodies(bodies: any[], systemId: string, q: string, results: SearchResult[]) {
+	function flattenBodies(
+		bodies: OrbitalBody[],
+		systemId: string,
+		q: string,
+		results: SearchResult[]
+	) {
 		bodies.forEach((body) => {
 			if (body.name.toLowerCase().includes(q)) {
 				results.push({ id: body.id, name: body.name, type: 'body', systemId, entity: body });
@@ -158,7 +176,7 @@
 			<div
 				class="absolute top-full mt-2 left-0 w-80 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl overflow-hidden z-[60]"
 			>
-				{#each searchResults as result}
+				{#each searchResults as result (result.id)}
 					<button
 						on:click={() => selectResult(result)}
 						class="w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-800 transition-colors text-left border-b border-slate-800/50 last:border-0"
