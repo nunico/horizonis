@@ -15,7 +15,6 @@
 	let lastScale = 1;
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
-	let snapTargetId: string | null = null;
 	let maxClusterRadius = 0;
 
 	onMount(async () => {
@@ -133,10 +132,7 @@
 			maxScale = minViewportSize / 2 / 20;
 		}
 
-		if (
-			Math.abs(minScale - lastMinScale) > 0.0001 ||
-			Math.abs(maxScale - lastMaxScale) > 0.0001
-		) {
+		if (Math.abs(minScale - lastMinScale) > 0.0001 || Math.abs(maxScale - lastMaxScale) > 0.0001) {
 			viewport.clampZoom({ minScale, maxScale });
 			lastMinScale = minScale;
 			lastMaxScale = maxScale;

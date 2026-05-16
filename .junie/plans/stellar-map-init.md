@@ -117,6 +117,7 @@ Verification will be done by running the Tauri app in development mode and inspe
 # Delivery Steps
 
 ### ✓ Step 1: Project Scaffolding & Setup
+
 Initialize the Tauri v2 and SvelteKit project using Deno as the runtime.
 
 - Run `deno run -A npm:create-tauri-app@latest` (or equivalent) to scaffold the project.
@@ -126,6 +127,7 @@ Initialize the Tauri v2 and SvelteKit project using Deno as the runtime.
 - Install backend crates: `serde`, `serde_json`, `uuid`, `petgraph`, `tauri`.
 
 ### ✓ Step 2: Data Models & Backend Infrastructure
+
 Define the core data structures and Tauri commands in Rust.
 
 - Implement the structs (`StarCluster`, `SolarSystem`, `Portal`, etc.) in `src-tauri/src/models.rs` as specified in `idea.md`.
@@ -134,6 +136,7 @@ Define the core data structures and Tauri commands in Rust.
 - Setup a basic `StorageManager` in Rust to handle JSON I/O in the app data directory.
 
 ### ✓ Step 3: Implement Star Cluster View (Galaxy Scale)
+
 Build the Star Cluster View using Pixi.js.
 
 - Implement a `StarMap` component that initializes a Pixi.js application.
@@ -143,6 +146,7 @@ Build the Star Cluster View using Pixi.js.
 - Implement click-to-drill-down logic to transition to the Solar System view.
 
 ### ✓ Step 4: Implement Solar System View (Orbital Scale)
+
 Build the Solar System View with AU-scaled orbital rendering.
 
 - Implement the `SolarSystemMap` component using Pixi.js.
@@ -152,6 +156,7 @@ Build the Solar System View with AU-scaled orbital rendering.
 - Render orbital regions like asteroid belts as annular bands.
 
 ### ✓ Step 5: UI Integration, State, and Persistence
+
 Connect the views with UI panels and implement data persistence.
 
 - Create the Detail Inspector panel to show properties of selected bodies/systems.
@@ -161,6 +166,7 @@ Connect the views with UI panels and implement data persistence.
 - Verify 60fps performance and smooth transitions between views.
 
 ### ✓ Step 6: Advanced Procedural Generation in Rust
+
 Reimplement the cluster generation in Rust with astro-physical principles and non-crossing portals.
 
 - Implement `src-tauri/src/generation.rs` with logic for star systems (mass, density, gravity).
@@ -170,6 +176,7 @@ Reimplement the cluster generation in Rust with astro-physical principles and no
 - Update tests to verify the new procedural logic.
 
 ### ✓ Step 7: Refine Rendering and Readability
+
 Improve the visual experience by ensuring labels and objects maintain consistent scale and handling overlapping satellites.
 
 - Implement constant-size scaling for stars, planets, and labels across all zoom levels.
@@ -179,6 +186,7 @@ Improve the visual experience by ensuring labels and objects maintain consistent
 - Verify that zoom primarily affects distances rather than object sizes.
 
 ### ✓ Step 8: Adaptive Scaling for Orbital Bodies
+
 Implement adaptive visual scaling for planets, moons, and other orbital bodies based on their physical radius.
 
 - Use a non-linear formula to map `radius_km` to a visual radius that reflects relative sizes.
@@ -186,6 +194,7 @@ Implement adaptive visual scaling for planets, moons, and other orbital bodies b
 - Update the Inspector to consistently reflect the visual and physical properties.
 
 ### ✓ Step 9: Multi-Star System Implementation
+
 Enhance generation and rendering to support binary/trinary star systems with individual planetary systems.
 
 - Update `models.rs` and `stellar.ts` with `orbit_au` and `satellites` for `Star`.
@@ -195,6 +204,7 @@ Enhance generation and rendering to support binary/trinary star systems with ind
 - Ensure adaptive scaling and constant line thickness work correctly with multiple orbital centers.
 
 ### ✓ Step 10: Fluent Zoom & Dynamic Limits
+
 Implement context-aware zoom limits and fluent navigation based on focused objects and system boundaries.
 
 - Implement dynamic zoom-out limits using the 60% viewport rule.

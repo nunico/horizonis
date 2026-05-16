@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
 	import { invoke } from '@tauri-apps/api/core';
@@ -48,7 +49,6 @@
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
 	let maxSystemRadius = 0;
-
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -133,8 +133,7 @@
 	function updateScales() {
 		if (!viewport || !systemData) return;
 		const s = 1 / viewport.scale.x;
-
-		const visualRadii = new Map<string, number>();
+		const visualRadii = new SvelteMap<string, number>();
 
 		// 1. Update satellite visibility first
 		for (const sat of satelliteContainers) {
@@ -206,17 +205,20 @@
 		}
 
 		for (const orbit of orbitNodes) {
-			orbit.graphics.clear().circle(0, 0, orbit.radius).stroke({ width: s, color: 0x334155, alpha: 0.4 });
+			orbit.graphics
+				.clear()
+				.circle(0, 0, orbit.radius)
+				.stroke({ width: s, color: 0x334155, alpha: 0.4 });
 		}
 	}
 
 	function getEntityMaxSatRadius(body: OrbitalBody | Star): number {
-		let maxR = 0;
+		let maxR: number;
 		if ('radius_km' in body) {
 			maxR = getVisualRadius(body.radius_km);
 		} else {
- 		// Star radius is radius_sol, convert to km for visual radius logic
- 		maxR = getVisualRadius(body.radius_sol * 695700);
+			// Star radius is radius_sol, convert to km for visual radius logic
+			maxR = getVisualRadius(body.radius_sol * 695700);
 		}
 
 		if (body.satellites) {
@@ -308,10 +310,7 @@
 			maxScale = (minViewportSize * 0.8) / (2 * focusedObject.baseRadius);
 		}
 
-		if (
-			Math.abs(minScale - lastMinScale) > 0.0001 ||
-			Math.abs(maxScale - lastMaxScale) > 0.0001
-		) {
+		if (Math.abs(minScale - lastMinScale) > 0.0001 || Math.abs(maxScale - lastMaxScale) > 0.0001) {
 			viewport.clampZoom({ minScale, maxScale });
 			lastMinScale = minScale;
 			lastMaxScale = maxScale;
@@ -365,7 +364,7 @@
 		viewport.moveCenter(0, 0);
 
 		if (typeof window !== 'undefined') {
-			(window as any).solarSystemMapDebug = {
+			(window as unknown as { solarSystemMapDebug: unknown }).solarSystemMapDebug = {
 				viewport,
 				starNodes,
 				bodyNodes,
@@ -436,7 +435,15 @@
 		label.y = baseRadius + 5;
 		starVisual.addChild(label);
 
-		starNodes.push({ container: starVisual, label, baseRadius, star, worldX, worldY, maxSatRadius });
+		starNodes.push({
+			container: starVisual,
+			label,
+			baseRadius,
+			star,
+			worldX,
+			worldY,
+			maxSatRadius
+		});
 
 		// Render star's satellites
 		star.satellites.forEach((body, i) => {

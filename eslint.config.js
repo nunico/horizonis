@@ -28,6 +28,18 @@ export default [
 		}
 	},
 	{
+		files: ['e2e-tests/**/*.js'],
+		languageOptions: {
+			globals: {
+				...globals.mocha,
+				browser: 'readonly',
+				$: 'readonly',
+				$$: 'readonly',
+				expect: 'readonly'
+			}
+		}
+	},
+	{
 		ignores: ['build/', '.svelte-kit/', 'dist/', 'src-tauri/']
 	}
 ];

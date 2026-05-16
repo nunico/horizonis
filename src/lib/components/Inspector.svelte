@@ -188,7 +188,7 @@
 						>Orbital Regions</span
 					>
 					<ul class="text-slate-300 text-xs space-y-1">
-						{#each entity.orbital_regions as region}
+						{#each entity.orbital_regions as region (region.name)}
 							<li class="bg-slate-950/30 px-2 py-1 rounded border border-slate-800/50">
 								{region.name} ({region.inner_radius_au} - {region.outer_radius_au} AU)
 							</li>

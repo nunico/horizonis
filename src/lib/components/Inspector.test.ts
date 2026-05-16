@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import Inspector from './Inspector.svelte';
 import { selectedEntity } from '../stores/appState';
 import { cluster } from '../stores/clusterData';
+import { type StarCluster } from '../types/stellar';
 import { get } from 'svelte/store';
 
 describe('Inspector component', () => {
@@ -22,7 +23,7 @@ describe('Inspector component', () => {
 					portals: []
 				}
 			]
-		} as any);
+		} as StarCluster);
 	});
 
 	it('does not render when no entity is selected', () => {

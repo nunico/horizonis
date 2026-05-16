@@ -2,7 +2,20 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Lint Task & Issue Fixes
+
+- **Summary**: Fixed the `lint` task to show all errors and resolved 43 linting issues across the project.
+- **Changes**:
+  - Swapped `eslint` and `prettier` execution order in `package.json` to ensure linting errors are displayed even if formatting issues exist.
+  - Added WebdriverIO/Mocha globals for `e2e-tests` in `eslint.config.js`.
+  - Fixed Svelte 5 reactivity warnings by using `SvelteMap` in `SolarSystemMap.svelte`.
+  - Resolved multiple `@typescript-eslint/no-explicit-any` and `@typescript-eslint/no-unused-vars` errors.
+  - Fixed `svelte/require-each-key` error in `Inspector.svelte`.
+  - Cleaned up unused variable `snapTargetId` in `StarMap.svelte`.
+- **Files Affected**: `package.json`, `eslint.config.js`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/components/StarMap.svelte`, `src/lib/components/Inspector.svelte`, `src/lib/components/Inspector.test.ts`, `src/routes/+layout.svelte`.
+
 ### [2026-05-16] - Zoom UX UI Regression Tests
+
 - **Summary**: Added E2E regression tests for the Solar System view and instrumented the code for better testability.
 - **Changes**:
   - Created `e2e-tests/test/specs/zoom-ux.e2e.js` to verify initial system fitting, logarithmic zoom limits, and hierarchical size constraints.
@@ -11,6 +24,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `e2e-tests/test/specs/zoom-ux.e2e.js`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/pixi/scaling.test.ts`.
 
 ### [2026-05-16] - Satellite Scaling Refinement
+
 - **Summary**: Increased the visual size difference between satellites and their parent objects for better hierarchical clarity.
 - **Changes**:
   - Adjusted `getVisualRadius` formula to `4 + Math.log10(radius_km) * 6` to increase the visual spread between bodies of different physical sizes.
@@ -19,6 +33,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/pixi/scaling.ts`, `src/lib/pixi/scaling.test.ts`.
 
 ### [2026-05-16] - Satellite Scaling Fix
+
 - **Summary**: Fixed a bug where satellites (moons) could appear larger than their parent objects when zoomed out.
 - **Changes**:
   - Implemented `getClampedScale` in `scaling.ts` to unify scaling logic and enforce parent-child size constraints.
@@ -28,6 +43,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/pixi/scaling.ts`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/pixi/scaling.test.ts`.
 
 ### [2026-05-16] - Logarithmic Zoom Scaling & Improved System Visibility
+
 - **Summary**: Improved the Solar System view UX by implementing logarithmic scaling for distances and sizes, ensuring full system visibility on entry, and refining zoom limits.
 - **Changes**:
   - Implemented `Math.log10(au * 100 + 1) * config.auToPixels / 2` for orbital distances to better balance satellite orbits and distant planets.
@@ -40,6 +56,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/pixi/scaling.ts`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/pixi/scaling.test.ts`.
 
 ### [2026-05-16] - Zoom Flicker Fix
+
 - **Summary**: Resolved UI flickering and jitter when reaching zoom limits in StarMap and SolarSystemMap.
 - **Changes**:
   - Implemented a small epsilon threshold for `zoomingIn` detection to prevent floating-point oscillation at boundaries.
@@ -49,6 +66,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`.
 
 ### [2026-05-16] - Fluent Zoom Jitter Fix
+
 - **Summary**: Resolved "jumping" UI behavior during zoom by replacing conflicting snap animations with a direct viewport nudge.
 - **Changes**:
   - Replaced `viewport.snap` in `zoomed` handlers with a direct proportional nudge (lerp) to avoid fighting with the `wheel` zoom plugin.
@@ -57,6 +75,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`.
 
 ### [2026-05-16] - Fluent Zoom & Dynamic Limits
+
 - **Summary**: Implemented context-aware zoom limits and fluent navigation to improve map exploration.
 - **Changes**:
   - Implemented dynamic zoom-out limits using a 60% viewport rule to maintain orientation.
@@ -68,6 +87,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`.
 
 ### [2026-05-16] - Multi-Star System Refinement & Star-Level Regions
+
 - **Summary**: Enhanced multi-star system generation with overlap verification and hierarchical orbital regions.
 - **Changes**:
   - Added `orbital_regions` to `Star` model in Rust and TypeScript.
@@ -79,6 +99,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src-tauri/src/models.rs`, `src-tauri/src/generation.rs`, `src/lib/types/stellar.ts`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/components/Inspector.svelte`.
 
 ### [2026-05-16] - Multi-Star System Implementation
+
 - **Summary**: Enhanced the application to support realistic binary and trinary star systems with individual planetary systems.
 - **Changes**:
   - Updated `Star` model in Rust and TypeScript to support `orbit_au` and nested `satellites`.
@@ -89,6 +110,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src-tauri/src/models.rs`, `src/lib/types/stellar.ts`, `src-tauri/src/generation.rs`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/components/Inspector.svelte`
 
 ### [2026-05-16] - Adaptive Scale and Label Readability
+
 - **Summary**: Enhanced orbital body rendering to ensure labels stay readable and icons avoid overlap with parents.
 - **Changes**:
   - Implemented label scale compensation to maintain constant screen size regardless of parent icon clamping.
@@ -98,6 +120,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/SolarSystemMap.svelte`
 
 ### [2026-05-16] - Adaptive Scaling for Orbital Bodies
+
 - **Summary**: Implemented adaptive visual scaling for planets and moons based on their physical radius.
 - **Changes**:
   - Implemented a square-root based formula to map `radius_km` to a visual radius, providing a realistic sense of relative sizes.
@@ -106,6 +129,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/SolarSystemMap.svelte`
 
 ### [2026-05-16] - Adaptive Star Scaling
+
 - **Summary**: Implemented adaptive star scaling to prevent overlap with satellite orbits during zoom.
 - **Changes**:
   - Added logic to `SolarSystemMap` to identify the minimum orbit radius.
@@ -114,6 +138,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/SolarSystemMap.svelte`
 
 ### [2026-05-16] - Constant Line Thickness Rendering
+
 - **Summary**: Ensured orbits and portal connections maintain a constant visual thickness across all zoom levels.
 - **Changes**:
   - Implemented dynamic re-drawing for portal jump connections in `StarMap` to adjust stroke width based on viewport scale.
@@ -122,6 +147,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`
 
 ### [2026-05-16] - Rendering Readability & Zoom Optimization
+
 - **Summary**: Improved label readability and object scaling across zoom levels.
 - **Changes**:
   - Implemented constant-size scaling for star systems, planets, and labels using viewport-inverse scaling.
@@ -131,6 +157,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`
 
 ### [2026-05-16] - UI Interaction & Responsiveness Fixes
+
 - **Summary**: Fixed intermittent pan/zoom issues and unreliable solar system navigation.
 - **Changes**:
   - Implemented resize synchronization between Pixi renderer and `pixi-viewport`.
@@ -140,6 +167,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`
 
 ### [2026-05-16] - Agent Guidelines & Documentation
+
 - **Summary**: Added project governance documents for AI agents.
 - **Changes**:
   - Created `AGENTS.md` with guidelines for token efficiency and memory management.
@@ -147,6 +175,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `AGENTS.md`, `CHANGELOG.md`
 
 ### [2026-05-16] - Responsiveness Optimization & E2E Testing
+
 - **Summary**: Resolved UI freezing and added WebDriver tests.
 - **Changes**:
   - Implemented in-memory caching in Rust using `tauri::State`.
@@ -156,6 +185,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src-tauri/src/lib.rs`, `src-tauri/src/commands.rs`, `src/lib/components/SolarSystemMap.svelte`, `e2e-tests/`
 
 ### [2026-05-16] - Astro-Physical Cluster Generation (Rust)
+
 - **Summary**: Reimplemented cluster generation in Rust with realistic physics.
 - **Changes**:
   - Added `src-tauri/src/generation.rs` using `rand` and `delaunator`.
@@ -165,6 +195,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `src-tauri/src/generation.rs`, `src-tauri/src/models.rs`, `src/lib/types/stellar.ts`, `src/lib/components/Inspector.svelte`
 
 ### [2026-05-15] - Procedural Data Generation (TypeScript)
+
 - **Summary**: Initial data generation script for 15 solar systems.
 - **Changes**:
   - Created `scripts/generate_cluster.ts`.
@@ -172,6 +203,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `scripts/generate_cluster.ts`, `src-tauri/src/storage.rs`
 
 ### [2026-05-15] - Testing Infrastructure
+
 - **Summary**: Added Vitest and Cargo tests.
 - **Changes**:
   - Configured Vitest for frontend unit and component tests.
@@ -179,6 +211,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `vitest.config.ts`, `src/test/`, `src-tauri/src/commands.rs`, `src-tauri/src/storage.rs`
 
 ### [2026-05-15] - Linting & Formatting
+
 - **Summary**: Added ESLint and Prettier.
 - **Changes**:
   - Configured ESLint with Svelte 5 and TypeScript support.
@@ -186,6 +219,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 - **Files Affected**: `eslint.config.js`, `.prettierrc`, `package.json`
 
 ### [2026-05-15] - Initial Project Implementation
+
 - **Summary**: Built core features according to the design plan.
 - **Changes**:
   - Scaffolded Tauri v2 + SvelteKit app.

@@ -7,7 +7,12 @@
 
 	onMount(() => {
 		if (typeof window !== 'undefined') {
-			(window as any).stores = { viewMode, selectedEntity, activeSystemId, cluster };
+			(window as unknown as { stores: unknown }).stores = {
+				viewMode,
+				selectedEntity,
+				activeSystemId,
+				cluster
+			};
 		}
 		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
