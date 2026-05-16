@@ -79,6 +79,7 @@
 		resizeHandler = () => {
 			if (viewport && app.renderer) {
 				viewport.resize(app.screen.width, app.screen.height);
+				updateZoomLimits();
 			}
 		};
 		app.renderer.on('resize', resizeHandler);
@@ -369,12 +370,14 @@
 			lastMaxScale = maxScale;
 		}
 
-		if (viewport.scale.x <= minScale * 1.01) {
-			viewport.moveCenter(0, 0);
-			viewport.plugins.pause('drag');
-		} else {
-			viewport.plugins.resume('drag');
-		}
+		viewport.clamp({
+			direction: 'all',
+			underflow: 'center',
+			left: -maxSystemRadius,
+			right: maxSystemRadius,
+			top: -maxSystemRadius,
+			bottom: maxSystemRadius
+		});
 	}
 
 	function renderSystem() {

@@ -57,6 +57,7 @@
 		resizeHandler = () => {
 			if (viewport && app.renderer) {
 				viewport.resize(app.screen.width, app.screen.height);
+				updateZoomLimits();
 			}
 		};
 		app.renderer.on('resize', resizeHandler);
@@ -78,6 +79,19 @@
 			lastScale = currentScale;
 		});
 		viewport.on('moved', updateScales);
+
+		if (typeof window !== 'undefined') {
+			(window as any).starMapDebug = {
+				viewport,
+				get lastMinScale() {
+					return lastMinScale;
+				},
+				get lastMaxScale() {
+					return lastMaxScale;
+				},
+				updateZoomLimits
+			};
+		}
 	});
 
 	onDestroy(() => {
@@ -193,12 +207,14 @@
 			lastMaxScale = maxScale;
 		}
 
-		if (viewport.scale.x <= minScale * 1.01) {
-			viewport.moveCenter(0, 0);
-			viewport.plugins.pause('drag');
-		} else {
-			viewport.plugins.resume('drag');
-		}
+		viewport.clamp({
+			direction: 'all',
+			underflow: 'center',
+			left: -maxClusterRadius,
+			right: maxClusterRadius,
+			top: -maxClusterRadius,
+			bottom: maxClusterRadius
+		});
 	}
 
 	function drawPortals() {
@@ -358,6 +374,10 @@
 
 		updateScales();
 		updateZoomLimits();
+
+		// Initial fit
+		viewport.setZoom(lastMinScale, true);
+		viewport.moveCenter(0, 0);
 	}
 
 	$: if ($cluster && viewport) {

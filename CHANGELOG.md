@@ -2,6 +2,18 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-16] - Improve Map Viewport UX
+
+- **Summary**: Enhanced the star map and solar system map by ensuring content visibility, maintaining 60% viewport coverage, and implementing robust panning constraints.
+- **Changes**:
+  - Implemented initial fit logic for `StarMap` to ensure all stars are visible upon loading.
+  - Replaced manual panning prevention with `viewport.clamp` in both `StarMap` and `SolarSystemMap`.
+  - Updated `resizeHandler` in both map components to dynamically recalculate zoom and pan limits.
+  - Exposed `window.starMapDebug` to allow automated verification of viewport state.
+  - Added E2E tests to verify initial fit and zoom constraints for the Star Map.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`, `e2e-tests/test/specs/zoom-ux.e2e.js`.
+- **Context**: None.
+
 ###### [2026-05-16] - Advanced Map Highlighting & UI/UX Refinement
 
 - **Summary**: Implemented interactive highlighting for orbits and portals, and finalized overall UI/UX improvements.

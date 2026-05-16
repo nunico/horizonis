@@ -1,4 +1,61 @@
 describe('Zoom UX Regression', () => {
+	it('should fit the whole cluster on entry', async () => {
+		await browser.url('http://localhost:1420');
+
+		// Wait for cluster view
+		const starMap = await $('[data-testid="star-map"]');
+		await starMap.waitForDisplayed({ timeout: 20000 });
+
+		// Wait for instrumentation
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => !!window.starMapDebug);
+			},
+			{ timeout: 5000, timeoutMsg: 'StarMap debug data not found' }
+		);
+
+		// Check initial scale
+		const debugData = await browser.execute(() => {
+			const { viewport, lastMinScale } = window.starMapDebug;
+			return {
+				currentScale: viewport.scale.x,
+				minScale: lastMinScale
+			};
+		});
+
+		// Current scale should be exactly minScale after renderCluster
+		expect(debugData.currentScale).toBeCloseTo(debugData.minScale, 4);
+	});
+
+	it('should prevent panning away from the cluster', async () => {
+		// Try to pan far away
+		await browser.performActions([
+			{
+				type: 'pointer',
+				id: 'finger2',
+				parameters: { pointerType: 'mouse' },
+				actions: [
+					{ type: 'pointerMove', duration: 0, x: 500, y: 500 },
+					{ type: 'pointerDown', button: 0 },
+					{ type: 'pointerMove', duration: 500, x: -1000, y: -1000 },
+					{ type: 'pointerUp', button: 0 }
+				]
+			}
+		]);
+
+		await browser.pause(500);
+
+		// Check center position - it should be clamped
+		// Since we are at minScale and underflow is 'center', it should be at (0,0)
+		const center = await browser.execute(() => {
+			const { viewport } = window.starMapDebug;
+			return { x: viewport.center.x, y: viewport.center.y };
+		});
+
+		expect(Math.abs(center.x)).toBeLessThan(10);
+		expect(Math.abs(center.y)).toBeLessThan(10);
+	});
+
 	it('should fit the whole system on entry', async () => {
 		await browser.url('http://localhost:1420');
 
