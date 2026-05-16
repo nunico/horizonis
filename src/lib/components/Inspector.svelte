@@ -75,8 +75,8 @@
 
 			{#if entity.spectral_class}
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Spectral Class</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Spectral Class</span
 					>
 					<p
 						class="text-slate-300 font-mono bg-slate-950/50 px-2 py-1 rounded border border-slate-800"
@@ -85,14 +85,14 @@
 					</p>
 				</div>
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Mass</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Mass</span
 					>
 					<p class="text-slate-300 font-mono">{entity.mass_sol?.toFixed(2)} M☉</p>
 				</div>
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Radius</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Radius</span
 					>
 					<p class="text-slate-300 font-mono">{entity.radius_sol?.toFixed(2)} R☉</p>
 				</div>
@@ -100,26 +100,26 @@
 
 			{#if entity.body_type}
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Type</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Type</span
 					>
 					<p class="text-slate-300">{entity.body_type}</p>
 				</div>
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Mass</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Mass</span
 					>
 					<p class="text-slate-300 font-mono">{entity.mass_earth?.toFixed(2)} M⊕</p>
 				</div>
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Radius</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Radius</span
 					>
 					<p class="text-slate-300 font-mono">{entity.radius_km?.toFixed(0)} km</p>
 				</div>
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Gravity</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Gravity</span
 					>
 					{#if entity.mass_earth && entity.radius_km}
 						<p class="text-slate-300 font-mono">
@@ -131,8 +131,8 @@
 
 			{#if entity.orbit_au !== undefined}
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Orbit Radius</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Orbit Radius</span
 					>
 					<p class="text-slate-300 font-mono">{entity.orbit_au} AU</p>
 				</div>
@@ -140,8 +140,8 @@
 
 			{#if entity.tags && entity.tags.length > 0}
 				<div>
-					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
-						>Tags</label
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Tags</span
 					>
 					<div class="flex flex-wrap gap-1 mt-1">
 						{#each entity.tags as tag (tag)}

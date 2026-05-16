@@ -12,6 +12,7 @@
 	let app: PIXI.Application;
 	let viewport: Viewport;
 	let systemData: SolarSystem | null = null;
+	let resizeHandler: () => void;
 
 	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'linear' };
 
@@ -28,14 +29,22 @@
 		viewport = new Viewport({
 			screenWidth: app.screen.width,
 			screenHeight: app.screen.height,
-			worldWidth: 10000,
-			worldHeight: 10000,
+			worldWidth: 20000,
+			worldHeight: 20000,
 			events: app.renderer.events
 		});
 
 		app.stage.addChild(viewport);
 		viewport.drag().pinch().wheel().decelerate();
 		viewport.moveCenter(0, 0);
+
+		// Handle resizes
+		resizeHandler = () => {
+			if (viewport && app.renderer) {
+				viewport.resize(app.screen.width, app.screen.height);
+			}
+		};
+		app.renderer.on('resize', resizeHandler);
 
 		if ($activeSystemId) {
 			// First check if we have the system in the cluster store
@@ -61,7 +70,10 @@
 	});
 
 	onDestroy(() => {
-		if (app) app.destroy(true, { children: true });
+		if (app) {
+			if (resizeHandler) app.renderer.off('resize', resizeHandler);
+			app.destroy(true, { children: true });
+		}
 	});
 
 	function renderSystem() {

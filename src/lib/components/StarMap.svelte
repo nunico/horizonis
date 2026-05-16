@@ -8,6 +8,7 @@
 	let container: HTMLDivElement;
 	let app: PIXI.Application;
 	let viewport: Viewport;
+	let resizeHandler: () => void;
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -22,8 +23,8 @@
 		viewport = new Viewport({
 			screenWidth: app.screen.width,
 			screenHeight: app.screen.height,
-			worldWidth: 2000,
-			worldHeight: 2000,
+			worldWidth: 4000,
+			worldHeight: 4000,
 			events: app.renderer.events
 		});
 
@@ -33,11 +34,18 @@
 
 		viewport.moveCenter(0, 0);
 
-		renderCluster();
+		// Handle resizes
+		resizeHandler = () => {
+			if (viewport && app.renderer) {
+				viewport.resize(app.screen.width, app.screen.height);
+			}
+		};
+		app.renderer.on('resize', resizeHandler);
 	});
 
 	onDestroy(() => {
 		if (app) {
+			if (resizeHandler) app.renderer.off('resize', resizeHandler);
 			app.destroy(true, { children: true });
 		}
 	});
@@ -73,19 +81,21 @@
 			node.eventMode = 'static';
 			node.cursor = 'pointer';
 
-			node.on('pointerdown', () => {
+			node.on('pointerdown', (e) => {
+				e.stopPropagation();
 				selectedEntity.set(system);
 			});
 
 			// Double click logic
-			let lastClick = 0;
-			node.on('pointerup', () => {
+			let lastClickTime = 0;
+			node.on('pointertap', (e) => {
+				e.stopPropagation();
 				const now = Date.now();
-				if (now - lastClick < 300) {
+				if (now - lastClickTime < 350) {
 					activeSystemId.set(system.id);
 					viewMode.set('system');
 				}
-				lastClick = now;
+				lastClickTime = now;
 			});
 
 			// Label

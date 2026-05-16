@@ -2,6 +2,15 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - UI Interaction & Responsiveness Fixes
+- **Summary**: Fixed intermittent pan/zoom issues and unreliable solar system navigation.
+- **Changes**:
+  - Implemented resize synchronization between Pixi renderer and `pixi-viewport`.
+  - Switched to `pointertap` for more robust double-click detection in StarMap.
+  - Optimized rendering reactivity to prevent double-renders on mount.
+  - Added event stopPropagation to interactive nodes to prevent event bubbling issues.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`
+
 ### [2026-05-16] - Agent Guidelines & Documentation
 - **Summary**: Added project governance documents for AI agents.
 - **Changes**:
