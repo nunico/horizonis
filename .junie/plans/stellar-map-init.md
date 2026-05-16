@@ -16,6 +16,7 @@ Build "Horizonis", an interactive stellar map desktop application that serves as
   - Local JSON persistence for map data.
   - Core navigation: Zoom, Pan, Drill-down, and Back.
   - Detail inspector for stars, planets, and portals.
+  - **Multi-star system support with barycentric orbits and hierarchical satellite systems.**
 - **Out of Scope**:
   - 3D space flight simulation.
   - Procedural generation of entire clusters (focus is on manual/data-driven map).
@@ -25,6 +26,7 @@ Build "Horizonis", an interactive stellar map desktop application that serves as
 
 - **As a worldbuilder**, I want to see how my star systems are connected via portals so I can plan interstellar routes.
 - **As a user**, I want to click on a star system to see its planets and their orbits in an AU-accurate scale.
+- **As a user**, I want to see binary and trinary star systems where stars orbit each other and have their own distinct planetary systems.
 - **As a user**, I want to save my map locally and have it persist between sessions.
 
 # Technical Design
@@ -44,32 +46,35 @@ The project is currently empty, containing only the design document (`idea.md`) 
 ### Proposed Changes
 
 - **Backend (Rust)**:
-  - Create a domain model matching the `idea.md` specs.
-  - Implement a storage layer using `tauri::path::app_data_dir`.
-  - Use `petgraph` for portal route calculations.
+  - Update `Star` model to include `orbit_au` and `satellites: Vec<OrbitalBody>`.
+  - Enhance `generation.rs` to create realistic barycentric orbits for binary and trinary systems.
+  - Implement stable S-type planetary orbits for individual stars in multi-star systems.
 - **Frontend (Svelte/Deno)**:
-  - Use `pixi-viewport` for standard map interactions.
-  - Implement a dual-canvas system or a single adaptive canvas for the two view modes.
-  - State management via Svelte stores to track `activeSystemId`, `selectedEntity`, and `viewMode`.
+  - Update `stellar.ts` types to match the backend model.
+  - Modify `SolarSystemMap.svelte` to render stars at their orbital positions and render their hierarchical satellites.
+  - Update `Inspector.svelte` to support editing stars and their nested satellites.
+  - Adjust adaptive scaling to handle multiple orbital centers.
 
 ### Data Models (TypeScript)
 
 ```typescript
+interface Star {
+	id: string;
+	name: string;
+	spectral_class: string;
+	radius_sol: number;
+	mass_sol: number;
+	orbit_au: number; // Orbit around system barycenter
+	satellites: OrbitalBody[]; // Planets orbiting this star
+}
+
 interface SolarSystem {
 	id: string;
 	name: string;
 	stars: Star[];
+	orbital_bodies: OrbitalBody[]; // System-wide / Circumbinary objects
 	portals: Portal[];
 	orbital_regions: OrbitalRegion[];
-}
-
-interface OrbitalBody {
-	id: string;
-	name: string;
-	body_type: 'Planet' | 'Moon' | 'SpaceStation' | 'DwarfPlanet' | 'Comet';
-	orbit_au: number;
-	satellites: OrbitalBody[];
-	tags: string[];
 }
 ```
 
@@ -108,7 +113,6 @@ Verification will be done by running the Tauri app in development mode and inspe
 # Delivery Steps
 
 ### ✓ Step 1: Project Scaffolding & Setup
-
 Initialize the Tauri v2 and SvelteKit project using Deno as the runtime.
 
 - Run `deno run -A npm:create-tauri-app@latest` (or equivalent) to scaffold the project.
@@ -118,7 +122,6 @@ Initialize the Tauri v2 and SvelteKit project using Deno as the runtime.
 - Install backend crates: `serde`, `serde_json`, `uuid`, `petgraph`, `tauri`.
 
 ### ✓ Step 2: Data Models & Backend Infrastructure
-
 Define the core data structures and Tauri commands in Rust.
 
 - Implement the structs (`StarCluster`, `SolarSystem`, `Portal`, etc.) in `src-tauri/src/models.rs` as specified in `idea.md`.
@@ -127,7 +130,6 @@ Define the core data structures and Tauri commands in Rust.
 - Setup a basic `StorageManager` in Rust to handle JSON I/O in the app data directory.
 
 ### ✓ Step 3: Implement Star Cluster View (Galaxy Scale)
-
 Build the Star Cluster View using Pixi.js.
 
 - Implement a `StarMap` component that initializes a Pixi.js application.
@@ -137,7 +139,6 @@ Build the Star Cluster View using Pixi.js.
 - Implement click-to-drill-down logic to transition to the Solar System view.
 
 ### ✓ Step 4: Implement Solar System View (Orbital Scale)
-
 Build the Solar System View with AU-scaled orbital rendering.
 
 - Implement the `SolarSystemMap` component using Pixi.js.
@@ -147,7 +148,6 @@ Build the Solar System View with AU-scaled orbital rendering.
 - Render orbital regions like asteroid belts as annular bands.
 
 ### ✓ Step 5: UI Integration, State, and Persistence
-
 Connect the views with UI panels and implement data persistence.
 
 - Create the Detail Inspector panel to show properties of selected bodies/systems.
@@ -180,3 +180,12 @@ Implement adaptive visual scaling for planets, moons, and other orbital bodies b
 - Use a non-linear formula to map `radius_km` to a visual radius that reflects relative sizes.
 - Ensure bodies don't overlap with their satellites' orbits by implementing adaptive clamping.
 - Update the Inspector to consistently reflect the visual and physical properties.
+
+###   Step 9: Multi-Star System Implementation
+Enhance generation and rendering to support binary/trinary star systems with individual planetary systems.
+
+- Update `models.rs` and `stellar.ts` with `orbit_au` and `satellites` for `Star`.
+- Implement barycentric orbit calculation in `generation.rs`.
+- Update `SolarSystemMap.svelte` to render stars and their satellites at correct spatial offsets.
+- Modify `Inspector.svelte` persistence logic to support nested star satellites.
+- Ensure adaptive scaling and constant line thickness work correctly with multiple orbital centers.
