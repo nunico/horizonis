@@ -13,6 +13,8 @@
 	let viewport: Viewport;
 	let systemData: SolarSystem | null = null;
 	let resizeHandler: () => void;
+	let constantSizeNodes: PIXI.Container[] = [];
+	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
 
 	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'linear' };
 
@@ -45,6 +47,8 @@
 			}
 		};
 		app.renderer.on('resize', resizeHandler);
+		viewport.on('zoomed', updateScales);
+		viewport.on('moved', updateScales);
 
 		if ($activeSystemId) {
 			// First check if we have the system in the cluster store
@@ -76,12 +80,28 @@
 		}
 	});
 
+	function updateScales() {
+		if (!viewport) return;
+		const s = 1 / viewport.scale.x;
+		for (const node of constantSizeNodes) {
+			node.scale.set(s);
+		}
+
+		for (const sat of satelliteContainers) {
+			const screenDistance = sat.radius * viewport.scale.x;
+			sat.container.visible = screenDistance > 30;
+		}
+	}
+
 	function renderSystem() {
 		if (!systemData || !viewport) return;
-		viewport.removeChildren();
+		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
+		constantSizeNodes = [];
+		satelliteContainers = [];
 
 		// Render Stars at center
 		for (const star of systemData.stars) {
+			const node = new PIXI.Container();
 			const g = new PIXI.Graphics();
 			const color = star.spectral_class.startsWith('G')
 				? 0xfde047
@@ -89,12 +109,24 @@
 					? 0xf97316
 					: 0x38bdf8;
 			g.circle(0, 0, Math.max(10, star.radius_sol * 15)).fill(color);
-			viewport.addChild(g);
+			node.addChild(g);
+
+			// Label for star
+			const label = new PIXI.Text({
+				text: star.name,
+				style: { fontFamily: 'sans-serif', fontSize: 14, fill: 0xf1f5f9 }
+			});
+			label.anchor.set(0.5, 0);
+			label.y = Math.max(12, star.radius_sol * 15) + 5;
+			node.addChild(label);
+
+			constantSizeNodes.push(node);
+			viewport.addChild(node);
 		}
 
 		// Render Orbital Bodies
 		for (const body of systemData.orbital_bodies) {
-			renderBody(body, 0, 0);
+			renderBody(body, 0, 0, false);
 		}
 
 		// Render Regions (e.g. Asteroid Belts)
@@ -103,22 +135,37 @@
 			const inner = auToPixels(region.inner_radius_au, scaleConfig);
 			const outer = auToPixels(region.outer_radius_au, scaleConfig);
 
-			// Render as a thick ring
+ 		// Render as a thick ring
 			r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
 			viewport.addChild(r);
 		}
+
+		updateScales();
 	}
 
-	function renderBody(body: OrbitalBody, centerX: number, centerY: number) {
+	function renderBody(body: OrbitalBody, centerX: number, centerY: number, isSatellite: boolean) {
 		const radius = auToPixels(body.orbit_au, scaleConfig);
+
+		const container = new PIXI.Container();
+		container.x = centerX;
+		container.y = centerY;
+		viewport.addChild(container);
+
+		if (isSatellite) {
+			satelliteContainers.push({ container, radius });
+		}
 
 		// Orbit Path
 		const orbit = new PIXI.Graphics();
-		orbit.circle(centerX, centerY, radius).stroke({ width: 1, color: 0x334155, alpha: 0.4 });
-		viewport.addChild(orbit);
+		orbit.circle(0, 0, radius).stroke({ width: 1, color: 0x334155, alpha: 0.4 });
+		container.addChild(orbit);
 
-		// The Body
-		const node = new PIXI.Graphics();
+		// The Body Node (stays constant size)
+		const bodyNode = new PIXI.Container();
+		bodyNode.x = radius;
+		bodyNode.y = 0;
+
+		const g = new PIXI.Graphics();
 		const colors: Record<string, number> = {
 			Planet: 0x60a5fa,
 			Moon: 0x94a3b8,
@@ -126,19 +173,15 @@
 			DwarfPlanet: 0xa78bfa,
 			Comet: 0x2dd4bf
 		};
-		node.circle(0, 0, 6).fill(colors[body.body_type] || 0xffffff);
+		g.circle(0, 0, 6).fill(colors[body.body_type] || 0xffffff);
+		bodyNode.addChild(g);
 
-		// For now, place planets along the X axis
-		node.x = centerX + radius;
-		node.y = centerY;
-		node.eventMode = 'static';
-		node.cursor = 'pointer';
-		node.on('pointerdown', (e) => {
+		bodyNode.eventMode = 'static';
+		bodyNode.cursor = 'pointer';
+		bodyNode.on('pointerdown', (e) => {
 			e.stopPropagation();
 			selectedEntity.set(body);
 		});
-
-		viewport.addChild(node);
 
 		// Label
 		const label = new PIXI.Text({
@@ -147,11 +190,14 @@
 		});
 		label.anchor.set(0.5, 0);
 		label.y = 10;
-		node.addChild(label);
+		bodyNode.addChild(label);
+
+		constantSizeNodes.push(bodyNode);
+		container.addChild(bodyNode);
 
 		// Recursive Satellites (Moons)
 		for (const satellite of body.satellites) {
-			renderBody(satellite, node.x, node.y);
+			renderBody(satellite, container.x + bodyNode.x, container.y + bodyNode.y, true);
 		}
 	}
 

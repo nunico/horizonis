@@ -9,6 +9,7 @@
 	let app: PIXI.Application;
 	let viewport: Viewport;
 	let resizeHandler: () => void;
+	let systemNodes: PIXI.Container[] = [];
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -41,6 +42,8 @@
 			}
 		};
 		app.renderer.on('resize', resizeHandler);
+		viewport.on('zoomed', updateScales);
+		viewport.on('moved', updateScales);
 	});
 
 	onDestroy(() => {
@@ -50,10 +53,19 @@
 		}
 	});
 
+	function updateScales() {
+		if (!viewport) return;
+		const s = 1 / viewport.scale.x;
+		for (const node of systemNodes) {
+			node.scale.set(s);
+		}
+	}
+
 	function renderCluster() {
 		if (!$cluster || !viewport) return;
 
-		viewport.removeChildren();
+		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
+		systemNodes = [];
 
 		// Render portals first (background)
 		const portalGraphics = new PIXI.Graphics();
@@ -111,8 +123,11 @@
 			label.y = 15;
 			node.addChild(label);
 
+			systemNodes.push(node);
 			viewport.addChild(node);
 		}
+
+		updateScales();
 	}
 
 	$: if ($cluster && viewport) {

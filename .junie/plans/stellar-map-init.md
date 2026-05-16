@@ -164,3 +164,11 @@ Reimplement the cluster generation in Rust with astro-physical principles and no
 - Implement portal generation using a planar graph approach (e.g. Delaunay triangulation + pruning) to ensure no crossings.
 - Integrate the generator into the backend to initialize the default cluster procedurally.
 - Update tests to verify the new procedural logic.
+
+### ✓ Step 7: Refine Rendering and Readability
+Improve the visual experience by ensuring labels and objects maintain consistent scale and handling overlapping satellites.
+
+- Implement constant-size scaling for stars, planets, and labels across all zoom levels.
+- Implement proximity-based culling for satellites in the Solar System view to prevent overlap with parent bodies.
+- Ensure text labels remain readable by adjusting their scale inversely to the viewport zoom.
+- Verify that zoom primarily affects distances rather than object sizes.
