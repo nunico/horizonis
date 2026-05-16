@@ -20,6 +20,8 @@ export interface Star {
 	spectral_class: string;
 	radius_sol: number;
 	mass_sol: number;
+	orbit_au: number;
+	satellites: OrbitalBody[];
 }
 
 export interface OrbitalBody {

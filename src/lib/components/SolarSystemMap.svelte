@@ -5,7 +5,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { cluster } from '../stores/clusterData';
 	import { activeSystemId, viewMode, selectedEntity } from '../stores/appState';
-	import type { SolarSystem, OrbitalBody } from '../types/stellar';
+	import type { SolarSystem, OrbitalBody, Star } from '../types/stellar';
 	import { auToPixels, type ScaleConfig } from '../pixi/scaling';
 
 	let container: HTMLDivElement;
@@ -13,7 +13,7 @@
 	let viewport: Viewport;
 	let systemData: SolarSystem | null = null;
 	let resizeHandler: () => void;
-	let starNodes: { container: PIXI.Container; label: PIXI.Text; baseRadius: number }[] = [];
+	let starNodes: { container: PIXI.Container; label: PIXI.Text; baseRadius: number; star: Star }[] = [];
 	let bodyNodes: {
 		container: PIXI.Container;
 		label: PIXI.Text;
@@ -104,23 +104,35 @@
 			sat.container.visible = screenDistance > 30;
 		}
 
-		// 2. Find absolute minimum orbit radius of VISIBLE objects for the star
-		let minOrbitWorldVisible = Infinity;
-		for (const body of systemData.orbital_bodies) {
-			const r = auToPixels(body.orbit_au, scaleConfig);
-			if (r * viewport.scale.x > 30) {
-				if (r < minOrbitWorldVisible) minOrbitWorldVisible = r;
-			}
-		}
-		for (const region of systemData.orbital_regions) {
-			const r = auToPixels(region.inner_radius_au, scaleConfig);
-			if (r < minOrbitWorldVisible) minOrbitWorldVisible = r;
-		}
-
 		for (const star of starNodes) {
+			// Find min visible satellite orbit for this star
+			let minVisibleSatOrbit = Infinity;
+			for (const sat of star.star.satellites) {
+				const r = auToPixels(sat.orbit_au, scaleConfig);
+				if (r * viewport.scale.x > 30) {
+					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
+				}
+			}
+
+			// Also consider system-wide bodies for the star's clamping if it's at the center
+			if (star.star.orbit_au === 0) {
+				for (const body of systemData.orbital_bodies) {
+					const r = auToPixels(body.orbit_au, scaleConfig);
+					if (r * viewport.scale.x > 30) {
+						if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
+					}
+				}
+				for (const region of systemData.orbital_regions) {
+					const r = auToPixels(region.inner_radius_au, scaleConfig);
+					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
+				}
+			}
+
 			// Clamp star scale so screen radius doesn't exceed 45% of screen min orbit
-			const maxScale = (minOrbitWorldVisible * 0.45) / star.baseRadius;
-			const targetScale = Math.min(s, maxScale);
+			const maxScaleSat = (minVisibleSatOrbit * 0.45) / star.baseRadius;
+			// If star has its own orbit, also avoid overlap with barycenter?
+			// Actually, just avoid overlap with its own satellites.
+			const targetScale = Math.min(s, maxScaleSat);
 			star.container.scale.set(targetScale);
 			// Keep label readable (scale 1 in screen space)
 			star.label.scale.set(s / targetScale);
@@ -159,35 +171,14 @@
 		satelliteContainers = [];
 		orbitNodes = [];
 
-		// Render Stars at center
+		// Render Stars
 		for (const star of systemData.stars) {
-			const node = new PIXI.Container();
-			const g = new PIXI.Graphics();
-			const color = star.spectral_class.startsWith('G')
-				? 0xfde047
-				: star.spectral_class.startsWith('M')
-					? 0xf97316
-					: 0x38bdf8;
-			const baseRadius = Math.max(10, star.radius_sol * 15);
-			g.circle(0, 0, baseRadius).fill(color);
-			node.addChild(g);
-
-			// Label for star
-			const label = new PIXI.Text({
-				text: star.name,
-				style: { fontFamily: 'sans-serif', fontSize: 14, fill: 0xf1f5f9 }
-			});
-			label.anchor.set(0.5, 0);
-			label.y = baseRadius + 5;
-			node.addChild(label);
-
-			starNodes.push({ container: node, label, baseRadius });
-			viewport.addChild(node);
+			renderStar(star);
 		}
 
-		// Render Orbital Bodies
+		// Render Orbital Bodies (Circumbinary)
 		for (const body of systemData.orbital_bodies) {
-			renderBody(body, 0, 0, false);
+			renderBody(body, viewport);
 		}
 
 		// Render Regions (e.g. Asteroid Belts)
@@ -204,29 +195,87 @@
 		updateScales();
 	}
 
-	function renderBody(body: OrbitalBody, centerX: number, centerY: number, isSatellite: boolean) {
+	function renderStar(star: Star) {
+		const radius = auToPixels(star.orbit_au, scaleConfig);
+
+		const orbitContainer = new PIXI.Container();
+		viewport.addChild(orbitContainer);
+
+		if (star.orbit_au > 0) {
+			const orbit = new PIXI.Graphics();
+			const s = 1 / viewport.scale.x;
+			orbit.circle(0, 0, radius).stroke({ width: s, color: 0x334155, alpha: 0.4 });
+			orbitContainer.addChild(orbit);
+			orbitNodes.push({ graphics: orbit, radius });
+		}
+
+		const starCenter = new PIXI.Container();
+		starCenter.x = radius;
+		starCenter.y = 0;
+		orbitContainer.addChild(starCenter);
+
+		const starVisual = new PIXI.Container();
+		starCenter.addChild(starVisual);
+
+		const g = new PIXI.Graphics();
+		const color = star.spectral_class.startsWith('G')
+			? 0xfde047
+			: star.spectral_class.startsWith('M')
+				? 0xf97316
+				: 0x38bdf8;
+		const baseRadius = Math.max(10, star.radius_sol * 15);
+		g.circle(0, 0, baseRadius).fill(color);
+		starVisual.addChild(g);
+
+		starVisual.eventMode = 'static';
+		starVisual.cursor = 'pointer';
+		starVisual.on('pointerdown', (e) => {
+			e.stopPropagation();
+			selectedEntity.set(star);
+		});
+
+		// Label for star
+		const label = new PIXI.Text({
+			text: star.name,
+			style: { fontFamily: 'sans-serif', fontSize: 14, fill: 0xf1f5f9 }
+		});
+		label.anchor.set(0.5, 0);
+		label.y = baseRadius + 5;
+		starVisual.addChild(label);
+
+		starNodes.push({ container: starVisual, label, baseRadius, star });
+
+		// Render star's satellites
+		for (const body of star.satellites) {
+			renderBody(body, starCenter);
+		}
+	}
+
+	function renderBody(body: OrbitalBody, parent: PIXI.Container) {
 		const radius = auToPixels(body.orbit_au, scaleConfig);
 
-		const container = new PIXI.Container();
-		container.x = centerX;
-		container.y = centerY;
-		viewport.addChild(container);
+		const orbitContainer = new PIXI.Container();
+		parent.addChild(orbitContainer);
 
-		if (isSatellite) {
-			satelliteContainers.push({ container, radius });
+		if (parent !== viewport) {
+			satelliteContainers.push({ container: orbitContainer, radius });
 		}
 
 		// Orbit Path
 		const orbit = new PIXI.Graphics();
 		const s = 1 / viewport.scale.x;
 		orbit.circle(0, 0, radius).stroke({ width: s, color: 0x334155, alpha: 0.4 });
-		container.addChild(orbit);
+		orbitContainer.addChild(orbit);
 		orbitNodes.push({ graphics: orbit, radius });
 
-		// The Body Node (stays constant size)
-		const bodyNode = new PIXI.Container();
-		bodyNode.x = radius;
-		bodyNode.y = 0;
+		// The Body Node
+		const bodyCenter = new PIXI.Container();
+		bodyCenter.x = radius;
+		bodyCenter.y = 0;
+		orbitContainer.addChild(bodyCenter);
+
+		const bodyVisual = new PIXI.Container();
+		bodyCenter.addChild(bodyVisual);
 
 		const g = new PIXI.Graphics();
 		const colors: Record<string, number> = {
@@ -238,11 +287,11 @@
 		};
 		const baseRadius = getVisualRadius(body.radius_km);
 		g.circle(0, 0, baseRadius).fill(colors[body.body_type] || 0xffffff);
-		bodyNode.addChild(g);
+		bodyVisual.addChild(g);
 
-		bodyNode.eventMode = 'static';
-		bodyNode.cursor = 'pointer';
-		bodyNode.on('pointerdown', (e) => {
+		bodyVisual.eventMode = 'static';
+		bodyVisual.cursor = 'pointer';
+		bodyVisual.on('pointerdown', (e) => {
 			e.stopPropagation();
 			selectedEntity.set(body);
 		});
@@ -254,20 +303,19 @@
 		});
 		label.anchor.set(0.5, 0);
 		label.y = baseRadius + 4;
-		bodyNode.addChild(label);
+		bodyVisual.addChild(label);
 
 		bodyNodes.push({
-			container: bodyNode,
+			container: bodyVisual,
 			label,
 			baseRadius,
 			body,
 			orbitRadiusWorld: radius
 		});
-		container.addChild(bodyNode);
 
 		// Recursive Satellites (Moons)
 		for (const satellite of body.satellites) {
-			renderBody(satellite, container.x + bodyNode.x, container.y + bodyNode.y, true);
+			renderBody(satellite, bodyCenter);
 		}
 	}
 

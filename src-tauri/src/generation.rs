@@ -127,6 +127,7 @@ fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> S
     };
 
     let mut stars = Vec::with_capacity(num_stars);
+    
     for i in 0..num_stars {
         let star_name = if num_stars > 1 {
             format!("{} {}", name, (b'A' + i as u8) as char)
@@ -135,34 +136,88 @@ fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> S
         };
         
         let class_info = SPECTRAL_CLASSES.choose(rng).unwrap();
+        let mass = class_info.1 * rng.random_range(0.9..1.1);
+        
         stars.push(Star {
             id: Uuid::new_v4(),
             name: star_name,
             spectral_class: class_info.0.to_string(),
-            mass_sol: class_info.1 * rng.random_range(0.9..1.1),
+            mass_sol: mass,
             radius_sol: class_info.2 * rng.random_range(0.9..1.1),
+            orbit_au: 0.0, // Will be set below
+            satellites: Vec::new(), // Will be set below
         });
     }
 
-    // Generate orbital bodies
-    let num_bodies = rng.random_range(3..10);
-    let mut orbital_bodies = Vec::with_capacity(num_bodies);
-    
-    // Minimum orbit is based on star mass (roughly)
-    let total_star_mass: f32 = stars.iter().map(|s| s.mass_sol).sum();
-    let mut current_orbit = 0.3 * total_star_mass.sqrt() * rng.random_range(0.8..1.2);
+    if num_stars > 1 {
+        // Simple barycentric setup
+        // Binary: Stars A and B separated by 40-100 AU
+        // Trinary: A and B separated by 30-60 AU, C at 200-500 AU
+        if num_stars == 2 {
+            let d = rng.random_range(40.0..100.0);
+            let m0 = stars[0].mass_sol;
+            let m1 = stars[1].mass_sol;
+            stars[0].orbit_au = d * (m1 / (m0 + m1));
+            stars[1].orbit_au = d * (m0 / (m0 + m1));
+        } else {
+            let d_inner = rng.random_range(30.0..60.0);
+            let d_outer = rng.random_range(200.0..500.0);
+            
+            // Distances from system barycenter
+            // This is a simplification: Star 0 and 1 are a tight pair orbiting center
+            // and Star 2 is far away.
+            stars[0].orbit_au = d_inner * 0.5;
+            stars[1].orbit_au = d_inner * 0.5;
+            stars[2].orbit_au = d_outer;
+        }
+    }
 
-    for i in 0..num_bodies {
-        // Titius-Bode-like spacing
-        current_orbit *= rng.random_range(1.4..2.0);
-        
-        orbital_bodies.push(generate_body(rng, i, current_orbit));
+    // Generate planetary systems for each star
+    for star in &mut stars {
+        let num_bodies = rng.random_range(0..6);
+        let mut current_orbit = 0.3 * star.mass_sol.sqrt() * rng.random_range(0.8..1.2);
+        for j in 0..num_bodies {
+            current_orbit *= rng.random_range(1.4..2.0);
+            // Limit planetary orbits so they don't overlap too much with binary neighbors
+            if star.orbit_au > 0.0 && current_orbit > star.orbit_au * 0.4 {
+                break;
+            }
+            star.satellites.push(generate_body(rng, j, current_orbit));
+        }
+    }
+
+    // Circumbinary / System-wide bodies
+    let mut orbital_bodies = Vec::new();
+    if num_stars > 1 {
+        let mut current_orbit = stars.iter().map(|s| s.orbit_au).fold(0.0, f32::max) * 2.5;
+        let num_circumbinary = rng.random_range(0..4);
+        for i in 0..num_circumbinary {
+            current_orbit *= rng.random_range(1.3..1.8);
+            orbital_bodies.push(generate_body(rng, i, current_orbit));
+        }
+    } else {
+        // For single star systems, we can still use orbital_bodies or just star.satellites
+        // Let's keep them in star.satellites for consistency with the multi-star logic,
+        // but maybe add some very distant objects to orbital_bodies.
+        if rng.random_bool(0.3) {
+            let last_planet_orbit = stars[0].satellites.last().map(|b| b.orbit_au).unwrap_or(1.0);
+            let orbit = last_planet_orbit * rng.random_range(5.0..20.0);
+            orbital_bodies.push(generate_body(rng, 10, orbit));
+        }
     }
 
     // Generate orbital regions (asteroid belts)
     let mut orbital_regions = Vec::new();
     if rng.random_bool(0.6) {
-        let inner = current_orbit * rng.random_range(0.4..0.6);
+        let base_orbit = if !orbital_bodies.is_empty() {
+            orbital_bodies[0].orbit_au * 0.7
+        } else if !stars[0].satellites.is_empty() {
+            stars[0].satellites.last().unwrap().orbit_au * 1.5
+        } else {
+            5.0
+        };
+        
+        let inner = base_orbit * rng.random_range(0.8..1.2);
         orbital_regions.push(OrbitalRegion {
             name: "Asteroid Belt".to_string(),
             inner_radius_au: inner,

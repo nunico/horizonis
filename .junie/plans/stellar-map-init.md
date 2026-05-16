@@ -181,7 +181,7 @@ Implement adaptive visual scaling for planets, moons, and other orbital bodies b
 - Ensure bodies don't overlap with their satellites' orbits by implementing adaptive clamping.
 - Update the Inspector to consistently reflect the visual and physical properties.
 
-###   Step 9: Multi-Star System Implementation
+### ✓ Step 9: Multi-Star System Implementation
 Enhance generation and rendering to support binary/trinary star systems with individual planetary systems.
 
 - Update `models.rs` and `stellar.ts` with `orbit_au` and `satellites` for `Star`.

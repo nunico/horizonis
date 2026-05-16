@@ -2,6 +2,16 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Multi-Star System Implementation
+- **Summary**: Enhanced the application to support realistic binary and trinary star systems with individual planetary systems.
+- **Changes**:
+  - Updated `Star` model in Rust and TypeScript to support `orbit_au` and nested `satellites`.
+  - Refactored `generation.rs` to create barycentric orbits for multi-star systems and distribute planets among stars.
+  - Implemented hierarchical rendering in `SolarSystemMap.svelte`, allowing stars to orbit the system barycenter while hosting their own planetary systems.
+  - Updated `Inspector.svelte` with recursive persistence logic and fixed TypeScript narrowing issues.
+  - Unified adaptive scaling and constant-thickness rendering across the new hierarchical structure.
+- **Files Affected**: `src-tauri/src/models.rs`, `src/lib/types/stellar.ts`, `src-tauri/src/generation.rs`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/components/Inspector.svelte`
+
 ### [2026-05-16] - Adaptive Scale and Label Readability
 - **Summary**: Enhanced orbital body rendering to ensure labels stay readable and icons avoid overlap with parents.
 - **Changes**:

@@ -9,11 +9,34 @@
 	let entity: Entity | null = null;
 	selectedEntity.subscribe((v) => (entity = v ? { ...v } : null));
 
+	function isStar(e: Entity): e is Star {
+		return 'spectral_class' in e;
+	}
+
+	function isOrbitalBody(e: Entity): e is OrbitalBody {
+		return 'body_type' in e;
+	}
+
+	function isSolarSystem(e: Entity): e is SolarSystem {
+		return !isStar(e) && !isOrbitalBody(e);
+	}
+
 	async function handleSave() {
 		if (!$cluster || !entity) return;
 
 		const newCluster = JSON.parse(JSON.stringify($cluster));
 		let found = false;
+
+		const updateBody = (bodies: OrbitalBody[]): boolean => {
+			for (const b of bodies) {
+				if (b.id === entity!.id) {
+					Object.assign(b, entity);
+					return true;
+				}
+				if (b.satellites && updateBody(b.satellites)) return true;
+			}
+			return false;
+		};
 
 		for (const system of newCluster.systems) {
 			if (system.id === entity.id) {
@@ -22,16 +45,19 @@
 				break;
 			}
 
-			const updateBody = (bodies: OrbitalBody[]): boolean => {
-				for (const b of bodies) {
-					if (b.id === entity.id) {
-						Object.assign(b, entity);
-						return true;
-					}
-					if (b.satellites && updateBody(b.satellites)) return true;
+			// Search in stars and their satellites
+			for (const star of system.stars) {
+				if (star.id === entity.id) {
+					Object.assign(star, entity);
+					found = true;
+					break;
 				}
-				return false;
-			};
+				if (star.satellites && updateBody(star.satellites)) {
+					found = true;
+					break;
+				}
+			}
+			if (found) break;
 
 			if (updateBody(system.orbital_bodies)) {
 				found = true;
@@ -73,7 +99,7 @@
 				/>
 			</div>
 
-			{#if entity.spectral_class}
+			{#if isStar(entity)}
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Spectral Class</span
@@ -98,7 +124,7 @@
 				</div>
 			{/if}
 
-			{#if entity.body_type}
+			{#if isOrbitalBody(entity)}
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Type</span
@@ -123,13 +149,13 @@
 					>
 					{#if entity.mass_earth && entity.radius_km}
 						<p class="text-slate-300 font-mono">
-							{( (entity.mass_earth / ( (entity.radius_km / 6371) ** 2 )) ).toFixed(2)} g
+							{(entity.mass_earth / (entity.radius_km / 6371) ** 2).toFixed(2)} g
 						</p>
 					{/if}
 				</div>
 			{/if}
 
-			{#if entity.orbit_au !== undefined}
+			{#if !isSolarSystem(entity)}
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Orbit Radius</span
@@ -138,7 +164,7 @@
 				</div>
 			{/if}
 
-			{#if entity.tags && entity.tags.length > 0}
+			{#if isOrbitalBody(entity) && entity.tags && entity.tags.length > 0}
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Tags</span
