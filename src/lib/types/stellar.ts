@@ -19,6 +19,7 @@ export interface Star {
 	name: string;
 	spectral_class: string;
 	radius_sol: number;
+	mass_sol: number;
 }
 
 export interface OrbitalBody {
@@ -26,6 +27,8 @@ export interface OrbitalBody {
 	name: string;
 	body_type: BodyType;
 	orbit_au: number;
+	radius_km: number;
+	mass_earth: number;
 	satellites: OrbitalBody[];
 	tags: string[];
 }

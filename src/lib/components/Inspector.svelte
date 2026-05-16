@@ -84,6 +84,18 @@
 						{entity.spectral_class}
 					</p>
 				</div>
+				<div>
+					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Mass</label
+					>
+					<p class="text-slate-300 font-mono">{entity.mass_sol?.toFixed(2)} M☉</p>
+				</div>
+				<div>
+					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Radius</label
+					>
+					<p class="text-slate-300 font-mono">{entity.radius_sol?.toFixed(2)} R☉</p>
+				</div>
 			{/if}
 
 			{#if entity.body_type}
@@ -92,6 +104,28 @@
 						>Type</label
 					>
 					<p class="text-slate-300">{entity.body_type}</p>
+				</div>
+				<div>
+					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Mass</label
+					>
+					<p class="text-slate-300 font-mono">{entity.mass_earth?.toFixed(2)} M⊕</p>
+				</div>
+				<div>
+					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Radius</label
+					>
+					<p class="text-slate-300 font-mono">{entity.radius_km?.toFixed(0)} km</p>
+				</div>
+				<div>
+					<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Gravity</label
+					>
+					{#if entity.mass_earth && entity.radius_km}
+						<p class="text-slate-300 font-mono">
+							{( (entity.mass_earth / ( (entity.radius_km / 6371) ** 2 )) ).toFixed(2)} g
+						</p>
+					{/if}
 				</div>
 			{/if}
 

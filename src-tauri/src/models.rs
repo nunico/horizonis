@@ -25,6 +25,7 @@ pub struct Star {
     pub name: String,
     pub spectral_class: String,
     pub radius_sol: f32,
+    pub mass_sol: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -33,6 +34,8 @@ pub struct OrbitalBody {
     pub name: String,
     pub body_type: BodyType,
     pub orbit_au: f32,
+    pub radius_km: f32,
+    pub mass_earth: f32,
     pub satellites: Vec<OrbitalBody>,
     pub tags: Vec<String>,
 }

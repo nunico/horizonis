@@ -155,3 +155,12 @@ Connect the views with UI panels and implement data persistence.
 - Wire up the `save_cluster` command to persist changes made in the UI (e.g. renaming systems).
 - Add keyboard shortcuts (`Escape`, `F`, `G`) and global UI controls (filters, layer toggles).
 - Verify 60fps performance and smooth transitions between views.
+
+### ✓ Step 6: Advanced Procedural Generation in Rust
+Reimplement the cluster generation in Rust with astro-physical principles and non-crossing portals.
+
+- Implement `src-tauri/src/generation.rs` with logic for star systems (mass, density, gravity).
+- Enhance `models.rs` to include physical properties (mass, radius) for stars and orbital bodies.
+- Implement portal generation using a planar graph approach (e.g. Delaunay triangulation + pruning) to ensure no crossings.
+- Integrate the generator into the backend to initialize the default cluster procedurally.
+- Update tests to verify the new procedural logic.

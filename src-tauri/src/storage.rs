@@ -44,13 +44,7 @@ impl StorageManager {
     }
 
     fn create_default_cluster(&self) -> StarCluster {
-        let default_json = include_str!("default_cluster.json");
-        serde_json::from_str(default_json).unwrap_or_else(|_| {
-            StarCluster {
-                name: "Default Sector".to_string(),
-                systems: vec![],
-            }
-        })
+        crate::generation::generate_cluster("Horizonis Sector", 15)
     }
 }
 
