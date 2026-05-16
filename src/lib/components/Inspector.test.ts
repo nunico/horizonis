@@ -52,4 +52,35 @@ describe('Inspector component', () => {
 		expect(get(cluster)!.systems[0].name).toBe('New Name');
 		expect(get(selectedEntity)).toBeNull();
 	});
+
+	it('saves on Enter keydown', async () => {
+		const system = get(cluster)!.systems[0];
+		selectedEntity.set(system);
+		render(Inspector);
+
+		const input = screen.getByDisplayValue('Old Name');
+		await fireEvent.input(input, { target: { value: 'Key Name' } });
+		await fireEvent.keyDown(input, { key: 'Enter' });
+
+		expect(get(cluster)!.systems[0].name).toBe('Key Name');
+		expect(get(selectedEntity)).toBeNull();
+	});
+
+	it('closes on Escape keydown', async () => {
+		selectedEntity.set(get(cluster)!.systems[0]);
+		render(Inspector);
+
+		const inspector = screen.getByText('Inspector').closest('div');
+		await fireEvent.keyDown(inspector!, { key: 'Escape' });
+
+		expect(get(selectedEntity)).toBeNull();
+	});
+
+	it('focuses the name input on mount', async () => {
+		selectedEntity.set(get(cluster)!.systems[0]);
+		render(Inspector);
+
+		const input = screen.getByDisplayValue('Old Name');
+		expect(document.activeElement).toBe(input);
+	});
 });

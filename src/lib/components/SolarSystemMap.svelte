@@ -49,6 +49,8 @@
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
 	let maxSystemRadius = 0;
+	let selectionGraphics: PIXI.Graphics;
+	let hoverGraphics: PIXI.Graphics;
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -210,6 +212,41 @@
 				.circle(0, 0, orbit.radius)
 				.stroke({ width: s, color: 0x334155, alpha: 0.4 });
 		}
+		drawSelection();
+	}
+
+	function drawSelection() {
+		if (!selectionGraphics || !viewport) return;
+		selectionGraphics.clear();
+
+		const entity = $selectedEntity;
+		if (!entity) return;
+
+		// Find world coordinates for the selected entity
+		let worldX = 0;
+		let worldY = 0;
+		let radius = 0;
+
+		const starNode = starNodes.find((n) => n.star.id === entity.id);
+		if (starNode) {
+			worldX = starNode.worldX;
+			worldY = starNode.worldY;
+			radius = starNode.baseRadius * starNode.container.scale.x;
+		} else {
+			const bodyNode = bodyNodes.find((n) => n.body.id === entity.id);
+			if (bodyNode) {
+				worldX = bodyNode.worldX;
+				worldY = bodyNode.worldY;
+				radius = bodyNode.baseRadius * bodyNode.container.scale.x;
+			}
+		}
+
+		if (radius > 0) {
+			const s = 1 / viewport.scale.x;
+			selectionGraphics
+				.circle(worldX, worldY, radius + 8 * s)
+				.stroke({ width: 2 * s, color: 0x38bdf8, alpha: 0.8 });
+		}
 	}
 
 	function getEntityMaxSatRadius(body: OrbitalBody | Star): number {
@@ -333,6 +370,12 @@
 		orbitNodes = [];
 		maxSystemRadius = 0;
 
+		selectionGraphics = new PIXI.Graphics();
+		viewport.addChild(selectionGraphics);
+
+		hoverGraphics = new PIXI.Graphics();
+		viewport.addChild(hoverGraphics);
+
 		// Render Stars
 		systemData.stars.forEach((star, i) => {
 			renderStar(star, i, systemData!.stars.length);
@@ -424,6 +467,18 @@
 		starVisual.on('pointerdown', (e) => {
 			e.stopPropagation();
 			selectedEntity.set(star);
+		});
+
+		starVisual.on('pointerover', () => {
+			const s = 1 / viewport.scale.x;
+			hoverGraphics
+				.clear()
+				.circle(worldX, worldY, baseRadius * starVisual.scale.x + 4 * s)
+				.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+		});
+
+		starVisual.on('pointerout', () => {
+			hoverGraphics.clear();
 		});
 
 		// Label for star
@@ -521,6 +576,18 @@
 			selectedEntity.set(body);
 		});
 
+		bodyVisual.on('pointerover', () => {
+			const s = 1 / viewport.scale.x;
+			hoverGraphics
+				.clear()
+				.circle(worldX, worldY, baseRadius * bodyVisual.scale.x + 4 * s)
+				.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+		});
+
+		bodyVisual.on('pointerout', () => {
+			hoverGraphics.clear();
+		});
+
 		// Label
 		const label = new PIXI.Text({
 			text: body.name,
@@ -551,6 +618,10 @@
 	function setMode(mode: 'linear' | 'log') {
 		scaleConfig.mode = mode;
 		renderSystem();
+	}
+
+	$: if ($selectedEntity !== undefined) {
+		drawSelection();
 	}
 </script>
 

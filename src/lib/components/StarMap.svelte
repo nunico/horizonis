@@ -16,6 +16,8 @@
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
 	let maxClusterRadius = 0;
+	let selectionGraphics: PIXI.Graphics;
+	let hoverGraphics: PIXI.Graphics;
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -82,6 +84,20 @@
 			node.scale.set(s);
 		}
 		drawPortals();
+		drawSelection();
+	}
+
+	function drawSelection() {
+		if (!selectionGraphics || !viewport) return;
+		selectionGraphics.clear();
+
+		const entity = $selectedEntity;
+		if (!entity || !('x' in entity) || !('y' in entity)) return;
+
+		const s = 1 / viewport.scale.x;
+		selectionGraphics
+			.circle(entity.x, entity.y, 18 * s)
+			.stroke({ width: 2 * s, color: 0x38bdf8, alpha: 0.8 });
 	}
 
 	function updateFocus(currentScale: number) {
@@ -177,6 +193,13 @@
 		viewport.addChild(portalGraphics);
 		drawPortals();
 
+		// Selection and Hover graphics
+		selectionGraphics = new PIXI.Graphics();
+		viewport.addChild(selectionGraphics);
+
+		hoverGraphics = new PIXI.Graphics();
+		viewport.addChild(hoverGraphics);
+
 		// Render systems
 		for (const system of $cluster.systems) {
 			const dist = Math.hypot(system.x, system.y);
@@ -193,6 +216,18 @@
 			node.on('pointerdown', (e) => {
 				e.stopPropagation();
 				selectedEntity.set(system);
+			});
+
+			node.on('pointerover', () => {
+				const s = 1 / viewport.scale.x;
+				hoverGraphics
+					.clear()
+					.circle(system.x, system.y, 14 * s)
+					.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+			});
+
+			node.on('pointerout', () => {
+				hoverGraphics.clear();
 			});
 
 			// Double click logic
@@ -230,6 +265,10 @@
 
 	$: if ($cluster && viewport) {
 		renderCluster();
+	}
+
+	$: if ($selectedEntity !== undefined) {
+		drawSelection();
 	}
 </script>
 

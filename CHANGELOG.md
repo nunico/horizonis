@@ -2,6 +2,19 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-16] - UI & UX Improvements
+
+- **Summary**: Enhanced navigation, editing interface, and visual feedback to improve overall usability and accessibility.
+- **Changes**:
+  - Added Navigation component with breadcrumbs and system search functionality.
+  - Implemented HelpOverlay component for keyboard shortcut documentation.
+  - Enhanced Inspector with auto-focus and keyboard shortcuts.
+  - Added visual feedback for hover and selection in PIXI maps.
+  - Integrated Navigation and HelpOverlay into the main application layout.
+  - Added unit tests for Navigation, Inspector, and HelpOverlay components.
+- **Files Affected**: src/lib/components/Navigation.svelte, src/lib/components/HelpOverlay.svelte, src/lib/components/Inspector.svelte, src/lib/components/StarMap.svelte, src/lib/components/SolarSystemMap.svelte, src/routes/+page.svelte, src/routes/+layout.svelte, src/lib/components/Navigation.test.ts, src/lib/components/Inspector.test.ts, src/lib/components/HelpOverlay.test.ts.
+- **Context**: None.
+
 ### [2026-05-16] - Lint Task & Issue Fixes
 
 - **Summary**: Fixed the `lint` task to show all errors and resolved 43 linting issues across the project.
