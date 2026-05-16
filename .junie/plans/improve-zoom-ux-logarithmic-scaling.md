@@ -113,3 +113,10 @@ Refine the hierarchical size constraint to make the size difference between sate
 - Update unit tests in `src/lib/pixi/scaling.test.ts` to reflect this change.
 - Verify with `deno task test`.
 - Update `CHANGELOG.md`.
+
+### ✓ Step 6: Add UI regression tests for Zoom UX
+Implement E2E tests to verify zoom limits, initial fitting, and hierarchical scaling in the Solar System view.
+- Instrument `SolarSystemMap.svelte` to expose PIXI state for testing.
+- Create `e2e-tests/test/specs/zoom-ux.e2e.js`.
+- Verify initial fit, max zoom limits, and parent-satellite size constraints.
+- Run `deno task test:e2e` and ensure all tests pass.

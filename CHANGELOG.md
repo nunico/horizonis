@@ -2,6 +2,14 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Zoom UX UI Regression Tests
+- **Summary**: Added E2E regression tests for the Solar System view and instrumented the code for better testability.
+- **Changes**:
+  - Created `e2e-tests/test/specs/zoom-ux.e2e.js` to verify initial system fitting, logarithmic zoom limits, and hierarchical size constraints.
+  - Instrumented `SolarSystemMap.svelte` to expose PIXI application state via `window.solarSystemMapDebug` for inspection by WebdriverIO.
+  - Added unit tests in `scaling.test.ts` to verify composite clamping logic.
+- **Files Affected**: `e2e-tests/test/specs/zoom-ux.e2e.js`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/pixi/scaling.test.ts`.
+
 ### [2026-05-16] - Satellite Scaling Refinement
 - **Summary**: Increased the visual size difference between satellites and their parent objects for better hierarchical clarity.
 - **Changes**:

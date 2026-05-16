@@ -72,4 +72,14 @@ describe('getClampedScale', () => {
 		const scale = getClampedScale(3, 100, 1.0, undefined, 10);
 		expect(scale).toBe(1.0);
 	});
+
+	it('applies the most restrictive clamp', () => {
+		// baseRadius = 10
+		// viewportScale = 1.0 -> targetScale = 1.0
+		// minVisibleSatOrbit = 20 -> maxScaleSat = (20 * 0.45) / 10 = 0.9
+		// orbitRadiusWorld = 15 -> maxScaleParent = (15 * 0.45) / 10 = 0.675
+		// parentVisualRadius = 10 -> maxScaleHierarchy = (10 * 0.4) / 10 = 0.4
+		const scale = getClampedScale(10, 20, 1.0, 15, 10);
+		expect(scale).toBeCloseTo(0.4);
+	});
 });

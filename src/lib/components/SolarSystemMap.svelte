@@ -363,6 +363,21 @@
 		// Initial fit: ensure the whole system is visible
 		viewport.setZoom(lastMinScale, true);
 		viewport.moveCenter(0, 0);
+
+		if (typeof window !== 'undefined') {
+			(window as any).solarSystemMapDebug = {
+				viewport,
+				starNodes,
+				bodyNodes,
+				scaleConfig,
+				get lastMinScale() {
+					return lastMinScale;
+				},
+				get lastMaxScale() {
+					return lastMaxScale;
+				}
+			};
+		}
 	}
 
 	function renderStar(star: Star, index: number, total: number) {
