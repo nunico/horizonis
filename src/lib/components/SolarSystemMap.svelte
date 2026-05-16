@@ -15,6 +15,7 @@
 	let resizeHandler: () => void;
 	let constantSizeNodes: PIXI.Container[] = [];
 	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
+	let orbitNodes: { graphics: PIXI.Graphics; radius: number }[] = [];
 
 	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'linear' };
 
@@ -91,6 +92,10 @@
 			const screenDistance = sat.radius * viewport.scale.x;
 			sat.container.visible = screenDistance > 30;
 		}
+
+		for (const orbit of orbitNodes) {
+			orbit.graphics.clear().circle(0, 0, orbit.radius).stroke({ width: s, color: 0x334155, alpha: 0.4 });
+		}
 	}
 
 	function renderSystem() {
@@ -98,6 +103,7 @@
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
 		constantSizeNodes = [];
 		satelliteContainers = [];
+		orbitNodes = [];
 
 		// Render Stars at center
 		for (const star of systemData.stars) {
@@ -157,8 +163,10 @@
 
 		// Orbit Path
 		const orbit = new PIXI.Graphics();
-		orbit.circle(0, 0, radius).stroke({ width: 1, color: 0x334155, alpha: 0.4 });
+		const s = 1 / viewport.scale.x;
+		orbit.circle(0, 0, radius).stroke({ width: s, color: 0x334155, alpha: 0.4 });
 		container.addChild(orbit);
+		orbitNodes.push({ graphics: orbit, radius });
 
 		// The Body Node (stays constant size)
 		const bodyNode = new PIXI.Container();

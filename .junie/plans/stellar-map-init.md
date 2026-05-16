@@ -171,4 +171,5 @@ Improve the visual experience by ensuring labels and objects maintain consistent
 - Implement constant-size scaling for stars, planets, and labels across all zoom levels.
 - Implement proximity-based culling for satellites in the Solar System view to prevent overlap with parent bodies.
 - Ensure text labels remain readable by adjusting their scale inversely to the viewport zoom.
+- Implement constant thickness for orbital paths and portal connections.
 - Verify that zoom primarily affects distances rather than object sizes.

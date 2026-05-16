@@ -2,6 +2,14 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Constant Line Thickness Rendering
+- **Summary**: Ensured orbits and portal connections maintain a constant visual thickness across all zoom levels.
+- **Changes**:
+  - Implemented dynamic re-drawing for portal jump connections in `StarMap` to adjust stroke width based on viewport scale.
+  - Implemented dynamic re-drawing for orbital paths in `SolarSystemMap` to maintain 1px screen thickness regardless of zoom.
+  - Optimized viewport event handlers to synchronize line thickness updates during zooming.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`
+
 ### [2026-05-16] - Rendering Readability & Zoom Optimization
 - **Summary**: Improved label readability and object scaling across zoom levels.
 - **Changes**:

@@ -10,6 +10,7 @@
 	let viewport: Viewport;
 	let resizeHandler: () => void;
 	let systemNodes: PIXI.Container[] = [];
+	let portalGraphics: PIXI.Graphics;
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -59,6 +60,26 @@
 		for (const node of systemNodes) {
 			node.scale.set(s);
 		}
+		drawPortals();
+	}
+
+	function drawPortals() {
+		if (!$cluster || !portalGraphics || !viewport) return;
+
+		portalGraphics.clear();
+		const s = 1 / viewport.scale.x;
+
+		for (const system of $cluster.systems) {
+			for (const portal of system.portals) {
+				const target = $cluster.systems.find((s) => s.id === portal.target_system_id);
+				if (target) {
+					portalGraphics
+						.moveTo(system.x, system.y)
+						.lineTo(target.x, target.y)
+						.stroke({ width: 2 * s, color: 0x334155, alpha: 0.5 });
+				}
+			}
+		}
 	}
 
 	function renderCluster() {
@@ -68,20 +89,9 @@
 		systemNodes = [];
 
 		// Render portals first (background)
-		const portalGraphics = new PIXI.Graphics();
+		portalGraphics = new PIXI.Graphics();
 		viewport.addChild(portalGraphics);
-
-		for (const system of $cluster.systems) {
-			for (const portal of system.portals) {
-				const target = $cluster.systems.find((s) => s.id === portal.target_system_id);
-				if (target) {
-					portalGraphics
-						.moveTo(system.x, system.y)
-						.lineTo(target.x, target.y)
-						.stroke({ width: 2, color: 0x334155, alpha: 0.5 });
-				}
-			}
-		}
+		drawPortals();
 
 		// Render systems
 		for (const system of $cluster.systems) {
