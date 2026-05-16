@@ -113,6 +113,10 @@
 					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 				}
 			}
+			for (const region of star.star.orbital_regions) {
+				const r = auToPixels(region.inner_radius_au, scaleConfig);
+				if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
+			}
 
 			// Also consider system-wide bodies for the star's clamping if it's at the center
 			if (star.star.orbit_au === 0) {
@@ -172,14 +176,14 @@
 		orbitNodes = [];
 
 		// Render Stars
-		for (const star of systemData.stars) {
-			renderStar(star);
-		}
+		systemData.stars.forEach((star, i) => {
+			renderStar(star, i, systemData!.stars.length);
+		});
 
 		// Render Orbital Bodies (Circumbinary)
-		for (const body of systemData.orbital_bodies) {
-			renderBody(body, viewport);
-		}
+		systemData.orbital_bodies.forEach((body, i) => {
+			renderBody(body, viewport, i, systemData!.orbital_bodies.length);
+		});
 
 		// Render Regions (e.g. Asteroid Belts)
 		for (const region of systemData.orbital_regions) {
@@ -195,8 +199,9 @@
 		updateScales();
 	}
 
-	function renderStar(star: Star) {
+	function renderStar(star: Star, index: number, total: number) {
 		const radius = auToPixels(star.orbit_au, scaleConfig);
+		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
 
 		const orbitContainer = new PIXI.Container();
 		viewport.addChild(orbitContainer);
@@ -210,8 +215,8 @@
 		}
 
 		const starCenter = new PIXI.Container();
-		starCenter.x = radius;
-		starCenter.y = 0;
+		starCenter.x = Math.cos(angle) * radius;
+		starCenter.y = Math.sin(angle) * radius;
 		orbitContainer.addChild(starCenter);
 
 		const starVisual = new PIXI.Container();
@@ -246,13 +251,23 @@
 		starNodes.push({ container: starVisual, label, baseRadius, star });
 
 		// Render star's satellites
-		for (const body of star.satellites) {
-			renderBody(body, starCenter);
+		star.satellites.forEach((body, i) => {
+			renderBody(body, starCenter, i, star.satellites.length);
+		});
+
+		// Render star's regions
+		for (const region of star.orbital_regions) {
+			const r = new PIXI.Graphics();
+			const inner = auToPixels(region.inner_radius_au, scaleConfig);
+			const outer = auToPixels(region.outer_radius_au, scaleConfig);
+			r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
+			starCenter.addChild(r);
 		}
 	}
 
-	function renderBody(body: OrbitalBody, parent: PIXI.Container) {
+	function renderBody(body: OrbitalBody, parent: PIXI.Container, index: number, total: number) {
 		const radius = auToPixels(body.orbit_au, scaleConfig);
+		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
 
 		const orbitContainer = new PIXI.Container();
 		parent.addChild(orbitContainer);
@@ -270,8 +285,8 @@
 
 		// The Body Node
 		const bodyCenter = new PIXI.Container();
-		bodyCenter.x = radius;
-		bodyCenter.y = 0;
+		bodyCenter.x = Math.cos(angle) * radius;
+		bodyCenter.y = Math.sin(angle) * radius;
 		orbitContainer.addChild(bodyCenter);
 
 		const bodyVisual = new PIXI.Container();
@@ -314,9 +329,9 @@
 		});
 
 		// Recursive Satellites (Moons)
-		for (const satellite of body.satellites) {
-			renderBody(satellite, bodyCenter);
-		}
+		body.satellites.forEach((satellite, i) => {
+			renderBody(satellite, bodyCenter, i, body.satellites.length);
+		});
 	}
 
 	function setMode(mode: 'linear' | 'log') {

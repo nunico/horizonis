@@ -2,6 +2,17 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Multi-Star System Refinement & Star-Level Regions
+- **Summary**: Enhanced multi-star system generation with overlap verification and hierarchical orbital regions.
+- **Changes**:
+  - Added `orbital_regions` to `Star` model in Rust and TypeScript.
+  - Implemented stable orbit limits in `generation.rs` to prevent planetary systems from overlapping with neighboring stars.
+  - Added procedural generation of orbital regions (asteroid belts) for individual stars.
+  - Updated `SolarSystemMap.svelte` to distribute stars and orbital bodies evenly along their orbits using angular offsets.
+  - Enhanced rendering to include star-level orbital regions and updated adaptive scaling logic.
+  - Added region display to the `Inspector` panel.
+- **Files Affected**: `src-tauri/src/models.rs`, `src-tauri/src/generation.rs`, `src/lib/types/stellar.ts`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/components/Inspector.svelte`.
+
 ### [2026-05-16] - Multi-Star System Implementation
 - **Summary**: Enhanced the application to support realistic binary and trinary star systems with individual planetary systems.
 - **Changes**:

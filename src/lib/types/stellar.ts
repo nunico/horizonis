@@ -22,6 +22,7 @@ export interface Star {
 	mass_sol: number;
 	orbit_au: number;
 	satellites: OrbitalBody[];
+	orbital_regions: OrbitalRegion[];
 }
 
 export interface OrbitalBody {

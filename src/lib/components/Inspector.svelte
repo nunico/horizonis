@@ -181,6 +181,21 @@
 					</div>
 				</div>
 			{/if}
+
+			{#if 'orbital_regions' in entity && entity.orbital_regions && entity.orbital_regions.length > 0}
+				<div>
+					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+						>Orbital Regions</span
+					>
+					<ul class="text-slate-300 text-xs space-y-1">
+						{#each entity.orbital_regions as region}
+							<li class="bg-slate-950/30 px-2 py-1 rounded border border-slate-800/50">
+								{region.name} ({region.inner_radius_au} - {region.outer_radius_au} AU)
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 		</div>
 
 		<div class="p-4 border-t border-slate-700 bg-slate-800/30">

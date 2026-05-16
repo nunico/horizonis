@@ -26,8 +26,12 @@ pub struct Star {
     pub spectral_class: String,
     pub radius_sol: f32,
     pub mass_sol: f32,
+    #[serde(default)]
     pub orbit_au: f32,
+    #[serde(default)]
     pub satellites: Vec<OrbitalBody>,
+    #[serde(default)]
+    pub orbital_regions: Vec<OrbitalRegion>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

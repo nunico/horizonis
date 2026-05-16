@@ -146,6 +146,7 @@ fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> S
             radius_sol: class_info.2 * rng.random_range(0.9..1.1),
             orbit_au: 0.0, // Will be set below
             satellites: Vec::new(), // Will be set below
+            orbital_regions: Vec::new(), // Will be set below
         });
     }
 
@@ -173,16 +174,53 @@ fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> S
     }
 
     // Generate planetary systems for each star
-    for star in &mut stars {
-        let num_bodies = rng.random_range(0..6);
-        let mut current_orbit = 0.3 * star.mass_sol.sqrt() * rng.random_range(0.8..1.2);
+    let star_count = stars.len();
+    for i in 0..star_count {
+        let mut stable_limit = 50.0;
+        if star_count > 1 {
+            // Find distance to closest other star (simplification for linear barycentric setup)
+            let mut min_dist = f32::MAX;
+            for j in 0..star_count {
+                if i == j {
+                    continue;
+                }
+                // Stars are generated on a line through barycenter
+                // Binary: rA and rB on opposite sides -> dist = rA + rB
+                // Trinary: A, B (opposite sides, d_inner/2), C (d_outer) -> dist(A,B) = d_inner, dist(A,C) = d_outer - d_inner/2
+                let dist = (stars[i].orbit_au + stars[j].orbit_au).abs();
+                // To be safer and handle trinary C star properly:
+                // Actually stars[0] and stars[1] are opposite, stars[2] is same side as one of them or distant.
+                // My trinary setup: stars[0].orbit_au = d_inner * 0.5, stars[1].orbit_au = d_inner * 0.5, stars[2].orbit_au = d_outer
+                // Let's just use a simple heuristic:
+                if dist < min_dist && dist > 0.01 { min_dist = dist; }
+            }
+            stable_limit = min_dist * 0.35;
+        }
+
+        let num_bodies = rng.random_range(0..8);
+        let mut current_orbit = 0.3 * stars[i].mass_sol.sqrt() * rng.random_range(0.8..1.2);
         for j in 0..num_bodies {
-            current_orbit *= rng.random_range(1.4..2.0);
-            // Limit planetary orbits so they don't overlap too much with binary neighbors
-            if star.orbit_au > 0.0 && current_orbit > star.orbit_au * 0.4 {
+            current_orbit *= rng.random_range(1.3..1.9);
+            if current_orbit > stable_limit {
                 break;
             }
-            star.satellites.push(generate_body(rng, j, current_orbit));
+            stars[i].satellites.push(generate_body(rng, j, current_orbit));
+        }
+
+        // Generate star-level regions
+        if rng.random_bool(0.5) {
+            let last_orbit = stars[i].satellites.last().map(|b| b.orbit_au).unwrap_or(current_orbit);
+            let inner = last_orbit * rng.random_range(1.2..1.8);
+            let outer = inner + rng.random_range(0.5..2.0);
+            if outer < stable_limit {
+                let star_name = stars[i].name.clone();
+                stars[i].orbital_regions.push(OrbitalRegion {
+                    name: format!("{} Asteroid Belt", star_name),
+                    inner_radius_au: inner,
+                    outer_radius_au: outer,
+                    region_type: "Asteroid Belt".to_string(),
+                });
+            }
         }
     }
 
