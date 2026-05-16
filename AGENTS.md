@@ -45,7 +45,7 @@ Documenting changes is mandatory for all agent-led tasks to provide a clear audi
 
 ## 4. Testing & Validation
 
-- **Regression Testing**: Always run existing tests (`deno task test`, `cargo test`) after modifications. Delegate test writing to the `test-writer` subagent for any new logic.
+- **Regression Testing**: Always run existing tests (`pnpm test`, `cargo test`) after modifications. Delegate test writing to the `test-writer` subagent for any new logic.
 - **New Coverage**: Add unit tests for any new logic added to `src-tauri` or `src/lib`.
 - **Code Review**: Before finalizing a task, delegate to the `code-reviewer` subagent to catch logic errors, security issues, and performance regressions.
 - **Bug Diagnosis**: When investigating a bug or stack trace, delegate to the `bug-detective` subagent before attempting a fix.

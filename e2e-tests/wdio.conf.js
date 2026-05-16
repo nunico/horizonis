@@ -35,7 +35,7 @@ export const config = {
 		delete env.NODE_OPTIONS;
 		const result = spawnSync(
 			'mise',
-			['exec', '--', 'deno', 'task', 'tauri', 'build', '--debug', '--no-bundle'],
+			['exec', '--', 'pnpm', 'tauri', 'build', '--debug', '--no-bundle'],
 			{
 				cwd: path.resolve(__dirname, '..'),
 				stdio: 'inherit',

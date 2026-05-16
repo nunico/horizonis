@@ -2,6 +2,19 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-16] - Migrate to pnpm
+
+- **Summary**: Replaced Deno, npm, and yarn with pnpm as the project's primary package manager and updated all configuration files.
+- **Changes**:
+  - Replaced Deno and npm with pnpm across the project and e2e-tests.
+  - Updated `mise.toml` to use pnpm and removed Deno dependency.
+  - Updated `tauri.conf.json` with pnpm-specific dev and build commands.
+  - Added `@types/node` to root devDependencies for better TypeScript support.
+  - Cleaned up `deno.lock` and `yarn.lock` files from the repository.
+  - Verified the migration by running tests and linting via pnpm.
+- **Files Affected**: `package.json`, `e2e-tests/package.json`, `mise.toml`, `src-tauri/tauri.conf.json`, `e2e-tests/wdio.conf.js`, `README.md`
+- **Context**: Standardizing on pnpm improves performance and consistency across different environments.
+
 ### [2026-05-16] - Update E2E test runner command
 
 - **Summary**: Updated E2E test script to use npm instead of Deno.
