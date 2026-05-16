@@ -10,9 +10,15 @@ export function auToPixels(au: number, config: ScaleConfig): number {
 		return au * config.auToPixels;
 	} else {
 		// Log scale: useful for viewing distant planets
-		// log10(1) = 0, log10(10) = 1, etc.
-		// We add 1 to au so that 0 AU is 0 and 1 AU is some base value.
-		// Multiply by 10 to give it some spread.
-		return Math.log10(au + 1) * config.auToPixels * 5;
+		// We use log10(au * 100 + 1) to give better spread for small au (satellites)
+		// and squash large distances.
+		return (Math.log10(au * 100 + 1) * config.auToPixels) / 2;
 	}
+}
+
+export function getVisualRadius(radius_km: number): number {
+	// Logarithmic scaling ensures small moons are visible and large stars
+	// don't dominate the screen too much.
+	// radius_km can be very small for stations, but usually > 0.
+	return 5 + Math.log10(Math.max(radius_km, 1)) * 4;
 }

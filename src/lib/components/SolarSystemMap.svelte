@@ -6,7 +6,7 @@
 	import { cluster } from '../stores/clusterData';
 	import { activeSystemId, viewMode, selectedEntity } from '../stores/appState';
 	import type { SolarSystem, OrbitalBody, Star } from '../types/stellar';
-	import { auToPixels, type ScaleConfig } from '../pixi/scaling';
+	import { auToPixels, getVisualRadius, type ScaleConfig } from '../pixi/scaling';
 
 	let container: HTMLDivElement;
 	let app: PIXI.Application;
@@ -35,18 +35,19 @@
 	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
 	let orbitNodes: { graphics: PIXI.Graphics; radius: number }[] = [];
 
-	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'linear' };
-	let focusedObject: { id: string; worldX: number; worldY: number; maxSatRadius: number } | null = null;
+	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'log' };
+	let focusedObject: {
+		id: string;
+		worldX: number;
+		worldY: number;
+		maxSatRadius: number;
+		baseRadius: number;
+	} | null = null;
 	let lastScale = 1;
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
 	let maxSystemRadius = 0;
 
-	function getVisualRadius(radius_km: number): number {
-		// Non-linear scaling to give an idea of relative sizes
-		// Baseline: Earth (6371km) -> ~6px, Moon (1737km) -> ~4px, Jupiter (70000km) -> ~15px
-		return 2 + Math.sqrt(radius_km) / 20;
-	}
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -135,7 +136,7 @@
 		// 1. Update satellite visibility first
 		for (const sat of satelliteContainers) {
 			const screenDistance = sat.radius * viewport.scale.x;
-			sat.container.visible = screenDistance > 30;
+			sat.container.visible = screenDistance > 10;
 		}
 
 		for (const star of starNodes) {
@@ -143,7 +144,7 @@
 			let minVisibleSatOrbit = Infinity;
 			for (const sat of star.star.satellites) {
 				const r = auToPixels(sat.orbit_au, scaleConfig);
-				if (r * viewport.scale.x > 30) {
+				if (r * viewport.scale.x > 10) {
 					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 				}
 			}
@@ -156,7 +157,7 @@
 			if (star.star.orbit_au === 0) {
 				for (const body of systemData.orbital_bodies) {
 					const r = auToPixels(body.orbit_au, scaleConfig);
-					if (r * viewport.scale.x > 30) {
+					if (r * viewport.scale.x > 10) {
 						if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 					}
 				}
@@ -181,7 +182,7 @@
 			let minVisibleSatOrbit = Infinity;
 			for (const sat of body.body.satellites) {
 				const r = auToPixels(sat.orbit_au, scaleConfig);
-				if (r * viewport.scale.x > 30) {
+				if (r * viewport.scale.x > 10) {
 					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 				}
 			}
@@ -206,8 +207,8 @@
 		if ('radius_km' in body) {
 			maxR = getVisualRadius(body.radius_km);
 		} else {
-			// Star radius is radius_sol, convert to approx km for visual radius logic
-			maxR = Math.max(10, body.radius_sol * 15);
+ 		// Star radius is radius_sol, convert to km for visual radius logic
+ 		maxR = getVisualRadius(body.radius_sol * 695700);
 		}
 
 		if (body.satellites) {
@@ -233,7 +234,13 @@
 		const mouseWorld = viewport.toWorld(mouseGlobal);
 
 		let minDist = Infinity;
-		let closest: { id: string; worldX: number; worldY: number; maxSatRadius: number } | null = null;
+		let closest: {
+			id: string;
+			worldX: number;
+			worldY: number;
+			maxSatRadius: number;
+			baseRadius: number;
+		} | null = null;
 
 		for (const node of starNodes) {
 			const dist = Math.hypot(node.worldX - mouseWorld.x, node.worldY - mouseWorld.y);
@@ -243,7 +250,8 @@
 					id: node.star.id,
 					worldX: node.worldX,
 					worldY: node.worldY,
-					maxSatRadius: node.maxSatRadius
+					maxSatRadius: node.maxSatRadius,
+					baseRadius: node.baseRadius
 				};
 			}
 		}
@@ -255,7 +263,8 @@
 					id: node.body.id,
 					worldX: node.worldX,
 					worldY: node.worldY,
-					maxSatRadius: node.maxSatRadius
+					maxSatRadius: node.maxSatRadius,
+					baseRadius: node.baseRadius
 				};
 			}
 		}
@@ -285,10 +294,10 @@
 		// Zoom out limit: outer objects > 60% to center
 		const minScale = (0.6 * (minViewportSize / 2)) / Math.max(maxSystemRadius, 100);
 
-		// Zoom in limit: focused object boundaries never exceed viewport
+		// Zoom in limit: focused object itself occupies at most 80% of viewport
 		let maxScale = 50; // Default
 		if (focusedObject) {
-			maxScale = minViewportSize / 2 / Math.max(focusedObject.maxSatRadius, 1);
+			maxScale = (minViewportSize * 0.8) / (2 * focusedObject.baseRadius);
 		}
 
 		if (
@@ -342,6 +351,10 @@
 
 		updateScales();
 		updateZoomLimits();
+
+		// Initial fit: ensure the whole system is visible
+		viewport.setZoom(lastMinScale, true);
+		viewport.moveCenter(0, 0);
 	}
 
 	function renderStar(star: Star, index: number, total: number) {
@@ -380,7 +393,7 @@
 			: star.spectral_class.startsWith('M')
 				? 0xf97316
 				: 0x38bdf8;
-		const baseRadius = Math.max(10, star.radius_sol * 15);
+		const baseRadius = getVisualRadius(star.radius_sol * 695700);
 		g.circle(0, 0, baseRadius).fill(color);
 		starVisual.addChild(g);
 

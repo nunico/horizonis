@@ -2,6 +2,18 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Logarithmic Zoom Scaling & Improved System Visibility
+- **Summary**: Improved the Solar System view UX by implementing logarithmic scaling for distances and sizes, ensuring full system visibility on entry, and refining zoom limits.
+- **Changes**:
+  - Implemented `Math.log10(au * 100 + 1) * config.auToPixels / 2` for orbital distances to better balance satellite orbits and distant planets.
+  - Implemented `5 + Math.log10(radius_km) * 4` for visual radii of all celestial bodies (stars, planets, moons).
+  - Set `log` scale mode as the default for solar systems.
+  - Added initial viewport fitting to `SolarSystemMap` to show the entire system upon entry.
+  - Updated zoom limits to cap focused objects at 80% viewport size, excluding satellites.
+  - Adjusted satellite visibility threshold to 10 pixels for better system-wide context.
+  - Unified star and body radius calculations using the same logarithmic model.
+- **Files Affected**: `src/lib/pixi/scaling.ts`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/pixi/scaling.test.ts`.
+
 ### [2026-05-16] - Zoom Flicker Fix
 - **Summary**: Resolved UI flickering and jitter when reaching zoom limits in StarMap and SolarSystemMap.
 - **Changes**:
