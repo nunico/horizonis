@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { auToPixels, getVisualRadius, type ScaleConfig } from './scaling';
+import { auToPixels, getVisualRadius, getClampedScale, type ScaleConfig } from './scaling';
 
 describe('auToPixels', () => {
 	it('calculates linear scale correctly', () => {
@@ -28,5 +28,48 @@ describe('getVisualRadius', () => {
 
 	it('handles very small radii', () => {
 		expect(getVisualRadius(0.1)).toBe(5);
+	});
+});
+
+describe('getClampedScale', () => {
+	it('returns target scale when no clamping is needed', () => {
+		// baseRadius = 10, target screen scale = 1.0 (viewport scale = 1.0)
+		// minVisibleSatOrbit = 100
+		const scale = getClampedScale(10, 100, 1.0);
+		expect(scale).toBe(1.0);
+	});
+
+	it('clamps scale based on satellite orbits', () => {
+		// minVisibleSatOrbit = 20. 45% of 20 = 9.
+		// baseRadius = 10. Max scale = 9 / 10 = 0.9.
+		const scale = getClampedScale(10, 20, 1.0);
+		expect(scale).toBeCloseTo(0.9);
+	});
+
+	it('clamps scale based on parent orbit', () => {
+		// orbitRadiusWorld = 20. 45% of 20 = 9.
+		// baseRadius = 10. Max scale = 9 / 10 = 0.9.
+		const scale = getClampedScale(10, 100, 1.0, 20);
+		expect(scale).toBeCloseTo(0.9);
+	});
+
+	it('enforces parent visual radius constraint (Satellite Size Bug)', () => {
+		// Parent visual radius = 10.
+		// Max satellite visual radius = 10 * 0.8 = 8.
+		// Satellite baseRadius = 10.
+		// Target scale = 1.0.
+		// Resulting visual radius would be 10, which is > 8.
+		// So target scale should be clamped to 8 / 10 = 0.8.
+		const scale = getClampedScale(10, 100, 1.0, undefined, 10);
+		expect(scale).toBeCloseTo(0.8);
+		expect(10 * scale).toBeLessThanOrEqual(10 * 0.8);
+	});
+
+	it('does not clamp if satellite is already smaller than parent', () => {
+		// Parent visual radius = 10. Max satellite visual radius = 8.
+		// Satellite baseRadius = 5. Target scale = 1.0.
+		// Visual radius = 5, which is < 8.
+		const scale = getClampedScale(5, 100, 1.0, undefined, 10);
+		expect(scale).toBe(1.0);
 	});
 });

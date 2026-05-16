@@ -2,6 +2,15 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Satellite Scaling Fix
+- **Summary**: Fixed a bug where satellites (moons) could appear larger than their parent objects when zoomed out.
+- **Changes**:
+  - Implemented `getClampedScale` in `scaling.ts` to unify scaling logic and enforce parent-child size constraints.
+  - Added a constraint ensuring satellite visual radius is at most 80% of its parent's visual radius.
+  - Updated `SolarSystemMap.svelte` to track object hierarchy and propagate visual radius limits.
+  - Added unit tests in `scaling.test.ts` to verify clamping logic and prevent size regressions.
+- **Files Affected**: `src/lib/pixi/scaling.ts`, `src/lib/components/SolarSystemMap.svelte`, `src/lib/pixi/scaling.test.ts`.
+
 ### [2026-05-16] - Logarithmic Zoom Scaling & Improved System Visibility
 - **Summary**: Improved the Solar System view UX by implementing logarithmic scaling for distances and sizes, ensuring full system visibility on entry, and refining zoom limits.
 - **Changes**:

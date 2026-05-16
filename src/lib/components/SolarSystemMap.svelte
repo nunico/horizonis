@@ -6,7 +6,7 @@
 	import { cluster } from '../stores/clusterData';
 	import { activeSystemId, viewMode, selectedEntity } from '../stores/appState';
 	import type { SolarSystem, OrbitalBody, Star } from '../types/stellar';
-	import { auToPixels, getVisualRadius, type ScaleConfig } from '../pixi/scaling';
+	import { auToPixels, getVisualRadius, getClampedScale, type ScaleConfig } from '../pixi/scaling';
 
 	let container: HTMLDivElement;
 	let app: PIXI.Application;
@@ -31,6 +31,7 @@
 		worldX: number;
 		worldY: number;
 		maxSatRadius: number;
+		parentId?: string;
 	}[] = [];
 	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
 	let orbitNodes: { graphics: PIXI.Graphics; radius: number }[] = [];
@@ -133,6 +134,8 @@
 		if (!viewport || !systemData) return;
 		const s = 1 / viewport.scale.x;
 
+		const visualRadii = new Map<string, number>();
+
 		// 1. Update satellite visibility first
 		for (const sat of satelliteContainers) {
 			const screenDistance = sat.radius * viewport.scale.x;
@@ -168,33 +171,38 @@
 			}
 
 			// Clamp star scale so screen radius doesn't exceed 45% of screen min orbit
-			const maxScaleSat = (minVisibleSatOrbit * 0.45) / star.baseRadius;
-			// If star has its own orbit, also avoid overlap with barycenter?
-			// Actually, just avoid overlap with its own satellites.
-			const targetScale = Math.min(s, maxScaleSat);
+			const targetScale = getClampedScale(star.baseRadius, minVisibleSatOrbit, viewport.scale.x);
 			star.container.scale.set(targetScale);
 			// Keep label readable (scale 1 in screen space)
 			star.label.scale.set(s / targetScale);
+
+			visualRadii.set(star.star.id, star.baseRadius * targetScale);
 		}
 
-		for (const body of bodyNodes) {
+		for (const bodyNode of bodyNodes) {
 			// Find min visible satellite orbit for this body
 			let minVisibleSatOrbit = Infinity;
-			for (const sat of body.body.satellites) {
+			for (const sat of bodyNode.body.satellites) {
 				const r = auToPixels(sat.orbit_au, scaleConfig);
 				if (r * viewport.scale.x > 10) {
 					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 				}
 			}
 
-			// Avoid overlap with satellites AND parent
-			const maxScaleSat = (minVisibleSatOrbit * 0.45) / body.baseRadius;
-			const maxScaleParent = (body.orbitRadiusWorld * 0.45) / body.baseRadius;
+			// Avoid overlap with satellites AND parent, and never be bigger than parent
+			const parentVisRadius = bodyNode.parentId ? visualRadii.get(bodyNode.parentId) : undefined;
+			const targetScale = getClampedScale(
+				bodyNode.baseRadius,
+				minVisibleSatOrbit,
+				viewport.scale.x,
+				bodyNode.orbitRadiusWorld,
+				parentVisRadius
+			);
 
-			const maxScale = Math.min(maxScaleSat, maxScaleParent);
-			const targetScale = Math.min(s, maxScale);
-			body.container.scale.set(targetScale);
-			body.label.scale.set(s / targetScale);
+			bodyNode.container.scale.set(targetScale);
+			bodyNode.label.scale.set(s / targetScale);
+
+			visualRadii.set(bodyNode.body.id, bodyNode.baseRadius * targetScale);
 		}
 
 		for (const orbit of orbitNodes) {
@@ -417,7 +425,7 @@
 
 		// Render star's satellites
 		star.satellites.forEach((body, i) => {
-			renderBody(body, starCenter, i, star.satellites.length, worldX, worldY);
+			renderBody(body, starCenter, i, star.satellites.length, worldX, worldY, star.id);
 		});
 
 		// Render star's regions
@@ -436,7 +444,8 @@
 		index: number,
 		total: number,
 		parentX = 0,
-		parentY = 0
+		parentY = 0,
+		parentId?: string
 	) {
 		const radius = auToPixels(body.orbit_au, scaleConfig);
 		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
@@ -507,12 +516,13 @@
 			orbitRadiusWorld: radius,
 			worldX,
 			worldY,
-			maxSatRadius
+			maxSatRadius,
+			parentId
 		});
 
 		// Recursive Satellites (Moons)
 		body.satellites.forEach((satellite, i) => {
-			renderBody(satellite, bodyCenter, i, body.satellites.length, worldX, worldY);
+			renderBody(satellite, bodyCenter, i, body.satellites.length, worldX, worldY, body.id);
 		});
 	}
 
