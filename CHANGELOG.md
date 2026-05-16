@@ -2,6 +2,14 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Adaptive Star Scaling
+- **Summary**: Implemented adaptive star scaling to prevent overlap with satellite orbits during zoom.
+- **Changes**:
+  - Added logic to `SolarSystemMap` to identify the minimum orbit radius.
+  - Implemented dynamic clamping for star visual scale based on minimum orbit world coordinates.
+  - Ensured stars maintain constant visual size when possible, but scale down to stay within orbits when zoomed out.
+- **Files Affected**: `src/lib/components/SolarSystemMap.svelte`
+
 ### [2026-05-16] - Constant Line Thickness Rendering
 - **Summary**: Ensured orbits and portal connections maintain a constant visual thickness across all zoom levels.
 - **Changes**:

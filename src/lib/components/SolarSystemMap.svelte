@@ -14,6 +14,7 @@
 	let systemData: SolarSystem | null = null;
 	let resizeHandler: () => void;
 	let constantSizeNodes: PIXI.Container[] = [];
+	let starNodes: { container: PIXI.Container; baseRadius: number }[] = [];
 	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
 	let orbitNodes: { graphics: PIXI.Graphics; radius: number }[] = [];
 
@@ -82,10 +83,28 @@
 	});
 
 	function updateScales() {
-		if (!viewport) return;
+		if (!viewport || !systemData) return;
 		const s = 1 / viewport.scale.x;
+
+		// Find absolute minimum orbit radius in world coordinates
+		let minOrbitWorld = Infinity;
+		for (const body of systemData.orbital_bodies) {
+			const r = auToPixels(body.orbit_au, scaleConfig);
+			if (r < minOrbitWorld) minOrbitWorld = r;
+		}
+		for (const region of systemData.orbital_regions) {
+			const r = auToPixels(region.inner_radius_au, scaleConfig);
+			if (r < minOrbitWorld) minOrbitWorld = r;
+		}
+
 		for (const node of constantSizeNodes) {
 			node.scale.set(s);
+		}
+
+		for (const star of starNodes) {
+			// Clamp star scale so screen radius doesn't exceed 90% of screen min orbit
+			const maxScale = (minOrbitWorld * 0.9) / star.baseRadius;
+			star.container.scale.set(Math.min(s, maxScale));
 		}
 
 		for (const sat of satelliteContainers) {
@@ -102,6 +121,7 @@
 		if (!systemData || !viewport) return;
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
 		constantSizeNodes = [];
+		starNodes = [];
 		satelliteContainers = [];
 		orbitNodes = [];
 
@@ -114,7 +134,8 @@
 				: star.spectral_class.startsWith('M')
 					? 0xf97316
 					: 0x38bdf8;
-			g.circle(0, 0, Math.max(10, star.radius_sol * 15)).fill(color);
+			const baseRadius = Math.max(10, star.radius_sol * 15);
+			g.circle(0, 0, baseRadius).fill(color);
 			node.addChild(g);
 
 			// Label for star
@@ -123,10 +144,10 @@
 				style: { fontFamily: 'sans-serif', fontSize: 14, fill: 0xf1f5f9 }
 			});
 			label.anchor.set(0.5, 0);
-			label.y = Math.max(12, star.radius_sol * 15) + 5;
+			label.y = baseRadius + 5;
 			node.addChild(label);
 
-			constantSizeNodes.push(node);
+			starNodes.push({ container: node, baseRadius });
 			viewport.addChild(node);
 		}
 
