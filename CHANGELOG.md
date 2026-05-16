@@ -2,6 +2,14 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Fluent Zoom Jitter Fix
+- **Summary**: Resolved "jumping" UI behavior during zoom by replacing conflicting snap animations with a direct viewport nudge.
+- **Changes**:
+  - Replaced `viewport.snap` in `zoomed` handlers with a direct proportional nudge (lerp) to avoid fighting with the `wheel` zoom plugin.
+  - Implemented focus hysteresis in `StarMap` and `SolarSystemMap` to prevent rapid target flip-flopping when the mouse is between objects.
+  - Improved focus stability by using unique IDs for tracking instead of transient object literals.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`.
+
 ### [2026-05-16] - Fluent Zoom & Dynamic Limits
 - **Summary**: Implemented context-aware zoom limits and fluent navigation to improve map exploration.
 - **Changes**:

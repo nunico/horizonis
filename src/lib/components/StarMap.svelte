@@ -13,6 +13,7 @@
 	let portalGraphics: PIXI.Graphics;
 	let focusedSystem: { x: number; y: number; id: string } | null = null;
 	let lastScale = 1;
+	let snapTargetId: string | null = null;
 	let maxClusterRadius = 0;
 
 	onMount(async () => {
@@ -55,12 +56,11 @@
 			updateScales();
 
 			if (zoomingIn && focusedSystem && currentScale > 0.5) {
-				// Smoothly move towards focused system
-				viewport.snap(focusedSystem.x, focusedSystem.y, {
-					time: 500,
-					removeOnInterrupt: true,
-					forceStart: false
-				});
+				// Smoothly nudge towards focused system instead of using a long snap plugin
+				// that fights with the wheel interaction.
+				const dx = (focusedSystem.x - viewport.center.x) * 0.1;
+				const dy = (focusedSystem.y - viewport.center.y) * 0.1;
+				viewport.moveCenter(viewport.center.x + dx, viewport.center.y + dy);
 			}
 
 			lastScale = currentScale;
@@ -102,7 +102,15 @@
 		}
 
 		if (closest) {
-			focusedSystem = { x: closest.x, y: closest.y, id: closest.id };
+			// Hysteresis: only switch focus if the new one is significantly closer
+			// than the current one to the mouse, preventing flip-flopping jitter.
+			if (
+				!focusedSystem ||
+				closest.id === focusedSystem.id ||
+				minDist < Math.hypot(focusedSystem.x - mouseWorld.x, focusedSystem.y - mouseWorld.y) * 0.8
+			) {
+				focusedSystem = { x: closest.x, y: closest.y, id: closest.id };
+			}
 		} else {
 			focusedSystem = null;
 		}

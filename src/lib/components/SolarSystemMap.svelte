@@ -36,7 +36,7 @@
 	let orbitNodes: { graphics: PIXI.Graphics; radius: number }[] = [];
 
 	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'linear' };
-	let focusedObject: { worldX: number; worldY: number; maxSatRadius: number } | null = null;
+	let focusedObject: { id: string; worldX: number; worldY: number; maxSatRadius: number } | null = null;
 	let lastScale = 1;
 	let maxSystemRadius = 0;
 
@@ -84,12 +84,11 @@
 			updateScales();
 
 			if (zoomingIn && focusedObject && currentScale > 0.1) {
-				// Smoothly move towards focused object
-				viewport.snap(focusedObject.worldX, focusedObject.worldY, {
-					time: 500,
-					removeOnInterrupt: true,
-					forceStart: false
-				});
+				// Smoothly nudge towards focused object instead of using a long snap plugin
+				// that fights with the wheel interaction.
+				const dx = (focusedObject.worldX - viewport.center.x) * 0.1;
+				const dy = (focusedObject.worldY - viewport.center.y) * 0.1;
+				viewport.moveCenter(viewport.center.x + dx, viewport.center.y + dy);
 			}
 
 			lastScale = currentScale;
@@ -231,24 +230,46 @@
 		const mouseWorld = viewport.toWorld(mouseGlobal);
 
 		let minDist = Infinity;
-		let closest = null;
+		let closest: { id: string; worldX: number; worldY: number; maxSatRadius: number } | null = null;
 
 		for (const node of starNodes) {
 			const dist = Math.hypot(node.worldX - mouseWorld.x, node.worldY - mouseWorld.y);
 			if (dist < minDist) {
 				minDist = dist;
-				closest = node;
+				closest = {
+					id: node.star.id,
+					worldX: node.worldX,
+					worldY: node.worldY,
+					maxSatRadius: node.maxSatRadius
+				};
 			}
 		}
 		for (const node of bodyNodes) {
 			const dist = Math.hypot(node.worldX - mouseWorld.x, node.worldY - mouseWorld.y);
 			if (dist < minDist) {
 				minDist = dist;
-				closest = node;
+				closest = {
+					id: node.body.id,
+					worldX: node.worldX,
+					worldY: node.worldY,
+					maxSatRadius: node.maxSatRadius
+				};
 			}
 		}
 
-		focusedObject = closest;
+		if (closest) {
+			// Hysteresis: only switch focus if the new one is significantly closer
+			// than the current one to the mouse, preventing flip-flopping jitter.
+			if (
+				!focusedObject ||
+				closest.id === focusedObject.id ||
+				minDist < Math.hypot(focusedObject.worldX - mouseWorld.x, focusedObject.worldY - mouseWorld.y) * 0.8
+			) {
+				focusedObject = closest;
+			}
+		} else {
+			focusedObject = null;
+		}
 	}
 
 	function updateZoomLimits() {
