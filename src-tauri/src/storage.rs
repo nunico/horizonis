@@ -27,7 +27,11 @@ impl StorageManager {
 
     pub fn load(&self) -> Result<StarCluster, String> {
         if !self.file_path.exists() {
-            return Ok(self.create_default_cluster());
+            let cluster = self.create_default_cluster();
+            if let Err(e) = self.save(&cluster) {
+                eprintln!("Failed to save default cluster: {}", e);
+            }
+            return Ok(cluster);
         }
 
         let content = fs::read_to_string(&self.file_path)

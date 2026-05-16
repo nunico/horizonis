@@ -3,10 +3,20 @@ mod storage;
 mod commands;
 mod generation;
 
+use std::sync::Mutex;
+use crate::models::StarCluster;
+
+pub struct AppState {
+    pub cluster: Mutex<Option<StarCluster>>,
+}
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(AppState {
+            cluster: Mutex::new(None),
+        })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             commands::get_cluster,

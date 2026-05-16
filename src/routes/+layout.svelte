@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import { viewMode, selectedEntity } from '$lib/stores/appState';
+	import { viewMode, selectedEntity, activeSystemId } from '$lib/stores/appState';
+	import { cluster } from '$lib/stores/clusterData';
 	let { children } = $props();
 
 	onMount(() => {
+		if (typeof window !== 'undefined') {
+			(window as any).stores = { viewMode, selectedEntity, activeSystemId, cluster };
+		}
 		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
 				selectedEntity.set(null);

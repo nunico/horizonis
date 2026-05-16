@@ -3,6 +3,7 @@
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
 	import { invoke } from '@tauri-apps/api/core';
+	import { cluster } from '../stores/clusterData';
 	import { activeSystemId, viewMode, selectedEntity } from '../stores/appState';
 	import type { SolarSystem, OrbitalBody } from '../types/stellar';
 	import { auToPixels, type ScaleConfig } from '../pixi/scaling';
@@ -37,11 +38,24 @@
 		viewport.moveCenter(0, 0);
 
 		if ($activeSystemId) {
-			try {
-				systemData = await invoke<SolarSystem>('get_system', { systemId: $activeSystemId });
+			// First check if we have the system in the cluster store
+			let foundSystem: SolarSystem | undefined;
+			cluster.subscribe((c) => {
+				if (c) {
+					foundSystem = c.systems.find((s) => s.id === $activeSystemId);
+				}
+			})();
+
+			if (foundSystem) {
+				systemData = foundSystem;
 				renderSystem();
-			} catch (e) {
-				console.error('Failed to load system:', e);
+			} else {
+				try {
+					systemData = await invoke<SolarSystem>('get_system', { systemId: $activeSystemId });
+					renderSystem();
+				} catch (e) {
+					console.error('Failed to load system:', e);
+				}
 			}
 		}
 	});
@@ -135,8 +149,8 @@
 	}
 </script>
 
-<div class="w-full h-full relative">
-	<div bind:this={container} class="w-full h-full"></div>
+<div class="w-full h-full relative" data-testid="solar-system-view">
+	<div bind:this={container} data-testid="solar-system-map" class="w-full h-full"></div>
 	<div class="absolute top-4 left-4 flex gap-2">
 		<button
 			class="px-4 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 border border-slate-700 transition-colors"

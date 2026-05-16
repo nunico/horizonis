@@ -110,4 +110,4 @@
 	}
 </script>
 
-<div bind:this={container} class="w-full h-full"></div>
+<div bind:this={container} data-testid="star-map" class="w-full h-full"></div>

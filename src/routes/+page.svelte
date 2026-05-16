@@ -20,7 +20,7 @@
 		{/if}
 		<Inspector />
 	{:else}
-		<div class="flex items-center justify-center w-full h-full">
+		<div data-testid="loading-screen" class="flex items-center justify-center w-full h-full">
 			<p class="text-slate-400 animate-pulse">Initializing Stellar Data...</p>
 		</div>
 	{/if}
