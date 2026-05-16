@@ -173,3 +173,10 @@ Improve the visual experience by ensuring labels and objects maintain consistent
 - Ensure text labels remain readable by adjusting their scale inversely to the viewport zoom.
 - Implement constant thickness for orbital paths and portal connections.
 - Verify that zoom primarily affects distances rather than object sizes.
+
+### ✓ Step 8: Adaptive Scaling for Orbital Bodies
+Implement adaptive visual scaling for planets, moons, and other orbital bodies based on their physical radius.
+
+- Use a non-linear formula to map `radius_km` to a visual radius that reflects relative sizes.
+- Ensure bodies don't overlap with their satellites' orbits by implementing adaptive clamping.
+- Update the Inspector to consistently reflect the visual and physical properties.

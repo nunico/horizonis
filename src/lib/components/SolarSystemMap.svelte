@@ -13,12 +13,24 @@
 	let viewport: Viewport;
 	let systemData: SolarSystem | null = null;
 	let resizeHandler: () => void;
-	let constantSizeNodes: PIXI.Container[] = [];
-	let starNodes: { container: PIXI.Container; baseRadius: number }[] = [];
+	let starNodes: { container: PIXI.Container; label: PIXI.Text; baseRadius: number }[] = [];
+	let bodyNodes: {
+		container: PIXI.Container;
+		label: PIXI.Text;
+		baseRadius: number;
+		body: OrbitalBody;
+		orbitRadiusWorld: number;
+	}[] = [];
 	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
 	let orbitNodes: { graphics: PIXI.Graphics; radius: number }[] = [];
 
 	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'linear' };
+
+	function getVisualRadius(radius_km: number): number {
+		// Non-linear scaling to give an idea of relative sizes
+		// Baseline: Earth (6371km) -> ~6px, Moon (1737km) -> ~4px, Jupiter (70000km) -> ~15px
+		return 2 + Math.sqrt(radius_km) / 20;
+	}
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -86,30 +98,52 @@
 		if (!viewport || !systemData) return;
 		const s = 1 / viewport.scale.x;
 
-		// Find absolute minimum orbit radius in world coordinates
-		let minOrbitWorld = Infinity;
-		for (const body of systemData.orbital_bodies) {
-			const r = auToPixels(body.orbit_au, scaleConfig);
-			if (r < minOrbitWorld) minOrbitWorld = r;
-		}
-		for (const region of systemData.orbital_regions) {
-			const r = auToPixels(region.inner_radius_au, scaleConfig);
-			if (r < minOrbitWorld) minOrbitWorld = r;
-		}
-
-		for (const node of constantSizeNodes) {
-			node.scale.set(s);
-		}
-
-		for (const star of starNodes) {
-			// Clamp star scale so screen radius doesn't exceed 90% of screen min orbit
-			const maxScale = (minOrbitWorld * 0.9) / star.baseRadius;
-			star.container.scale.set(Math.min(s, maxScale));
-		}
-
+		// 1. Update satellite visibility first
 		for (const sat of satelliteContainers) {
 			const screenDistance = sat.radius * viewport.scale.x;
 			sat.container.visible = screenDistance > 30;
+		}
+
+		// 2. Find absolute minimum orbit radius of VISIBLE objects for the star
+		let minOrbitWorldVisible = Infinity;
+		for (const body of systemData.orbital_bodies) {
+			const r = auToPixels(body.orbit_au, scaleConfig);
+			if (r * viewport.scale.x > 30) {
+				if (r < minOrbitWorldVisible) minOrbitWorldVisible = r;
+			}
+		}
+		for (const region of systemData.orbital_regions) {
+			const r = auToPixels(region.inner_radius_au, scaleConfig);
+			if (r < minOrbitWorldVisible) minOrbitWorldVisible = r;
+		}
+
+		for (const star of starNodes) {
+			// Clamp star scale so screen radius doesn't exceed 45% of screen min orbit
+			const maxScale = (minOrbitWorldVisible * 0.45) / star.baseRadius;
+			const targetScale = Math.min(s, maxScale);
+			star.container.scale.set(targetScale);
+			// Keep label readable (scale 1 in screen space)
+			star.label.scale.set(s / targetScale);
+		}
+
+		for (const body of bodyNodes) {
+			// Find min visible satellite orbit for this body
+			let minVisibleSatOrbit = Infinity;
+			for (const sat of body.body.satellites) {
+				const r = auToPixels(sat.orbit_au, scaleConfig);
+				if (r * viewport.scale.x > 30) {
+					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
+				}
+			}
+
+			// Avoid overlap with satellites AND parent
+			const maxScaleSat = (minVisibleSatOrbit * 0.45) / body.baseRadius;
+			const maxScaleParent = (body.orbitRadiusWorld * 0.45) / body.baseRadius;
+
+			const maxScale = Math.min(maxScaleSat, maxScaleParent);
+			const targetScale = Math.min(s, maxScale);
+			body.container.scale.set(targetScale);
+			body.label.scale.set(s / targetScale);
 		}
 
 		for (const orbit of orbitNodes) {
@@ -120,8 +154,8 @@
 	function renderSystem() {
 		if (!systemData || !viewport) return;
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
-		constantSizeNodes = [];
 		starNodes = [];
+		bodyNodes = [];
 		satelliteContainers = [];
 		orbitNodes = [];
 
@@ -147,7 +181,7 @@
 			label.y = baseRadius + 5;
 			node.addChild(label);
 
-			starNodes.push({ container: node, baseRadius });
+			starNodes.push({ container: node, label, baseRadius });
 			viewport.addChild(node);
 		}
 
@@ -202,7 +236,8 @@
 			DwarfPlanet: 0xa78bfa,
 			Comet: 0x2dd4bf
 		};
-		g.circle(0, 0, 6).fill(colors[body.body_type] || 0xffffff);
+		const baseRadius = getVisualRadius(body.radius_km);
+		g.circle(0, 0, baseRadius).fill(colors[body.body_type] || 0xffffff);
 		bodyNode.addChild(g);
 
 		bodyNode.eventMode = 'static';
@@ -218,10 +253,16 @@
 			style: { fontFamily: 'sans-serif', fontSize: 12, fill: 0x94a3b8 }
 		});
 		label.anchor.set(0.5, 0);
-		label.y = 10;
+		label.y = baseRadius + 4;
 		bodyNode.addChild(label);
 
-		constantSizeNodes.push(bodyNode);
+		bodyNodes.push({
+			container: bodyNode,
+			label,
+			baseRadius,
+			body,
+			orbitRadiusWorld: radius
+		});
 		container.addChild(bodyNode);
 
 		// Recursive Satellites (Moons)

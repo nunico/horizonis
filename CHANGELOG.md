@@ -2,6 +2,23 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Adaptive Scale and Label Readability
+- **Summary**: Enhanced orbital body rendering to ensure labels stay readable and icons avoid overlap with parents.
+- **Changes**:
+  - Implemented label scale compensation to maintain constant screen size regardless of parent icon clamping.
+  - Added parent-overlap avoidance for all orbital bodies (planets and moons).
+  - Refined clamping logic to only consider visible satellites, preventing bodies from shrinking due to hidden/culled moons.
+  - Unified scaling formulas for stars and orbital bodies to ensure a consistent 10% safety gap between icons.
+- **Files Affected**: `src/lib/components/SolarSystemMap.svelte`
+
+### [2026-05-16] - Adaptive Scaling for Orbital Bodies
+- **Summary**: Implemented adaptive visual scaling for planets and moons based on their physical radius.
+- **Changes**:
+  - Implemented a square-root based formula to map `radius_km` to a visual radius, providing a realistic sense of relative sizes.
+  - Added adaptive clamping for orbital bodies to prevent overlap with their satellites' orbits during zoom.
+  - Optimized `SolarSystemMap` by removing redundant constant-size tracking in favor of unified clamping logic.
+- **Files Affected**: `src/lib/components/SolarSystemMap.svelte`
+
 ### [2026-05-16] - Adaptive Star Scaling
 - **Summary**: Implemented adaptive star scaling to prevent overlap with satellite orbits during zoom.
 - **Changes**:
