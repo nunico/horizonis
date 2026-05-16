@@ -2,6 +2,17 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Fluent Zoom & Dynamic Limits
+- **Summary**: Implemented context-aware zoom limits and fluent navigation to improve map exploration.
+- **Changes**:
+  - Implemented dynamic zoom-out limits using a 60% viewport rule to maintain orientation.
+  - Added proximity-based focus detection during zoom to identify the closest system or body to the mouse pointer.
+  - Implemented context-sensitive zoom-in limits based on the focused object's boundaries (planetary systems or satellites).
+  - Added auto-centering and pan-disabling at the minimum zoom level for improved clarity.
+  - Implemented smooth auto-centering towards the focused object when zooming in.
+  - Optimized hierarchical world-coordinate tracking for efficient proximity calculations in solar systems.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`.
+
 ### [2026-05-16] - Multi-Star System Refinement & Star-Level Regions
 - **Summary**: Enhanced multi-star system generation with overlap verification and hierarchical orbital regions.
 - **Changes**:

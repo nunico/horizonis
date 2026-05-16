@@ -13,18 +13,32 @@
 	let viewport: Viewport;
 	let systemData: SolarSystem | null = null;
 	let resizeHandler: () => void;
-	let starNodes: { container: PIXI.Container; label: PIXI.Text; baseRadius: number; star: Star }[] = [];
+	let starNodes: {
+		container: PIXI.Container;
+		label: PIXI.Text;
+		baseRadius: number;
+		star: Star;
+		worldX: number;
+		worldY: number;
+		maxSatRadius: number;
+	}[] = [];
 	let bodyNodes: {
 		container: PIXI.Container;
 		label: PIXI.Text;
 		baseRadius: number;
 		body: OrbitalBody;
 		orbitRadiusWorld: number;
+		worldX: number;
+		worldY: number;
+		maxSatRadius: number;
 	}[] = [];
 	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
 	let orbitNodes: { graphics: PIXI.Graphics; radius: number }[] = [];
 
 	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'linear' };
+	let focusedObject: { worldX: number; worldY: number; maxSatRadius: number } | null = null;
+	let lastScale = 1;
+	let maxSystemRadius = 0;
 
 	function getVisualRadius(radius_km: number): number {
 		// Non-linear scaling to give an idea of relative sizes
@@ -61,7 +75,25 @@
 			}
 		};
 		app.renderer.on('resize', resizeHandler);
-		viewport.on('zoomed', updateScales);
+		viewport.on('zoomed', () => {
+			const currentScale = viewport.scale.x;
+			const zoomingIn = currentScale > lastScale;
+
+			updateFocus();
+			updateZoomLimits();
+			updateScales();
+
+			if (zoomingIn && focusedObject && currentScale > 0.1) {
+				// Smoothly move towards focused object
+				viewport.snap(focusedObject.worldX, focusedObject.worldY, {
+					time: 500,
+					removeOnInterrupt: true,
+					forceStart: false
+				});
+			}
+
+			lastScale = currentScale;
+		});
 		viewport.on('moved', updateScales);
 
 		if ($activeSystemId) {
@@ -167,6 +199,81 @@
 		}
 	}
 
+	function getEntityMaxSatRadius(body: OrbitalBody | Star): number {
+		let maxR = 0;
+		if ('radius_km' in body) {
+			maxR = getVisualRadius(body.radius_km);
+		} else {
+			// Star radius is radius_sol, convert to approx km for visual radius logic
+			maxR = Math.max(10, body.radius_sol * 15);
+		}
+
+		if (body.satellites) {
+			for (const sat of body.satellites) {
+				const orbitR = auToPixels(sat.orbit_au, scaleConfig);
+				const satBoundary = orbitR + getEntityMaxSatRadius(sat);
+				if (satBoundary > maxR) maxR = satBoundary;
+			}
+		}
+		if ('orbital_regions' in body && body.orbital_regions) {
+			for (const reg of body.orbital_regions) {
+				const regR = auToPixels(reg.outer_radius_au, scaleConfig);
+				if (regR > maxR) maxR = regR;
+			}
+		}
+		return maxR;
+	}
+
+	function updateFocus() {
+		if (!viewport || !app) return;
+		const mouseGlobal = app.renderer.events.pointer.global;
+		if (!mouseGlobal) return;
+		const mouseWorld = viewport.toWorld(mouseGlobal);
+
+		let minDist = Infinity;
+		let closest = null;
+
+		for (const node of starNodes) {
+			const dist = Math.hypot(node.worldX - mouseWorld.x, node.worldY - mouseWorld.y);
+			if (dist < minDist) {
+				minDist = dist;
+				closest = node;
+			}
+		}
+		for (const node of bodyNodes) {
+			const dist = Math.hypot(node.worldX - mouseWorld.x, node.worldY - mouseWorld.y);
+			if (dist < minDist) {
+				minDist = dist;
+				closest = node;
+			}
+		}
+
+		focusedObject = closest;
+	}
+
+	function updateZoomLimits() {
+		if (!viewport || !systemData) return;
+		const minViewportSize = Math.min(viewport.screenWidth, viewport.screenHeight);
+
+		// Zoom out limit: outer objects > 60% to center
+		const minScale = (0.6 * (minViewportSize / 2)) / Math.max(maxSystemRadius, 100);
+
+		// Zoom in limit: focused object boundaries never exceed viewport
+		let maxScale = 50; // Default
+		if (focusedObject) {
+			maxScale = minViewportSize / 2 / Math.max(focusedObject.maxSatRadius, 1);
+		}
+
+		viewport.clampZoom({ minScale, maxScale });
+
+		if (viewport.scale.x <= minScale * 1.01) {
+			viewport.moveCenter(0, 0);
+			viewport.plugins.pause('drag');
+		} else {
+			viewport.plugins.resume('drag');
+		}
+	}
+
 	function renderSystem() {
 		if (!systemData || !viewport) return;
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
@@ -174,6 +281,7 @@
 		bodyNodes = [];
 		satelliteContainers = [];
 		orbitNodes = [];
+		maxSystemRadius = 0;
 
 		// Render Stars
 		systemData.stars.forEach((star, i) => {
@@ -191,17 +299,27 @@
 			const inner = auToPixels(region.inner_radius_au, scaleConfig);
 			const outer = auToPixels(region.outer_radius_au, scaleConfig);
 
- 		// Render as a thick ring
+			if (outer > maxSystemRadius) maxSystemRadius = outer;
+
+			// Render as a thick ring
 			r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
 			viewport.addChild(r);
 		}
 
 		updateScales();
+		updateZoomLimits();
 	}
 
 	function renderStar(star: Star, index: number, total: number) {
 		const radius = auToPixels(star.orbit_au, scaleConfig);
 		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
+		const worldX = Math.cos(angle) * radius;
+		const worldY = Math.sin(angle) * radius;
+		const maxSatRadius = getEntityMaxSatRadius(star);
+
+		if (Math.hypot(worldX, worldY) + maxSatRadius > maxSystemRadius) {
+			maxSystemRadius = Math.hypot(worldX, worldY) + maxSatRadius;
+		}
 
 		const orbitContainer = new PIXI.Container();
 		viewport.addChild(orbitContainer);
@@ -215,8 +333,8 @@
 		}
 
 		const starCenter = new PIXI.Container();
-		starCenter.x = Math.cos(angle) * radius;
-		starCenter.y = Math.sin(angle) * radius;
+		starCenter.x = worldX;
+		starCenter.y = worldY;
 		orbitContainer.addChild(starCenter);
 
 		const starVisual = new PIXI.Container();
@@ -248,11 +366,11 @@
 		label.y = baseRadius + 5;
 		starVisual.addChild(label);
 
-		starNodes.push({ container: starVisual, label, baseRadius, star });
+		starNodes.push({ container: starVisual, label, baseRadius, star, worldX, worldY, maxSatRadius });
 
 		// Render star's satellites
 		star.satellites.forEach((body, i) => {
-			renderBody(body, starCenter, i, star.satellites.length);
+			renderBody(body, starCenter, i, star.satellites.length, worldX, worldY);
 		});
 
 		// Render star's regions
@@ -265,9 +383,23 @@
 		}
 	}
 
-	function renderBody(body: OrbitalBody, parent: PIXI.Container, index: number, total: number) {
+	function renderBody(
+		body: OrbitalBody,
+		parent: PIXI.Container,
+		index: number,
+		total: number,
+		parentX = 0,
+		parentY = 0
+	) {
 		const radius = auToPixels(body.orbit_au, scaleConfig);
 		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
+		const worldX = parentX + Math.cos(angle) * radius;
+		const worldY = parentY + Math.sin(angle) * radius;
+		const maxSatRadius = getEntityMaxSatRadius(body);
+
+		if (Math.hypot(worldX, worldY) + maxSatRadius > maxSystemRadius) {
+			maxSystemRadius = Math.hypot(worldX, worldY) + maxSatRadius;
+		}
 
 		const orbitContainer = new PIXI.Container();
 		parent.addChild(orbitContainer);
@@ -325,12 +457,15 @@
 			label,
 			baseRadius,
 			body,
-			orbitRadiusWorld: radius
+			orbitRadiusWorld: radius,
+			worldX,
+			worldY,
+			maxSatRadius
 		});
 
 		// Recursive Satellites (Moons)
 		body.satellites.forEach((satellite, i) => {
-			renderBody(satellite, bodyCenter, i, body.satellites.length);
+			renderBody(satellite, bodyCenter, i, body.satellites.length, worldX, worldY);
 		});
 	}
 

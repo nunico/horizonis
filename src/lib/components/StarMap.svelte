@@ -11,6 +11,9 @@
 	let resizeHandler: () => void;
 	let systemNodes: PIXI.Container[] = [];
 	let portalGraphics: PIXI.Graphics;
+	let focusedSystem: { x: number; y: number; id: string } | null = null;
+	let lastScale = 1;
+	let maxClusterRadius = 0;
 
 	onMount(async () => {
 		app = new PIXI.Application();
@@ -43,7 +46,25 @@
 			}
 		};
 		app.renderer.on('resize', resizeHandler);
-		viewport.on('zoomed', updateScales);
+		viewport.on('zoomed', () => {
+			const currentScale = viewport.scale.x;
+			const zoomingIn = currentScale > lastScale;
+
+			updateFocus();
+			updateZoomLimits();
+			updateScales();
+
+			if (zoomingIn && focusedSystem && currentScale > 0.5) {
+				// Smoothly move towards focused system
+				viewport.snap(focusedSystem.x, focusedSystem.y, {
+					time: 500,
+					removeOnInterrupt: true,
+					forceStart: false
+				});
+			}
+
+			lastScale = currentScale;
+		});
 		viewport.on('moved', updateScales);
 	});
 
@@ -61,6 +82,54 @@
 			node.scale.set(s);
 		}
 		drawPortals();
+	}
+
+	function updateFocus() {
+		if (!viewport || !app || !$cluster) return;
+		const mouseGlobal = app.renderer.events.pointer.global;
+		if (!mouseGlobal) return;
+		const mouseWorld = viewport.toWorld(mouseGlobal);
+
+		let minDist = Infinity;
+		let closest = null;
+
+		for (const system of $cluster.systems) {
+			const dist = Math.hypot(system.x - mouseWorld.x, system.y - mouseWorld.y);
+			if (dist < minDist) {
+				minDist = dist;
+				closest = system;
+			}
+		}
+
+		if (closest) {
+			focusedSystem = { x: closest.x, y: closest.y, id: closest.id };
+		} else {
+			focusedSystem = null;
+		}
+	}
+
+	function updateZoomLimits() {
+		if (!viewport || !$cluster) return;
+		const minViewportSize = Math.min(viewport.screenWidth, viewport.screenHeight);
+
+		// Zoom out limit: outer objects > 60% to center
+		const minScale = (0.6 * (minViewportSize / 2)) / Math.max(maxClusterRadius, 100);
+
+		// Zoom in limit: focused object boundaries never exceed viewport
+		let maxScale = 10; // Default max zoom for cluster
+		if (focusedSystem) {
+			// Boundaries for a system node are roughly 20px (icon + label)
+			maxScale = minViewportSize / 2 / 20;
+		}
+
+		viewport.clampZoom({ minScale, maxScale });
+
+		if (viewport.scale.x <= minScale * 1.01) {
+			viewport.moveCenter(0, 0);
+			viewport.plugins.pause('drag');
+		} else {
+			viewport.plugins.resume('drag');
+		}
 	}
 
 	function drawPortals() {
@@ -87,6 +156,7 @@
 
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
 		systemNodes = [];
+		maxClusterRadius = 0;
 
 		// Render portals first (background)
 		portalGraphics = new PIXI.Graphics();
@@ -95,6 +165,9 @@
 
 		// Render systems
 		for (const system of $cluster.systems) {
+			const dist = Math.hypot(system.x, system.y);
+			if (dist + 20 > maxClusterRadius) maxClusterRadius = dist + 20;
+
 			const node = new PIXI.Graphics();
 			node.circle(0, 0, 10).fill(0x38bdf8);
 
@@ -138,6 +211,7 @@
 		}
 
 		updateScales();
+		updateZoomLimits();
 	}
 
 	$: if ($cluster && viewport) {

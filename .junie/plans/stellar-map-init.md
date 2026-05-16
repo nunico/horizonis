@@ -17,6 +17,7 @@ Build "Horizonis", an interactive stellar map desktop application that serves as
   - Core navigation: Zoom, Pan, Drill-down, and Back.
   - Detail inspector for stars, planets, and portals.
   - **Multi-star system support with barycentric orbits and hierarchical satellite systems.**
+  - **Dynamic zoom limits and fluent navigation based on system and object boundaries.**
 - **Out of Scope**:
   - 3D space flight simulation.
   - Procedural generation of entire clusters (focus is on manual/data-driven map).
@@ -28,6 +29,7 @@ Build "Horizonis", an interactive stellar map desktop application that serves as
 - **As a user**, I want to click on a star system to see its planets and their orbits in an AU-accurate scale.
 - **As a user**, I want to see binary and trinary star systems where stars orbit each other and have their own distinct planetary systems.
 - **As a user**, I want to save my map locally and have it persist between sessions.
+- **As a user**, I want the map navigation to feel fluent, with natural zoom limits that keep the focused object in view.
 
 # Technical Design
 
@@ -54,6 +56,8 @@ The project is currently empty, containing only the design document (`idea.md`) 
   - Modify `SolarSystemMap.svelte` to render stars at their orbital positions and render their hierarchical satellites.
   - Update `Inspector.svelte` to support editing stars and their nested satellites.
   - Adjust adaptive scaling to handle multiple orbital centers.
+  - **Implement dynamic zoom clamping and auto-centering logic in `StarMap.svelte` and `SolarSystemMap.svelte`.**
+  - **Add proximity-based focus detection to enable context-sensitive max zoom.**
 
 ### Data Models (TypeScript)
 
@@ -189,3 +193,13 @@ Enhance generation and rendering to support binary/trinary star systems with ind
 - Update `SolarSystemMap.svelte` to render stars and their satellites at correct spatial offsets.
 - Modify `Inspector.svelte` persistence logic to support nested star satellites.
 - Ensure adaptive scaling and constant line thickness work correctly with multiple orbital centers.
+
+### ✓ Step 10: Fluent Zoom & Dynamic Limits
+Implement context-aware zoom limits and fluent navigation based on focused objects and system boundaries.
+
+- Implement dynamic zoom-out limits using the 60% viewport rule.
+- Add proximity-based focus detection during zoom to identify the closest object to the mouse pointer.
+- Implement context-sensitive zoom-in limits where the focused object's boundaries (planetary systems or satellites) never exceed the viewport.
+- Add auto-centering and pan-disabling at the minimum zoom level to improve navigation clarity.
+- Add auto-centering when zooming in to a focussed object.
+- Update hierarchical world-coordinate tracking to support efficient proximity calculations.
