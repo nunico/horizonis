@@ -12,7 +12,7 @@
 		"lint": "eslint . && prettier --check .",
 		"format": "prettier --write .",
 		"test": "vitest run",
-		"test:e2e": "cd e2e-tests && deno task test",
+		"test:e2e": "cd e2e-tests && npm test",
 		"tauri": "tauri"
 	},
 	"license": "MIT",

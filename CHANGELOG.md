@@ -2,6 +2,46 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+### [2026-05-16] - Update E2E test runner command
+
+- **Summary**: Updated E2E test script to use npm instead of Deno.
+- **Changes**:
+  - Updated E2E test script to use npm instead of Deno.
+- **Files Affected**: `package.json`, `e2e-tests/package.json`
+- **Context**: Aligns E2E execution with the Node/WebdriverIO setup.
+
+### [2026-05-16] - Fix map centering and viewport UX
+
+- **Summary**: Implemented a robust viewport centering and clamping strategy that accounts for the navigation bar and allows panning on small windows.
+- **Changes**:
+  - Replaced `underflow: 'center'` with manual clamping logic that dynamically locks the center when content fits, but allows panning when it doesn't.
+  - Added a 56px vertical offset to map centering to account for the Navigation bar height.
+  - Adjusted `minScale` calculations to ensure full visibility within the visible area (excluding the navigation bar).
+  - Re-added large `worldWidth` and `worldHeight` to the Viewport constructor to ensure correct coordinate handling and panning range.
+  - Updated E2E regression tests to reflect the new centering behavior.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`, `e2e-tests/test/specs/zoom-ux.e2e.js`
+- **Context**: Previous fix was too restrictive and broke centering for solar systems; this version is more flexible and handles UI overlap.
+
+### [2026-05-16] - Resolve viewport centering conflict
+
+- **Summary**: Fixed a conflict between `viewport.clamp` and the manual viewport centering that caused clusters to appear off-center.
+- **Changes**:
+  - Removed `direction: 'all'` from `viewport.clamp` in `StarMap.svelte` and `SolarSystemMap.svelte` to prevent overriding explicit bounds.
+  - Removed fixed `worldWidth` and `worldHeight` from Viewport constructor to allow flexible coordinate ranges including negative coordinates.
+  - Verified that `underflow: 'center'` now correctly uses the calculated cluster/system bounds for centering.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`
+- **Context**: Resolving a bug where the viewport was stuck at (0, 0) because of default world boundaries in the clamp plugin.
+
+### [2026-05-16] - Fix Star Map viewport centering
+
+- **Summary**: The star map viewport and clamping logic were hardcoded to (0, 0), causing clusters to appear off-center.
+- **Changes**: 
+  - Implemented geometric center calculation for the star cluster in `StarMap.svelte`.
+  - Updated `maxClusterRadius` to be relative to the calculated cluster center.
+  - Updated viewport positioning and clamping to use the dynamic cluster center.
+- **Files Affected**: `src/lib/components/StarMap.svelte`, `e2e-tests/wdio.conf.js` (fix build)
+- **Context**: Ensuring the star map is correctly centered regardless of the random generation's offset.
+
 ###### [2026-05-16] - Resolve UI Linting and Accessibility Issues
 
 - **Summary**: Resolved multiple linting and accessibility issues across core UI components to improve code quality and reactivity.

@@ -66,8 +66,8 @@
 		viewport = new Viewport({
 			screenWidth: app.screen.width,
 			screenHeight: app.screen.height,
-			worldWidth: 20000,
-			worldHeight: 20000,
+			worldWidth: 100000,
+			worldHeight: 100000,
 			events: app.renderer.events
 		});
 
@@ -350,15 +350,20 @@
 
 	function updateZoomLimits() {
 		if (!viewport || !systemData) return;
-		const minViewportSize = Math.min(viewport.screenWidth, viewport.screenHeight);
+		const sw = viewport.screenWidth;
+		const sh = viewport.screenHeight;
+		const scale = viewport.scale.x;
 
-		// Zoom out limit: outer objects > 60% to center
-		const minScale = (0.6 * (minViewportSize / 2)) / Math.max(maxSystemRadius, 100);
+		// Navigation bar height is 56px.
+		const visibleHeight = sh - 56;
+
+		// Zoom out limit: system fits in 80% of visible area
+		const minScale = (0.8 * (Math.min(sw, visibleHeight) / 2)) / Math.max(maxSystemRadius, 100);
 
 		// Zoom in limit: focused object itself occupies at most 80% of viewport
-		let maxScale = 50; // Default
+		let maxScale = 50;
 		if (focusedObject) {
-			maxScale = (minViewportSize * 0.8) / (2 * focusedObject.baseRadius);
+			maxScale = (Math.min(sw, sh) * 0.8) / (2 * focusedObject.baseRadius);
 		}
 
 		if (Math.abs(minScale - lastMinScale) > 0.0001 || Math.abs(maxScale - lastMaxScale) > 0.0001) {
@@ -367,13 +372,15 @@
 			lastMaxScale = maxScale;
 		}
 
+		const hwx = sw / 2 / scale;
+		const hwy = sh / 2 / scale;
+		const offY = 28 / scale;
+
 		viewport.clamp({
-			direction: 'all',
-			underflow: 'center',
-			left: -maxSystemRadius,
-			right: maxSystemRadius,
-			top: -maxSystemRadius,
-			bottom: maxSystemRadius
+			left: Math.min(0 - hwx, -maxSystemRadius),
+			right: Math.max(0 + hwx, maxSystemRadius),
+			top: Math.min(0 - offY - hwy, -maxSystemRadius - 56 / scale),
+			bottom: Math.max(0 - offY + hwy, maxSystemRadius)
 		});
 	}
 
@@ -418,9 +425,9 @@
 		updateScales();
 		updateZoomLimits();
 
-		// Initial fit: ensure the whole system is visible
+		// Initial fit: center in the visible area
 		viewport.setZoom(lastMinScale, true);
-		viewport.moveCenter(0, 0);
+		viewport.moveCenter(0, 0 - 28 / lastMinScale);
 
 		if (typeof window !== 'undefined') {
 			(window as unknown as { solarSystemMapDebug: unknown }).solarSystemMapDebug = {

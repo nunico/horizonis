@@ -27,6 +27,7 @@
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
 	let maxClusterRadius = 0;
+	let clusterCenter = { x: 0, y: 0 };
 	let selectionGraphics: PIXI.Graphics;
 	let hoverGraphics: PIXI.Graphics;
 
@@ -43,8 +44,8 @@
 		viewport = new Viewport({
 			screenWidth: app.screen.width,
 			screenHeight: app.screen.height,
-			worldWidth: 4000,
-			worldHeight: 4000,
+			worldWidth: 100000,
+			worldHeight: 100000,
 			events: app.renderer.events
 		});
 
@@ -190,16 +191,21 @@
 
 	function updateZoomLimits() {
 		if (!viewport || !$cluster) return;
-		const minViewportSize = Math.min(viewport.screenWidth, viewport.screenHeight);
+		const sw = viewport.screenWidth;
+		const sh = viewport.screenHeight;
+		const scale = viewport.scale.x;
 
-		// Zoom out limit: outer objects > 60% to center
-		const minScale = (0.6 * (minViewportSize / 2)) / Math.max(maxClusterRadius, 100);
+		// Navigation bar height is 56px.
+		// We want to center the cluster in the visible area (56 to screenHeight).
+		const visibleHeight = sh - 56;
+
+		// Zoom out limit: cluster fits in 80% of the visible area
+		const minScale = (0.8 * (Math.min(sw, visibleHeight) / 2)) / Math.max(maxClusterRadius, 100);
 
 		// Zoom in limit: focused object boundaries never exceed viewport
-		let maxScale = 10; // Default max zoom for cluster
+		let maxScale = 10;
 		if (focusedSystem) {
-			// Boundaries for a system node are roughly 20px (icon + label)
-			maxScale = minViewportSize / 2 / 20;
+			maxScale = Math.min(sw, sh) / 2 / 20;
 		}
 
 		if (Math.abs(minScale - lastMinScale) > 0.0001 || Math.abs(maxScale - lastMaxScale) > 0.0001) {
@@ -208,13 +214,17 @@
 			lastMaxScale = maxScale;
 		}
 
+		// Manual clamping logic to allow panning when window is small
+		// but center it when window is large.
+		const hwx = sw / 2 / scale;
+		const hwy = sh / 2 / scale;
+		const offY = 28 / scale; // Shift center by 28px down on screen
+
 		viewport.clamp({
-			direction: 'all',
-			underflow: 'center',
-			left: -maxClusterRadius,
-			right: maxClusterRadius,
-			top: -maxClusterRadius,
-			bottom: maxClusterRadius
+			left: Math.min(clusterCenter.x - hwx, clusterCenter.x - maxClusterRadius),
+			right: Math.max(clusterCenter.x + hwx, clusterCenter.x + maxClusterRadius),
+			top: Math.min(clusterCenter.y - offY - hwy, clusterCenter.y - maxClusterRadius - 56 / scale),
+			bottom: Math.max(clusterCenter.y - offY + hwy, clusterCenter.y + maxClusterRadius)
 		});
 	}
 
@@ -266,7 +276,29 @@
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
 		systemNodes = [];
 		portalNodes = [];
-		maxClusterRadius = 0;
+
+		if ($cluster.systems.length > 0) {
+			let minX = Infinity,
+				maxX = -Infinity,
+				minY = Infinity,
+				maxY = -Infinity;
+			for (const system of $cluster.systems) {
+				if (system.x < minX) minX = system.x;
+				if (system.x > maxX) maxX = system.x;
+				if (system.y < minY) minY = system.y;
+				if (system.y > maxY) maxY = system.y;
+			}
+			clusterCenter = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+
+			maxClusterRadius = 0;
+			for (const system of $cluster.systems) {
+				const dist = Math.hypot(system.x - clusterCenter.x, system.y - clusterCenter.y);
+				if (dist + 40 > maxClusterRadius) maxClusterRadius = dist + 40;
+			}
+		} else {
+			clusterCenter = { x: 0, y: 0 };
+			maxClusterRadius = 100;
+		}
 
 		// Deduplicate and Create Portal Nodes
 		const uniquePortals = new SvelteMap<string, { from: string; to: string }>();
@@ -319,9 +351,6 @@
 
 		// Render systems
 		for (const system of $cluster.systems) {
-			const dist = Math.hypot(system.x, system.y);
-			if (dist + 20 > maxClusterRadius) maxClusterRadius = dist + 20;
-
 			const node = new PIXI.Graphics();
 			node.circle(0, 0, 10).fill(0x38bdf8);
 
@@ -377,9 +406,9 @@
 		updateScales();
 		updateZoomLimits();
 
-		// Initial fit
+		// Initial fit: center in the visible area
 		viewport.setZoom(lastMinScale, true);
-		viewport.moveCenter(0, 0);
+		viewport.moveCenter(clusterCenter.x, clusterCenter.y - 28 / lastMinScale);
 	}
 
 	$: if ($cluster && viewport) {

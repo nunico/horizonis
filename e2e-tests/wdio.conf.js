@@ -26,7 +26,13 @@ export const config = {
 		timeout: 60000
 	},
 	onPrepare: () => {
+		if (process.env.SKIP_BUILD === 'true') {
+			console.log('Skipping Tauri app build as requested.');
+			return;
+		}
 		console.log('Building Tauri app...');
+		const env = { ...process.env, CI: 'true' };
+		delete env.NODE_OPTIONS;
 		const result = spawnSync(
 			'mise',
 			['exec', '--', 'deno', 'task', 'tauri', 'build', '--debug', '--no-bundle'],
@@ -34,7 +40,7 @@ export const config = {
 				cwd: path.resolve(__dirname, '..'),
 				stdio: 'inherit',
 				shell: true,
-				env: { ...process.env, CI: 'true' }
+				env
 			}
 		);
 		if (result.status !== 0) {
