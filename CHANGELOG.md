@@ -2,6 +2,17 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-18] - Fix mise MCP server configuration
+
+- **Summary**: Resolved compatibility issues with the mise MCP server by implementing a protocol adapter and aligning configuration with project standards.
+- **Changes**:
+  - Created `scripts/mise-mcp-adapter.cjs` to map legacy `list_tools` calls to `tools/list`.
+  - Updated `.junie/mcp/mcp.json` to use the new adapter script.
+  - Converted `.junie/mcp/mcp.json` indentation from spaces to tabs to match project style.
+  - Enhanced the adapter to handle input stream processing more robustly.
+- **Files Affected**: `scripts/mise-mcp-adapter.cjs`, `.junie/mcp/mcp.json`
+- **Context**: The mise MCP server currently requires an experimental flag and does not natively support the legacy `list_tools` method.
+
 ###### [2026-05-18] - Fix Test Suite and Svelte Component Typing Errors
 
 - **Summary**: Resolved TypeScript typing errors in Svelte components and the web app's test suite by refining reactive state handling and ensuring proper integration of jest-dom matchers with Vitest.

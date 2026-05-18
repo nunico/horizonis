@@ -1,13 +1,10 @@
 {
     "mcpServers": {
         "mise": {
-            "command": "mise",
+            "command": "node",
             "args": [
-                "mcp"
-            ],
-            "env": {
-                "MISE_EXPERIMENTAL": "1"
-            }
+                "scripts/mise-mcp-adapter.cjs"
+            ]
         },
         "WebDriverIO": {
             "command": "node",
