@@ -1,0 +1,22 @@
+{
+	"name": "e2e-tests",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "application",
+	"sourceRoot": "apps/e2e-tests/test",
+	"targets": {
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm exec wdio run wdio.conf.js",
+				"cwd": "apps/e2e-tests"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm exec eslint .",
+				"cwd": "apps/e2e-tests"
+			}
+		}
+	}
+}

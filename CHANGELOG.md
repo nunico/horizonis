@@ -2,6 +2,41 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-18] - Move E2E tests to apps/e2e-tests
+
+- **Summary**: Relocated e2e-tests to the apps directory and configured Nx integration.
+- **Changes**:
+  - Moved `e2e-tests/` to `apps/e2e-tests/`.
+  - Created `apps/e2e-tests/project.json` with test and lint targets.
+  - Updated `apps/e2e-tests/wdio.conf.js` with correct application and workspace paths.
+  - Updated `eslint.config.js` to match the new e2e-tests location.
+  - Added "e2e" script to root `package.json`.
+  - Removed redundant `pnpm-lock.yaml` and `node_modules` from `apps/e2e-tests`.
+- **Files Affected**: `apps/e2e-tests/`, `package.json`, `eslint.config.js`, `apps/e2e-tests/project.json`, `apps/e2e-tests/wdio.conf.js`.
+- **Context**: None.
+
+###### [2026-05-18] - Monorepo Restructure
+
+- **Summary**: Restructured the project into an Nx monorepo with separate `apps/web` (SvelteKit) and `apps/desktop` (Tauri) packages.
+- **Changes**:
+  - Initialized Nx and configured pnpm workspaces for improved task orchestration and dependency management.
+  - Moved SvelteKit frontend to `apps/web` and Tauri backend to `apps/desktop`.
+  - Updated configuration files (`tauri.conf.json`, `tsconfig.json`, `vite.config.js`, `svelte.config.js`) for the new structure.
+  - Created root orchestration scripts in `package.json` for unified dev and build workflows.
+  - Set up `tsconfig.base.json` at the root for shared TypeScript configuration.
+  - Configured ESLint and Prettier for monorepo support and cleaned up the legacy `src-tauri` directory.
+- **Files Affected**: `apps/web/`, `apps/desktop/`, `package.json`, `nx.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `eslint.config.js`.
+- **Context**: None.
+
+###### [2026-05-18] - Create generate-changelog skill
+
+- **Summary**: Created a new Junie skill for generating changelog entries consistent with project guidelines.
+- **Changes**:
+  - Created `.junie/skills/generate-changelog/SKILL.md` containing documentation for the changelog workflow.
+  - Defined the trigger, workflow, and expected format for agent-led changelog updates.
+- **Files Affected**: `.junie/skills/generate-changelog/SKILL.md`
+- **Context**: This skill ensures that all future agents follow the standardized changelog format defined in AGENTS.md.
+
 ###### [2026-05-16] - Migrate to pnpm
 
 - **Summary**: Replaced Deno, npm, and yarn with pnpm as the project's primary package manager and updated all configuration files.

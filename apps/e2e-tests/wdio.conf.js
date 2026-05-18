@@ -15,7 +15,7 @@ export const config = {
 			maxInstances: 1,
 			browserName: 'wry',
 			'tauri:options': {
-				application: path.resolve(__dirname, '../src-tauri/target/debug/tauri-app')
+				application: path.resolve(__dirname, '../desktop/target/debug/tauri-app')
 			}
 		}
 	],
@@ -37,7 +37,7 @@ export const config = {
 			'mise',
 			['exec', '--', 'pnpm', 'tauri', 'build', '--debug', '--no-bundle'],
 			{
-				cwd: path.resolve(__dirname, '..'),
+				cwd: path.resolve(__dirname, '../..'),
 				stdio: 'inherit',
 				shell: true,
 				env

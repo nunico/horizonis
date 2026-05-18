@@ -1,0 +1,30 @@
+{
+	"name": "web",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"dependencies": {
+		"@lucide/svelte": "^1.16.0",
+		"@tauri-apps/api": "^2",
+		"@tauri-apps/plugin-opener": "^2",
+		"lucide-svelte": "^1.0.1",
+		"pixi-viewport": "^6.0.3",
+		"pixi.js": "^8.18.1"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-static": "^3.0.6",
+		"@sveltejs/kit": "^2.9.0",
+		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/svelte": "^5.3.1",
+		"autoprefixer": "^10.5.0",
+		"jsdom": "^29.1.1",
+		"postcss": "^8.5.14",
+		"svelte": "^5.0.0",
+		"svelte-check": "^4.0.0",
+		"tailwindcss": "^3.4.19",
+		"typescript": "~5.6.2",
+		"vite": "^6.0.3",
+		"vitest": "^4.1.6"
+	}
+}

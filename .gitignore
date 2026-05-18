@@ -22,3 +22,4 @@ target/
 # https://v2.tauri.app/distribute/windows-installer/
 WixTools/
 
+.nx/

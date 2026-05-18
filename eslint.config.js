@@ -28,7 +28,7 @@ export default [
 		}
 	},
 	{
-		files: ['e2e-tests/**/*.js'],
+		files: ['apps/e2e-tests/**/*.js'],
 		languageOptions: {
 			globals: {
 				...globals.mocha,
@@ -40,6 +40,6 @@ export default [
 		}
 	},
 	{
-		ignores: ['build/', '.svelte-kit/', 'dist/', 'src-tauri/']
+		ignores: ['**/build/**', '**/.svelte-kit/**', '**/dist/**', '**/target/**']
 	}
 ];
