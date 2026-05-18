@@ -2,6 +2,46 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-18] - Fix WASM Loading in Web Version
+
+- **Summary**: Fixed a bug where the `procedural-gen` WASM library failed to load in the web version due to incorrect path resolution by Vite.
+- **Changes**:
+  - Excluded `procedural-gen` from Vite's `optimizeDeps.exclude` to prevent it from being moved to `.vite/deps`.
+  - Updated `initWasm` in `clusterData.ts` to explicitly import the WASM URL using Vite's `?url` suffix and pass it to the WASM initializer.
+  - Ensured the WASM file is correctly resolved relative to the source code rather than the pre-bundled dependency location.
+- **Files Affected**: `apps/web/vite.config.js`, `apps/web/src/lib/stores/clusterData.ts`
+- **Context**: Vite's dependency pre-bundling can break WASM libraries that rely on `import.meta.url` for assets if they are not explicitly excluded or if asset paths are not handled correctly.
+
+###### [2026-05-18] - Map Reactivity Optimization
+
+- **Summary**: Optimized map rendering performance by refining untrack usage in Svelte 5 effects.
+- **Changes**:
+  - Moved `untrack($selectedEntity)` outside the orbit nodes loop in `SolarSystemMap.svelte` to prevent redundant store subscriptions.
+  - Added `untrack()` to `$selectedEntity` access in `drawPortals` in `StarMap.svelte` to resolve reactivity leaks.
+  - Improved overall selection performance in both star and solar system maps.
+- **Files Affected**: `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/components/StarMap.svelte`
+- **Context**: None.
+
+###### [2026-05-18] - Map Reactivity Optimization
+
+- **Summary**: Optimized map rendering performance by refining untrack usage in Svelte 5 effects.
+- **Changes**:
+  - Moved `untrack($selectedEntity)` outside the orbit nodes loop in `SolarSystemMap.svelte` to prevent redundant store subscriptions.
+  - Added `untrack()` to `$selectedEntity` access in `drawPortals` in `StarMap.svelte` to resolve reactivity leaks.
+  - Improved overall selection performance in both star and solar system maps.
+- **Files Affected**: `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/components/StarMap.svelte`
+- **Context**: None.
+
+###### [2026-05-18] - Fix Star Map Double-Click Interaction
+
+- **Summary**: Resolved a bug where double-clicking a star failed to open the solar system map due to an unwanted reactivity dependency in Svelte 5.
+- **Changes**:
+  - Applied `untrack()` to `$selectedEntity` accesses in `StarMap.svelte` and `SolarSystemMap.svelte` to prevent full re-renders on selection.
+  - Fixed a reactivity leak where updating the selection caused the entire cluster to be re-rendered, destroying nodes and resetting double-click timers.
+  - Improved performance by reducing unnecessary PIXI application re-builds during map interaction.
+- **Files Affected**: `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`
+- **Context**: Svelte 5 effects transitively track all reactive dependencies accessed within their call graph; `untrack()` is required to isolate interaction state from structural rendering.
+
 ###### [2026-05-18] - Fix mise MCP server configuration
 
 - **Summary**: Resolved compatibility issues with the mise MCP server by implementing a protocol adapter and aligning configuration with project standards.

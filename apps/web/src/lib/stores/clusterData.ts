@@ -28,7 +28,9 @@ export async function initWasm() {
 	}
 	try {
 		const { default: init } = await import('procedural-gen');
-		await init();
+		// @ts-ignore
+		const wasmUrl = (await import('procedural-gen/procedural_gen_bg.wasm?url')).default;
+		await init(wasmUrl);
 		isInitialized.set(true);
 	} catch (e) {
 		console.error('Failed to init WASM:', e);
