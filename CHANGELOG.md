@@ -2,6 +2,15 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-19] - Update Agent Guidelines for Code Quality
+
+- **Summary**: Updated `AGENTS.md` to mandate code quality checks in the testing and workflow sections.
+- **Changes**:
+  - Added mandatory type checking, linting, and formatting checks to Section 4 (Testing & Validation).
+  - Updated Section 6 (Standard Workflow) to include "Quality Check" as a new step (step 5) before Review and Document.
+- **Files Affected**: `AGENTS.md`
+- **Context**: None.
+
 ###### [2026-05-18] - TypeScript & Type Safety Improvements
 
 - **Summary**: Resolved all TypeScript compiler errors and cleaned up redundant type casts and directives.

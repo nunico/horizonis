@@ -41,6 +41,7 @@ Documenting changes is mandatory for all agent-led tasks to provide a clear audi
 ## 4. Testing & Validation
 
 - Regression Testing: Always run existing tests (`pnpm test`, `cargo test`) after modifications. Delegate test writing to the `test-writer` subagent for any new logic.
+- Quality Assurance: Always perform type checking, linting, and formatting checks (`pnpm nx run-many --targets=check`, `pnpm lint`) after completing any task to maintain code quality.
 - New Coverage: Add unit tests for any new logic added to `src-tauri` or `src/lib`.
 - Code Review: Before finalizing a task, delegate to the `code-reviewer` subagent to catch logic errors, security issues, and performance regressions.
 - Bug Diagnosis: When investigating a bug or stack trace, delegate to the `bug-detective` subagent before attempting a fix.
@@ -73,9 +74,10 @@ For every non-trivial task, follow this sequence:
 1. Plan
 2. Research (if unfamiliar APIs are involved)
 3. Implement
-4. Test
-5. Review
-6. Document
+4. Test (including unit tests and regression testing)
+5. Quality Check (run `pnpm nx run-many --targets=check` and `pnpm lint`)
+6. Review
+7. Document
 
 > For bugs: run `bug-detective` before step 3. For migrations: substitute `migration-agent` for `implementer`. For infra changes: use `devops-engineer` instead of `implementer`.
 
