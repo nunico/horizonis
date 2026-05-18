@@ -4,7 +4,7 @@
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
 	import { cluster } from '../stores/clusterData';
-	import { viewMode, activeSystemId, selectedEntity } from '../stores/appState';
+	import { viewMode, activeSystemId, selectedEntity, type Entity } from '../stores/appState';
 	import type { SolarSystem } from '../types/stellar';
 
 	let container = $state<HTMLDivElement>();
@@ -33,7 +33,7 @@
 	let hoverGraphics: PIXI.Graphics;
 
 	// Optimization: System lookup Map
-	let systemsById = $derived(new SvelteMap($cluster?.Systems.map(s => [s.Id, s]) || []));
+	let systemsById = $derived(new SvelteMap($cluster?.Systems.map((s) => [s.Id, s]) || []));
 
 	// Optimization: Spatial Grid for O(log n) lookups
 	const GRID_SIZE = 200;
@@ -83,11 +83,9 @@
 				updateZoomLimits();
 			}
 		};
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		pixiApp.renderer.on('resize' as any, resizeHandler);
+		pixiApp.renderer.on('resize', resizeHandler);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		v.on('zoomed' as any, () => {
+		v.on('zoomed', () => {
 			const currentScale = v.scale.x;
 			const zoomingIn = currentScale > lastScale * 1.0001;
 
@@ -103,15 +101,18 @@
 
 			lastScale = currentScale;
 		});
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		v.on('moved' as any, updateScales);
+		v.on('moved', updateScales);
 
 		if (import.meta.env.DEV && typeof window !== 'undefined') {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(window as any).starMapDebug = {
+			// @ts-expect-error - Debug global
+			window.starMapDebug = {
 				viewport: v,
-				get lastMinScale() { return lastMinScale; },
-				get lastMaxScale() { return lastMaxScale; },
+				get lastMinScale() {
+					return lastMinScale;
+				},
+				get lastMaxScale() {
+					return lastMaxScale;
+				},
 				updateZoomLimits
 			};
 		}
@@ -166,13 +167,13 @@
 		if (!selectionGraphics || !viewport) return;
 		selectionGraphics.clear();
 
-		const entity = untrack(() => $selectedEntity);
+		const entity = untrack(() => $selectedEntity as Entity | null);
 		if (!entity || !('X' in entity) || !('Y' in entity)) return;
 
+		const system = entity as SolarSystem;
 		const s = 1 / viewport.scale.x;
 		selectionGraphics
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			.circle((entity as any).X, (entity as any).Y, 18 * s)
+			.circle(system.X, system.Y, 18 * s)
 			.stroke({ width: 2 * s, color: 0x38bdf8, alpha: 0.8 });
 	}
 
@@ -256,9 +257,8 @@
 		if (!$cluster || !viewport) return;
 
 		const s = 1 / viewport.scale.x;
-		const selectedEntityVal = untrack(() => $selectedEntity);
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const selectedId = selectedEntityVal && 'Id' in selectedEntityVal ? (selectedEntityVal as any).Id : undefined;
+		const selectedEntityVal = untrack(() => $selectedEntity) as Entity | null;
+		const selectedId = selectedEntityVal?.Id;
 
 		for (const portal of portalNodes) {
 			const isHovered = hoveredPortalKey === portal.key;
@@ -304,7 +304,10 @@
 		portalNodes = [];
 
 		if ($cluster.Systems.length > 0) {
-			let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+			let minX = Infinity,
+				maxX = -Infinity,
+				minY = Infinity,
+				maxY = -Infinity;
 			for (const system of $cluster.Systems) {
 				if (system.X < minX) minX = system.X;
 				if (system.X > maxX) maxX = system.X;
@@ -335,7 +338,7 @@
 			}
 		}
 
-		for (const [key, pair] of Array.from(uniquePortals.entries())) {
+		for (const [key, pair] of uniquePortals) {
 			const sys1 = systemsById.get(pair.from) as SolarSystem | undefined;
 			const sys2 = systemsById.get(pair.to) as SolarSystem | undefined;
 			if (sys1 && sys2) {
@@ -343,13 +346,11 @@
 				g.eventMode = 'static';
 				g.cursor = 'pointer';
 
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				g.on('pointerover' as any, () => {
+				g.on('pointerover', () => {
 					hoveredPortalKey = key;
 					updateScales();
 				});
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				g.on('pointerout' as any, () => {
+				g.on('pointerout', () => {
 					hoveredPortalKey = null;
 					updateScales();
 				});
@@ -381,27 +382,23 @@
 			node.eventMode = 'static';
 			node.cursor = 'pointer';
 
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			node.on('pointerdown' as any, (e: PIXI.FederatedPointerEvent) => {
+			node.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 				e.stopPropagation();
 				selectedEntity.set(system);
 			});
 
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			node.on('pointerover' as any, () => {
+			node.on('pointerover', () => {
 				hoveredSystemId = system.Id;
 				updateScales();
 			});
 
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			node.on('pointerout' as any, () => {
+			node.on('pointerout', () => {
 				hoveredSystemId = null;
 				updateScales();
 			});
 
 			let lastClickTime = 0;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			node.on('pointertap' as any, (e: PIXI.FederatedPointerEvent) => {
+			node.on('pointertap', (e: PIXI.FederatedPointerEvent) => {
 				e.stopPropagation();
 				const now = Date.now();
 				if (now - lastClickTime < 350) {

@@ -29,7 +29,9 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
-		onclick={(e) => { if (e.target === e.currentTarget) show = false; }}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) show = false;
+		}}
 	>
 		<div
 			role="dialog"

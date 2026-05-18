@@ -72,16 +72,16 @@ For every non-trivial task, follow this sequence:
 
 1. Plan
 2. Research (if unfamiliar APIs are involved)
-3. Implement 
+3. Implement
 4. Test
 5. Review
-6. Document 
+6. Document
 
 > For bugs: run `bug-detective` before step 3. For migrations: substitute `migration-agent` for `implementer`. For infra changes: use `devops-engineer` instead of `implementer`.
 
 ## Coding Guidelines
 
-- Always prioritize readability, safety, and maintainability. 
+- Always prioritize readability, safety, and maintainability.
 - Refactor code to improve efficiency and reduce complexity.
 - Break up long or complex functions into smaller, more manageable pieces
 - Use descriptive variable/function/constant names, comments and error messages

@@ -127,7 +127,7 @@ describe('Navigation component', () => {
 		const input = screen.getByPlaceholderText(/search systems/i);
 		await fireEvent.focus(input);
 		await fireEvent.input(input, { target: { value: 'Alpha' } });
-		
+
 		vi.advanceTimersByTime(200);
 		await tick();
 

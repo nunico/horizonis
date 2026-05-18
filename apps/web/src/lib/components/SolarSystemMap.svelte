@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount, onDestroy, untrack } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
 	import { cluster } from '../stores/clusterData';
@@ -33,7 +32,8 @@
 		maxSatRadius: number;
 		parentId?: string;
 	}[] = [];
-	let satelliteContainers: { container: PIXI.Container<PIXI.ContainerChild>; radius: number }[] = [];
+	let satelliteContainers: { container: PIXI.Container<PIXI.ContainerChild>; radius: number }[] =
+		[];
 	let orbitNodes: { graphics: PIXI.Graphics; radius: number; entityId: string }[] = [];
 	let hoveredEntityId = $state<string | null>(null);
 
@@ -85,9 +85,7 @@
 			}
 		};
 		pixiApp.renderer.on('resize', resizeHandler);
-		// @ts-expect-error - PIXI v8 event types mismatch with Viewport
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(v as any).on('zoomed', () => {
+		v.on('zoomed', () => {
 			const currentScale = v.scale.x;
 			const zoomingIn = currentScale > lastScale * 1.0001;
 
@@ -103,9 +101,7 @@
 
 			lastScale = currentScale;
 		});
-		// @ts-expect-error - PIXI v8 event types mismatch with Viewport
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(v as any).on('moved', updateScales);
+		v.on('moved', updateScales);
 
 		if (import.meta.env.DEV && typeof window !== 'undefined') {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,7 +128,8 @@
 	function updateScales() {
 		if (!viewport || !systemData) return;
 		const s = 1 / viewport.scale.x;
-		const visualRadii = new SvelteMap<string, number>();
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
+		const visualRadii = new Map<string, number>();
 
 		for (const sat of satelliteContainers) {
 			const screenDistance = sat.radius * viewport.scale.x;
@@ -412,8 +409,12 @@
 				starNodes,
 				bodyNodes,
 				scaleConfig,
-				get lastMinScale() { return lastMinScale; },
-				get lastMaxScale() { return lastMaxScale; }
+				get lastMinScale() {
+					return lastMinScale;
+				},
+				get lastMaxScale() {
+					return lastMaxScale;
+				}
 			};
 		}
 	}
@@ -438,21 +439,15 @@
 			const orbit = new PIXI.Graphics();
 			orbit.eventMode = 'static';
 			orbit.cursor = 'pointer';
-			// @ts-expect-error - PIXI v8 event types
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(orbit as any).on('pointerover', () => {
+			orbit.on('pointerover', () => {
 				hoveredEntityId = star.Id;
 				updateScales();
 			});
-			// @ts-expect-error - PIXI v8 event types
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(orbit as any).on('pointerout', () => {
+			orbit.on('pointerout', () => {
 				hoveredEntityId = null;
 				updateScales();
 			});
-			// @ts-expect-error - PIXI v8 event types
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(orbit as any).on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
+			orbit.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 				e.stopPropagation();
 				selectedEntity.set(star);
 			});
@@ -481,16 +476,12 @@
 
 		starVisual.eventMode = 'static';
 		starVisual.cursor = 'pointer';
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(starVisual as any).on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
+		starVisual.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 			e.stopPropagation();
 			selectedEntity.set(star);
 		});
 
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(starVisual as any).on('pointerover', () => {
+		starVisual.on('pointerover', () => {
 			hoveredEntityId = star.Id;
 			updateScales();
 			if (!viewport) return;
@@ -501,9 +492,7 @@
 				.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
 		});
 
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(starVisual as any).on('pointerout', () => {
+		starVisual.on('pointerout', () => {
 			hoveredEntityId = null;
 			updateScales();
 			hoverGraphics.clear();
@@ -569,21 +558,15 @@
 		const orbit = new PIXI.Graphics();
 		orbit.eventMode = 'static';
 		orbit.cursor = 'pointer';
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(orbit as any).on('pointerover', () => {
+		orbit.on('pointerover', () => {
 			hoveredEntityId = body.Id;
 			updateScales();
 		});
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(orbit as any).on('pointerout', () => {
+		orbit.on('pointerout', () => {
 			hoveredEntityId = null;
 			updateScales();
 		});
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(orbit as any).on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
+		orbit.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 			e.stopPropagation();
 			selectedEntity.set(body);
 		});
@@ -613,16 +596,12 @@
 
 		bodyVisual.eventMode = 'static';
 		bodyVisual.cursor = 'pointer';
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(bodyVisual as any).on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
+		bodyVisual.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 			e.stopPropagation();
 			selectedEntity.set(body);
 		});
 
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(bodyVisual as any).on('pointerover', () => {
+		bodyVisual.on('pointerover', () => {
 			hoveredEntityId = body.Id;
 			updateScales();
 			if (!viewport) return;
@@ -633,9 +612,7 @@
 				.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
 		});
 
-		// @ts-expect-error - PIXI v8 event types
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(bodyVisual as any).on('pointerout', () => {
+		bodyVisual.on('pointerout', () => {
 			hoveredEntityId = null;
 			updateScales();
 			hoverGraphics.clear();

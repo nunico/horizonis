@@ -33,13 +33,31 @@
 		<Inspector />
 		<HelpOverlay bind:show={showHelp} />
 	{:else if error}
-		<div class="flex flex-col items-center justify-center w-full h-full bg-slate-950 p-8 text-center">
+		<div
+			class="flex flex-col items-center justify-center w-full h-full bg-slate-950 p-8 text-center"
+		>
 			<div class="text-rose-500 mb-4">
-				<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="48"
+					height="48"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line
+						x1="12"
+						y1="16"
+						x2="12.01"
+						y2="16"
+					/></svg
+				>
 			</div>
 			<h1 class="text-slate-100 font-bold text-xl mb-2">Initialization Failed</h1>
 			<p class="text-slate-400 text-sm max-w-md mb-6">{error}</p>
-			<button 
+			<button
 				onclick={() => window.location.reload()}
 				class="bg-slate-800 hover:bg-slate-700 text-slate-100 px-6 py-2 rounded-lg transition-colors"
 			>

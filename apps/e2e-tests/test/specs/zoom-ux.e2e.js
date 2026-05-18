@@ -55,7 +55,7 @@ describe('Zoom UX Regression', () => {
 		});
 
 		// x should be near 0 (or cluster center)
-		expect(Math.abs(debugData.x)).toBeLessThan(100); 
+		expect(Math.abs(debugData.x)).toBeLessThan(100);
 		// y should be near -28/scale (shifted for navigation bar)
 		const expectedY = -28 / debugData.scale;
 		expect(Math.abs(debugData.y - expectedY)).toBeLessThan(100);

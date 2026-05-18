@@ -12,7 +12,7 @@ describe('clusterData store', () => {
 	beforeEach(() => {
 		cluster.set(null);
 		vi.clearAllMocks();
-		// @ts-ignore
+		// @ts-expect-error - Mocking storage
 		delete window.__TAURI_INTERNALS__;
 		localStorage.clear();
 	});

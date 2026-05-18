@@ -27,7 +27,7 @@ pub fn get_cluster(app_handle: AppHandle, state: State<'_, AppState>) -> Result<
 
 #[tauri::command]
 pub fn generate_cluster(app_handle: AppHandle, state: State<'_, AppState>, seed: Option<u64>) -> Result<StarCluster, String> {
-    let seed = seed.unwrap_or_else(|| rand::random::<u64>());
+    let seed = seed.unwrap_or_else(rand::random::<u64>);
     let cluster = procedural_gen::generate_cluster(seed);
     
     // Save to disk and update cache

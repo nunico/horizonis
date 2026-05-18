@@ -1,31 +1,31 @@
 {
-  "name": "desktop",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "projectType": "application",
-  "sourceRoot": "apps/desktop/src",
-  "targets": {
-    "dev": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm exec tauri dev",
-        "cwd": "apps/desktop"
-      }
-    },
-    "build": {
-      "dependsOn": ["web:build"],
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm exec tauri build",
-        "cwd": "apps/desktop"
-      },
-      "outputs": ["{projectRoot}/target/release/bundle"]
-    },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "cargo clippy",
-        "cwd": "apps/desktop"
-      }
-    }
-  }
+	"name": "desktop",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "application",
+	"sourceRoot": "apps/desktop/src",
+	"targets": {
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm exec tauri dev",
+				"cwd": "apps/desktop"
+			}
+		},
+		"build": {
+			"dependsOn": ["web:build"],
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm exec tauri build",
+				"cwd": "apps/desktop"
+			},
+			"outputs": ["{projectRoot}/target/release/bundle"]
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "cargo clippy",
+				"cwd": "apps/desktop"
+			}
+		}
+	}
 }

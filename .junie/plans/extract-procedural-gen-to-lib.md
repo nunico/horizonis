@@ -5,58 +5,63 @@ sessionId: session-260518-153136-qph6
 # Requirements
 
 ### Overview & Goals
+
 Extract the procedural generation logic and data models into a shared library to allow its use in both the Rust-based desktop app and the Svelte-based web app (via WASM). This enables the web app to function as a standalone Progressive Web App (PWA) with the same generation capabilities as the desktop version.
 
 ### Scope
+
 - **In Scope**:
-    - Extraction of `models.rs` and `generation.rs` to `libs/procedural-gen`.
-    - Extraction of `compute_route` logic from `commands.rs` to `libs/procedural-gen` to enable pathfinding in PWA.
-    - Implementation of seed-based generation to ensure WASM/Desktop parity.
-    - WASM binding generation for the extracted logic (generation and routing).
-    - Integration of WASM into `@apps/web`.
-    - Svelte 5 modernization of core components (Runes, Events).
-    - Web performance optimizations (spatial indexing, O(1) lookups, debouncing).
-    - Security gating for debug globals in `@apps/web`.
-    - PWA configuration for `@apps/web`.
-    - Abstraction of persistence in the web app to support both Tauri and Standalone modes.
-    - Refactoring of desktop storage to use atomic writes.
+  - Extraction of `models.rs` and `generation.rs` to `libs/procedural-gen`.
+  - Extraction of `compute_route` logic from `commands.rs` to `libs/procedural-gen` to enable pathfinding in PWA.
+  - Implementation of seed-based generation to ensure WASM/Desktop parity.
+  - WASM binding generation for the extracted logic (generation and routing).
+  - Integration of WASM into `@apps/web`.
+  - Svelte 5 modernization of core components (Runes, Events).
+  - Web performance optimizations (spatial indexing, O(1) lookups, debouncing).
+  - Security gating for debug globals in `@apps/web`.
+  - PWA configuration for `@apps/web`.
+  - Abstraction of persistence in the web app to support both Tauri and Standalone modes.
+  - Refactoring of desktop storage to use atomic writes.
 - **Out of Scope**:
-    - Changes to the core generation algorithms.
-    - New UI features for the web or desktop apps.
-    - Backend server implementation (PWA will rely on local storage).
+  - Changes to the core generation algorithms.
+  - New UI features for the web or desktop apps.
+  - Backend server implementation (PWA will rely on local storage).
 
 # Technical Design
 
 ### Current Implementation
+
 - **Desktop**: Rust Tauri app in `apps/desktop`. Generation logic is embedded in the desktop app's crate.
 - **Web**: SvelteKit app in `apps/web`. Currently relies on Tauri `invoke` calls to get/save cluster data.
 - **Models**: Shared manually via TypeScript definitions in `apps/web/src/lib/types/stellar.ts`.
 
 ### Key Decisions
+
 - **WASM Interop**: Use `wasm-bindgen` and `serde-wasm-bindgen` for efficient data transfer between Rust and JavaScript.
 - **WASM Build Tool**: Use `wasm-pack` to build the library for the web target.
 - **RNG Strategy**: Replace `ThreadRng` with `impl Rng` in generation functions and use `StdRng` with explicit seeds to ensure WASM compatibility and deterministic results across platforms.
 - **Routing**: Move pathfinding logic to the shared library. Use `petgraph` in the shared library and ensure it compiles to WASM.
 - **Persistence Abstraction**: Use a strategy pattern in `@apps/web` to detect the environment (Tauri vs. Web) and choose the appropriate storage provider (Tauri API vs. Browser LocalStorage).
-    - **Interface Contract**:
-      ```typescript
-      export interface StorageProvider {
-          getCluster(): Promise<StarCluster>;
-          saveCluster(cluster: StarCluster): Promise<void>;
-      }
-      ```
+  - **Interface Contract**:
+    ```typescript
+    export interface StorageProvider {
+    	getCluster(): Promise<StarCluster>;
+    	saveCluster(cluster: StarCluster): Promise<void>;
+    }
+    ```
 - **Library Build Configuration**: Use a Cargo feature (e.g., `wasm`) to conditionally enable the `cdylib` crate type. This prevents linker conflicts when building the desktop app (which uses `rlib`/`staticlib`) while allowing `wasm-pack` to produce the necessary WASM binary.
 - **Svelte 5 Modernization**: Standardize on Svelte 5 runes (`$props`, `$derived`, `$state`) and new event syntax (`onclick`, `onkeydown`) to replace deprecated Svelte 4 patterns.
 - **Web Performance Strategy**:
-    - Use spatial indexing (e.g., grid-based) in `StarMap` for O(log n) closest-system lookups.
-    - Use `Map` for O(1) entity lookups by ID during rendering and inspector updates.
-    - Implement debouncing for search input in `Navigation`.
-    - Use `structuredClone()` for deep copies to maintain type integrity and performance.
+  - Use spatial indexing (e.g., grid-based) in `StarMap` for O(log n) closest-system lookups.
+  - Use `Map` for O(1) entity lookups by ID during rendering and inspector updates.
+  - Implement debouncing for search input in `Navigation`.
+  - Use `structuredClone()` for deep copies to maintain type integrity and performance.
 - **Security & Debugging**: Gate all `window` debug extensions (stores, starMapDebug) behind `import.meta.env.DEV` to prevent state exposure in production.
 - **Atomic Storage**: Refactor desktop storage to use a write-to-temp-and-rename pattern to prevent data corruption.
 - **PWA Implementation**: Use `vite-plugin-pwa` for SvelteKit to handle service workers and manifest generation.
 
 ### Proposed Changes
+
 1.  **New Library**: `libs/procedural-gen`
     - Crate type: `rlib` and conditionally `cdylib` (via `wasm` feature).
     - Dependencies: `serde`, `uuid` (with `js` feature), `rand`, `delaunator`, `petgraph`.
@@ -81,46 +86,49 @@ Extract the procedural generation logic and data models into a shared library to
     - Gate debug globals behind environment checks.
 
 ### Architecture Diagram
+
 ```mermaid
 graph TD
     subgraph "Libraries"
         Core["libs/procedural-gen (Rust/WASM)"]
     end
-    
+
     subgraph "Applications"
         Desktop["apps/desktop (Tauri)"]
         Web["apps/web (SvelteKit)"]
     end
-    
+
     Desktop -- uses as crate --> Core
     Web -- uses as WASM --> Core
-    
+
     subgraph "Web Build Targets"
         WebBundle["Tauri Bundle"]
         WebPWA["Standalone PWA"]
     end
-    
+
     Web --> WebBundle
     Web --> WebPWA
 ```
 
 ### File Structure
+
 - `libs/procedural-gen/`
-    - `Cargo.toml`
-    - `src/`
-        - `lib.rs`
-        - `models.rs`
-        - `generation.rs`
-        - `wasm.rs`
+  - `Cargo.toml`
+  - `src/`
+    - `lib.rs`
+    - `models.rs`
+    - `generation.rs`
+    - `wasm.rs`
 - `apps/web/`
-    - `src/lib/storage/` (new)
-        - `index.ts`
-        - `tauri.ts`
-        - `browser.ts`
+  - `src/lib/storage/` (new)
+    - `index.ts`
+    - `tauri.ts`
+    - `browser.ts`
 
 # Testing
 
 ### Validation Approach
+
 - **WASM Consistency**: Compare output of `generate_cluster` and `compute_route` in Rust (Desktop) and WASM (Web) using the same seed to ensure parity.
 - **Persistence**: Verify that data saved in PWA mode persists across page reloads using LocalStorage.
 - **Tauri Integration**: Verify that `@apps/web` still correctly communicates with the Tauri backend when running inside the desktop app.
@@ -128,13 +136,15 @@ graph TD
 - **Unit Testing**: Refactor `clusterData.test.ts` to inject mock providers and cover error paths for both Tauri and Browser storage.
 
 ### Key Scenarios
+
 1.  **Desktop Launch**: Application starts, loads cluster from disk using the new library.
 2.  **Web Standalone**: User visits the site as a PWA, triggers generation (WASM), and the cluster is saved to LocalStorage.
 3.  **Offline PWA**: User disconnects from internet, reloads PWA, and can still view/interact with the saved cluster.
 
 # Delivery Steps
 
-###   Step 1: Extract procedural generation and routing to shared library
+### Step 1: Extract procedural generation and routing to shared library
+
 Extract logic, models, and pathfinding into a new Rust library and update desktop integration.
 
 - Create `libs/procedural-gen` directory and `Cargo.toml`.
@@ -149,7 +159,8 @@ Extract logic, models, and pathfinding into a new Rust library and update deskto
 - Update `apps/desktop/src/storage.rs`: use new library's API in `create_default_cluster`.
 - Add the new library to the root `Cargo.toml` workspace.
 
-###   Step 2: Implement WASM support and build configuration
+### Step 2: Implement WASM support and build configuration
+
 Enable WASM compilation with proper gating and platform consistency.
 
 - Add `wasm-bindgen` and `serde-wasm-bindgen` dependencies.
@@ -158,7 +169,8 @@ Enable WASM compilation with proper gating and platform consistency.
 - Implement `#[wasm_bindgen]` wrappers for `generate_cluster(seed: u64)` and `compute_route`.
 - Add a `wasm-pack` build script to the library's `project.json`.
 
-###   Step 3: Modernize Web App and integrate WASM
+### Step 3: Modernize Web App and integrate WASM
+
 Improve desktop reliability, modernize the web UI, and integrate WASM with abstraction.
 
 - Refactor `apps/desktop/src/storage.rs` to use atomic writes (temp file + rename) and propagate errors.
@@ -173,7 +185,8 @@ Improve desktop reliability, modernize the web UI, and integrate WASM with abstr
 - Refactor `clusterData.test.ts` to use mock providers and cover error paths.
 - Ensure TypeScript types in `@apps/web` match the `PascalCase` serialization from Rust.
 
-###   Step 4: Implement PWA support and build targets
+### Step 4: Implement PWA support and build targets
+
 Enable PWA features and add a separate build target with conditional configuration.
 
 - Add `vite-plugin-pwa` to `apps/web` devDependencies.

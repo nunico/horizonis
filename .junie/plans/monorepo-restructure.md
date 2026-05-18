@@ -10,15 +10,15 @@ below precisely. Do not skip steps. After each major step, verify the workspace 
 
 The source repo is expected to have approximately this layout:
 
-  /
-  ├── src/                    # SvelteKit source (routes, lib, etc.)
-  ├── src-tauri/              # Tauri Rust backend (main.rs, tauri.conf.json, Cargo.toml)
-  ├── static/
-  ├── svelte.config.js
-  ├── vite.config.ts
-  ├── tsconfig.json
-  ├── package.json
-  └── ...
+/
+├── src/ # SvelteKit source (routes, lib, etc.)
+├── src-tauri/ # Tauri Rust backend (main.rs, tauri.conf.json, Cargo.toml)
+├── static/
+├── svelte.config.js
+├── vite.config.ts
+├── tsconfig.json
+├── package.json
+└── ...
 
 If the layout differs, adapt the paths accordingly but preserve the intent of each step.
 
@@ -26,28 +26,27 @@ If the layout differs, adapt the paths accordingly but preserve the intent of ea
 
 ## Target Monorepo Structure
 
-  /
-  ├── apps/
-  │   ├── desktop/            # Tauri Rust backend (src-tauri contents)
-  │   │   ├── src/
-  │   │   ├── Cargo.toml
-  │   │   ├── tauri.conf.json
-  │   │   └── project.json
-  │   └── web/                # SvelteKit frontend
-  │       ├── src/
-  │       ├── static/
-  │       ├── svelte.config.js
-  │       ├── vite.config.ts
-  │       ├── tsconfig.json
-  │       ├── package.json
-  │       └── project.json
-  ├── libs/                   # (empty, ready for shared libraries)
-  ├── node_modules/
-  ├── nx.json
-  ├── package.json            # root workspace package.json
-  ├── tsconfig.base.json
-  └── pnpm-workspace.yaml     # or package.json workspaces if using npm/yarn
-
+/
+├── apps/
+│ ├── desktop/ # Tauri Rust backend (src-tauri contents)
+│ │ ├── src/
+│ │ ├── Cargo.toml
+│ │ ├── tauri.conf.json
+│ │ └── project.json
+│ └── web/ # SvelteKit frontend
+│ ├── src/
+│ ├── static/
+│ ├── svelte.config.js
+│ ├── vite.config.ts
+│ ├── tsconfig.json
+│ ├── package.json
+│ └── project.json
+├── libs/ # (empty, ready for shared libraries)
+├── node_modules/
+├── nx.json
+├── package.json # root workspace package.json
+├── tsconfig.base.json
+└── pnpm-workspace.yaml # or package.json workspaces if using npm/yarn
 
 ---
 
@@ -66,7 +65,7 @@ When prompted:
 - For `build`, set output to `.svelte-kit` and `build/`.
 - Skip outputs for `dev`, `check`, `lint`.
 - Do NOT choose an "integrated" preset if asked; choose "package-based" or accept defaults
-— we will restructure manually.
+  — we will restructure manually.
 
 2. Confirm that `nx.json` has been created at the repo root.
 
@@ -80,10 +79,9 @@ Create `pnpm-workspace.yaml` at the root:
 
 ```yaml
 packages:
-  - "apps/*"
-  - "libs/*"
+  - 'apps/*'
+  - 'libs/*'
 ```
-
 
 ### If using npm/yarn:
 
@@ -93,7 +91,6 @@ In the root `package.json`, add:
 "workspaces": ["apps/*", "libs/*"]
 ```
 
-
 ---
 
 ## Step 3 — Create the Monorepo Folder Structure
@@ -101,7 +98,6 @@ In the root `package.json`, add:
 ```bash
 mkdir -p apps/web apps/desktop libs
 ```
-
 
 ---
 
@@ -118,12 +114,12 @@ mv tsconfig.json apps/web/tsconfig.json
 ```
 
 2. Move the SvelteKit `package.json` (if it contains frontend-specific deps) into `apps/web/`.
-If the root `package.json` covers all deps, copy it to `apps/web/package.json` and then
-strip non-frontend deps from the copy; keep Tauri-agnostic frontend deps only.
+   If the root `package.json` covers all deps, copy it to `apps/web/package.json` and then
+   strip non-frontend deps from the copy; keep Tauri-agnostic frontend deps only.
 3. Update `apps/web/svelte.config.js`:
-    - Ensure `adapter-static` is configured (required by Tauri — no SSR).
-    - Set `kit.outDir` to `.svelte-kit` (relative to `apps/web/`).
-    - Set `kit.files.assets` to `static` (relative to `apps/web/`).
+   - Ensure `adapter-static` is configured (required by Tauri — no SSR).
+   - Set `kit.outDir` to `.svelte-kit` (relative to `apps/web/`).
+   - Set `kit.files.assets` to `static` (relative to `apps/web/`).
 
 Minimal example:
 
@@ -132,16 +128,16 @@ import adapter from '@sveltejs/adapter-static';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  kit: {
-    adapter: adapter({
-      pages: 'build',
-      assets: 'build',
-      fallback: 'index.html',
-    }),
-    files: {
-      assets: 'static',
-    },
-  },
+	kit: {
+		adapter: adapter({
+			pages: 'build',
+			assets: 'build',
+			fallback: 'index.html'
+		}),
+		files: {
+			assets: 'static'
+		}
+	}
 };
 
 export default config;
@@ -155,15 +151,15 @@ export const prerender = true;
 ```
 
 5. Update `apps/web/vite.config.ts` — fix any `root` or `cacheDir` paths that assumed
-the old root location:
+   the old root location:
 
 ```ts
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [sveltekit()],
-  // cacheDir is relative to this file's location, no changes needed normally
+	plugins: [sveltekit()]
+	// cacheDir is relative to this file's location, no changes needed normally
 });
 ```
 
@@ -171,14 +167,13 @@ export default defineConfig({
 
 ```json
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "paths": {}
-  },
-  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte"]
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"paths": {}
+	},
+	"include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte"]
 }
 ```
-
 
 ---
 
@@ -188,48 +183,48 @@ This file registers the SvelteKit app with Nx:
 
 ```json
 {
-  "name": "web",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "projectType": "application",
-  "sourceRoot": "apps/web/src",
-  "targets": {
-    "dev": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm vite dev",
-        "cwd": "apps/web"
-      }
-    },
-    "build": {
-      "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/build", "{projectRoot}/.svelte-kit"],
-      "options": {
-        "command": "pnpm vite build",
-        "cwd": "apps/web"
-      }
-    },
-    "check": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm svelte-check --tsconfig ./tsconfig.json",
-        "cwd": "apps/web"
-      }
-    },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm eslint src",
-        "cwd": "apps/web"
-      }
-    },
-    "test": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm vitest run",
-        "cwd": "apps/web"
-      }
-    }
-  }
+	"name": "web",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "application",
+	"sourceRoot": "apps/web/src",
+	"targets": {
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm vite dev",
+				"cwd": "apps/web"
+			}
+		},
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/build", "{projectRoot}/.svelte-kit"],
+			"options": {
+				"command": "pnpm vite build",
+				"cwd": "apps/web"
+			}
+		},
+		"check": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm svelte-check --tsconfig ./tsconfig.json",
+				"cwd": "apps/web"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm eslint src",
+				"cwd": "apps/web"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm vitest run",
+				"cwd": "apps/web"
+			}
+		}
+	}
 }
 ```
 
@@ -257,24 +252,20 @@ mv src-tauri/Cargo.lock apps/desktop/Cargo.lock
 
 ```json
 {
-  "build": {
-    "beforeDevCommand": "nx run web:dev",
-    "beforeBuildCommand": "nx run web:build",
-    "devUrl": "http://localhost:5173",
-    "frontendDist": "../web/build"
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all"
-  }
+	"build": {
+		"beforeDevCommand": "nx run web:dev",
+		"beforeBuildCommand": "nx run web:build",
+		"devUrl": "http://localhost:5173",
+		"frontendDist": "../web/build"
+	},
+	"bundle": {
+		"active": true,
+		"targets": "all"
+	}
 }
 ```
 
-Key points:
-    - `frontendDist` is relative to `apps/desktop/` and points to the SvelteKit build output.
-    - `devUrl` must match whatever port Vite uses (default: 5173).
-    - `beforeBuildCommand` delegates to Nx so caching is used automatically.
-3. If the repo has a workspace `Cargo.toml` at the root already, leave it. Otherwise, create one
+Key points: - `frontendDist` is relative to `apps/desktop/` and points to the SvelteKit build output. - `devUrl` must match whatever port Vite uses (default: 5173). - `beforeBuildCommand` delegates to Nx so caching is used automatically. 3. If the repo has a workspace `Cargo.toml` at the root already, leave it. Otherwise, create one
 at the repo root to wire up Rust workspaces:
 
 ```toml
@@ -292,40 +283,39 @@ and do not assume the old `src-tauri/` location.
 
 ```json
 {
-  "name": "desktop",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "projectType": "application",
-  "sourceRoot": "apps/desktop/src",
-  "tags": ["scope:desktop", "type:app"],
-  "targets": {
-    "dev": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "cargo tauri dev",
-        "cwd": "apps/desktop"
-      },
-      "dependsOn": []
-    },
-    "build": {
-      "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/target/release/bundle"],
-      "options": {
-        "command": "cargo tauri build",
-        "cwd": "apps/desktop"
-      },
-      "dependsOn": ["web:build"]
-    },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "cargo clippy",
-        "cwd": "apps/desktop"
-      }
-    }
-  }
+	"name": "desktop",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "application",
+	"sourceRoot": "apps/desktop/src",
+	"tags": ["scope:desktop", "type:app"],
+	"targets": {
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "cargo tauri dev",
+				"cwd": "apps/desktop"
+			},
+			"dependsOn": []
+		},
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": ["{workspaceRoot}/target/release/bundle"],
+			"options": {
+				"command": "cargo tauri build",
+				"cwd": "apps/desktop"
+			},
+			"dependsOn": ["web:build"]
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "cargo clippy",
+				"cwd": "apps/desktop"
+			}
+		}
+	}
 }
 ```
-
 
 ---
 
@@ -336,19 +326,19 @@ app-specific scripts directly. Update it to:
 
 ```json
 {
-  "name": "my-app-monorepo",
-  "private": true,
-  "workspaces": ["apps/*", "libs/*"],
-  "scripts": {
-    "dev": "nx run desktop:dev",
-    "build": "nx run desktop:build",
-    "web:dev": "nx run web:dev",
-    "web:build": "nx run web:build",
-    "graph": "nx graph"
-  },
-  "devDependencies": {
-    "nx": "latest"
-  }
+	"name": "my-app-monorepo",
+	"private": true,
+	"workspaces": ["apps/*", "libs/*"],
+	"scripts": {
+		"dev": "nx run desktop:dev",
+		"build": "nx run desktop:build",
+		"web:dev": "nx run web:dev",
+		"web:build": "nx run web:build",
+		"graph": "nx graph"
+	},
+	"devDependencies": {
+		"nx": "latest"
+	}
 }
 ```
 
@@ -362,24 +352,23 @@ workspace tooling (`nx`, `prettier`, `eslint` configs shared across all apps).
 
 ```json
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "compilerOptions": {
-    "rootDir": ".",
-    "sourceMap": true,
-    "declaration": false,
-    "moduleResolution": "bundler",
-    "target": "ES2022",
-    "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "paths": {}
-  },
-  "exclude": ["node_modules", "tmp"]
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		"rootDir": ".",
+		"sourceMap": true,
+		"declaration": false,
+		"moduleResolution": "bundler",
+		"target": "ES2022",
+		"module": "ESNext",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"paths": {}
+	},
+	"exclude": ["node_modules", "tmp"]
 }
 ```
-
 
 ---
 
@@ -389,40 +378,35 @@ Update `nx.json` at the root to define caching, task pipelines, and default runn
 
 ```json
 {
-  "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "defaultBase": "main",
-  "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": [
-      "default",
-      "!{projectRoot}/**/*.spec.ts",
-      "!{projectRoot}/**/*.test.ts"
-    ],
-    "sharedGlobals": ["{workspaceRoot}/tsconfig.base.json"]
-  },
-  "targetDefaults": {
-    "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"],
-      "cache": true
-    },
-    "test": {
-      "inputs": ["default", "^production"],
-      "cache": true
-    },
-    "lint": {
-      "inputs": ["default"],
-      "cache": true
-    },
-    "check": {
-      "inputs": ["default"],
-      "cache": true
-    }
-  },
-  "plugins": []
+	"$schema": "./node_modules/nx/schemas/nx-schema.json",
+	"defaultBase": "main",
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*", "sharedGlobals"],
+		"production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/**/*.test.ts"],
+		"sharedGlobals": ["{workspaceRoot}/tsconfig.base.json"]
+	},
+	"targetDefaults": {
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": ["production", "^production"],
+			"cache": true
+		},
+		"test": {
+			"inputs": ["default", "^production"],
+			"cache": true
+		},
+		"lint": {
+			"inputs": ["default"],
+			"cache": true
+		},
+		"check": {
+			"inputs": ["default"],
+			"cache": true
+		}
+	},
+	"plugins": []
 }
 ```
-
 
 ---
 
@@ -458,7 +442,6 @@ npx nx run desktop:dev
 npx nx run desktop:build
 ```
 
-
 ---
 
 ## Step 13 — Clean Up
@@ -474,20 +457,22 @@ target/
 ```
 
 4. Update CI/CD scripts (GitHub Actions, GitLab CI, etc.) to use `nx run` commands instead
-of direct `npm run` scripts.
+   of direct `npm run` scripts.
 
 ---
 
 ## Constraints and Rules
 
 - Do NOT use `@nx/svelte` or `@nxext/sveltekit` plugins unless they are already in the
-project — use `nx:run-commands` for maximum compatibility and transparency.
+  project — use `nx:run-commands` for maximum compatibility and transparency.
 - Do NOT upgrade or change versions of Tauri, SvelteKit, or Vite unless a version conflict
-requires it. Only migrate structure.
+  requires it. Only migrate structure.
 - Preserve all existing functionality. The migrated monorepo must build identically to
-the original project.
+  the original project.
 - Do NOT commit `node_modules/` or any generated build artefacts.
 - All paths in config files (`tauri.conf.json`, `vite.config.ts`, `tsconfig.json`, etc.)
-must be relative to the file's own location, not the old project root.
+  must be relative to the file's own location, not the old project root.
+
+```
 
 ```

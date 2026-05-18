@@ -2,16 +2,12 @@
 	import { selectedEntity } from '../stores/appState';
 	import { cluster, saveCluster } from '../stores/clusterData';
 	import { X, Save, Tag } from 'lucide-svelte';
-	import type { SolarSystem, Star, OrbitalBody } from '../types/stellar';
+	import type { SolarSystem, Star, OrbitalBody, StarCluster } from '../types/stellar';
 
 	type Entity = SolarSystem | Star | OrbitalBody;
 
-	let entity = $state<Entity | null>(null);
+	let entity = $derived($selectedEntity ? { ...$selectedEntity } : null);
 	let nameInput = $state<HTMLInputElement>();
-
-	$effect(() => {
-		entity = $selectedEntity ? { ...$selectedEntity } : null;
-	});
 
 	$effect(() => {
 		if (entity && nameInput) {
@@ -42,7 +38,7 @@
 	async function handleSave() {
 		if (!$cluster || !entity) return;
 
-		const newCluster: any = structuredClone($cluster);
+		const newCluster = structuredClone($cluster) as StarCluster;
 		let found = false;
 
 		const updateBody = (bodies: OrbitalBody[]): boolean => {

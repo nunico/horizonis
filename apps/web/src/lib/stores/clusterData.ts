@@ -11,7 +11,7 @@ let storage: StorageProvider;
 async function getStorage() {
 	if (storage) return storage;
 
-	// @ts-ignore
+	// @ts-expect-error - Tauri global
 	if (window.__TAURI_INTERNALS__) {
 		storage = new TauriStorage();
 	} else {
@@ -21,15 +21,16 @@ async function getStorage() {
 }
 
 export async function initWasm() {
-	// @ts-ignore
+	// @ts-expect-error - Tauri global
 	if (window.__TAURI_INTERNALS__) {
 		isInitialized.set(true);
 		return;
 	}
 	try {
-		const { default: init } = await import('procedural-gen');
-		// @ts-ignore
-		const wasmUrl = (await import('procedural-gen/procedural_gen_bg.wasm?url')).default;
+		const [{ default: init }, { default: wasmUrl }] = await Promise.all([
+			import('procedural-gen'),
+			import('procedural-gen/procedural_gen_bg.wasm?url') as Promise<{ default: string }>
+		]);
 		await init(wasmUrl);
 		isInitialized.set(true);
 	} catch (e) {

@@ -13,11 +13,14 @@ describe('Map Rendering', () => {
 		const canvas = await starMap.$('canvas');
 		await canvas.waitForExist({ timeout: 5000 });
 		expect(await canvas.isDisplayed()).toBe(true);
-		
+
 		// Wait for debug info to be available
-		await browser.waitUntil(async () => {
-			return await browser.execute(() => !!window.starMapDebug?.viewport);
-		}, { timeout: 10000, timeoutMsg: 'StarMap debug info not available' });
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => !!window.starMapDebug?.viewport);
+			},
+			{ timeout: 10000, timeoutMsg: 'StarMap debug info not available' }
+		);
 
 		// Check if systems are rendered in PixiJS
 		const childCount = await browser.execute(() => {
@@ -47,9 +50,12 @@ describe('Map Rendering', () => {
 		expect(await canvas.isDisplayed()).toBe(true);
 
 		// Wait for debug info to be available
-		await browser.waitUntil(async () => {
-			return await browser.execute(() => !!window.solarSystemDebug?.viewport);
-		}, { timeout: 10000, timeoutMsg: 'SolarSystemMap debug info not available' });
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => !!window.solarSystemDebug?.viewport);
+			},
+			{ timeout: 10000, timeoutMsg: 'SolarSystemMap debug info not available' }
+		);
 
 		// Check if bodies are rendered in PixiJS
 		const bodyCount = await browser.execute(() => {

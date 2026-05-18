@@ -1,29 +1,29 @@
 {
-  "name": "procedural-gen",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "projectType": "library",
-  "sourceRoot": "libs/procedural-gen/src",
-  "targets": {
-    "build": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "cargo build",
-        "cwd": "libs/procedural-gen"
-      }
-    },
-    "wasm:build": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "npx wasm-pack build --target web -- --features wasm",
-        "cwd": "libs/procedural-gen"
-      }
-    },
-    "test": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "cargo test",
-        "cwd": "libs/procedural-gen"
-      }
-    }
-  }
+	"name": "procedural-gen",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "library",
+	"sourceRoot": "libs/procedural-gen/src",
+	"targets": {
+		"build": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "cargo build",
+				"cwd": "libs/procedural-gen"
+			}
+		},
+		"wasm:build": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "npx wasm-pack build --target web -- --features wasm",
+				"cwd": "libs/procedural-gen"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "cargo test",
+				"cwd": "libs/procedural-gen"
+			}
+		}
+	}
 }

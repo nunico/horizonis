@@ -2,6 +2,41 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-18] - TypeScript & Type Safety Improvements
+
+- **Summary**: Resolved all TypeScript compiler errors and cleaned up redundant type casts and directives.
+- **Changes**:
+  - Removed 23 unused `@ts-expect-error` directives in `StarMap.svelte` and `SolarSystemMap.svelte`.
+  - Removed redundant `any` casts in `SolarSystemMap.svelte` to leverage PIXI v8's native type support.
+  - Verified a clean state with zero errors and warnings across the web application using `svelte-check`.
+- **Files Affected**: `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`
+- **Context**: Previous PIXI v8 type workarounds are no longer necessary as the compiler now correctly resolves the event types.
+
+###### [2026-05-18] - Code Quality & Linting Fixes
+
+- **Summary**: Resolved multiple ESLint, Clippy, and Prettier issues across the monorepo.
+- **Changes**:
+  - Replaced `$state` + `$effect` with `$derived` in `Inspector.svelte` for better Svelte 5 idiomatic state handling.
+  - Fixed `no-useless-assignment` in `Navigation.svelte` by utilizing the `showHelp` prop in the UI.
+  - Standardized PIXI 8 event handling using `@ts-expect-error` instead of `any` casts in map components.
+  - Removed unused imports and refined type narrowing for selected entities.
+  - Fixed a redundant closure warning in the desktop app's Rust commands.
+  - Applied project-wide formatting using Prettier.
+- **Files Affected**: `apps/web/src/lib/components/Inspector.svelte`, `apps/web/src/lib/components/Navigation.svelte`, `apps/web/src/lib/components/StarMap.svelte`, `apps/desktop/src/commands.rs`, `apps/web/src/lib/components/Inspector.test.ts`
+- **Context**: None.
+
+###### [2026-05-18] - Fix Code Review Issues
+
+- **Summary**: Addressed feedback from code review to improve code quality, type safety, and performance.
+- **Changes**:
+  - Removed a duplicate changelog entry.
+  - Replaced `SvelteMap` with standard `Map` for local temporary variables in `SolarSystemMap.svelte`.
+  - Standardized PIXI event handling with consistent `@ts-expect-error` usage.
+  - Improved type safety for `selectedEntity` in `StarMap.svelte`.
+  - Refined WASM module URL resolution in `clusterData.ts`.
+- **Files Affected**: `CHANGELOG.md`, `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/stores/clusterData.ts`
+- **Context**: None.
+
 ###### [2026-05-18] - Fix WASM Loading in Web Version
 
 - **Summary**: Fixed a bug where the `procedural-gen` WASM library failed to load in the web version due to incorrect path resolution by Vite.
@@ -11,26 +46,6 @@ All notable changes to the Horizonis project by AI agents will be documented in 
   - Ensured the WASM file is correctly resolved relative to the source code rather than the pre-bundled dependency location.
 - **Files Affected**: `apps/web/vite.config.js`, `apps/web/src/lib/stores/clusterData.ts`
 - **Context**: Vite's dependency pre-bundling can break WASM libraries that rely on `import.meta.url` for assets if they are not explicitly excluded or if asset paths are not handled correctly.
-
-###### [2026-05-18] - Map Reactivity Optimization
-
-- **Summary**: Optimized map rendering performance by refining untrack usage in Svelte 5 effects.
-- **Changes**:
-  - Moved `untrack($selectedEntity)` outside the orbit nodes loop in `SolarSystemMap.svelte` to prevent redundant store subscriptions.
-  - Added `untrack()` to `$selectedEntity` access in `drawPortals` in `StarMap.svelte` to resolve reactivity leaks.
-  - Improved overall selection performance in both star and solar system maps.
-- **Files Affected**: `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/components/StarMap.svelte`
-- **Context**: None.
-
-###### [2026-05-18] - Map Reactivity Optimization
-
-- **Summary**: Optimized map rendering performance by refining untrack usage in Svelte 5 effects.
-- **Changes**:
-  - Moved `untrack($selectedEntity)` outside the orbit nodes loop in `SolarSystemMap.svelte` to prevent redundant store subscriptions.
-  - Added `untrack()` to `$selectedEntity` access in `drawPortals` in `StarMap.svelte` to resolve reactivity leaks.
-  - Improved overall selection performance in both star and solar system maps.
-- **Files Affected**: `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/components/StarMap.svelte`
-- **Context**: None.
 
 ###### [2026-05-18] - Fix Star Map Double-Click Interaction
 
@@ -201,7 +216,7 @@ All notable changes to the Horizonis project by AI agents will be documented in 
 ### [2026-05-16] - Fix Star Map viewport centering
 
 - **Summary**: The star map viewport and clamping logic were hardcoded to (0, 0), causing clusters to appear off-center.
-- **Changes**: 
+- **Changes**:
   - Implemented geometric center calculation for the star cluster in `StarMap.svelte`.
   - Updated `maxClusterRadius` to be relative to the calculated cluster center.
   - Updated viewport positioning and clamping to use the dynamic cluster center.

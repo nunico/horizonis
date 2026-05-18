@@ -212,6 +212,7 @@
 		<button
 			onclick={() => (showHelp = true)}
 			class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
+			class:text-sky-400={showHelp}
 			title="Help (?)"
 			aria-label="Help"
 		>
