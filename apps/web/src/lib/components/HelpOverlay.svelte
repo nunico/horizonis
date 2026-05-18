@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { X } from 'lucide-svelte';
 
-	export let show = false;
+	let { show = $bindable(false) } = $props();
 
 	const shortcuts = [
 		{ key: '?', description: 'Toggle this help overlay' },
@@ -22,14 +22,14 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
-		on:click|self={() => (show = false)}
+		onclick={(e) => { if (e.target === e.currentTarget) show = false; }}
 	>
 		<div
 			role="dialog"
@@ -39,7 +39,7 @@
 			<div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/30">
 				<h2 id="help-title" class="text-lg font-bold text-slate-100">Keyboard Shortcuts</h2>
 				<button
-					on:click={() => (show = false)}
+					onclick={() => (show = false)}
 					class="text-slate-500 hover:text-slate-300 transition-colors"
 					aria-label="Close"
 				>

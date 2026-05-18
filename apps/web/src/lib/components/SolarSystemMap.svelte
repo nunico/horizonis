@@ -1,18 +1,16 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
-	import { invoke } from '@tauri-apps/api/core';
 	import { cluster } from '../stores/clusterData';
 	import { activeSystemId, viewMode, selectedEntity } from '../stores/appState';
 	import type { SolarSystem, OrbitalBody, Star } from '../types/stellar';
 	import { auToPixels, getVisualRadius, getClampedScale, type ScaleConfig } from '../pixi/scaling';
 
-	let container: HTMLDivElement;
+	let container = $state<HTMLDivElement>();
 	let app: PIXI.Application;
 	let viewport: Viewport;
-	let systemData: SolarSystem | null = null;
+	let systemData = $state<SolarSystem | null>(null);
 	let resizeHandler: () => void;
 	let starNodes: {
 		container: PIXI.Container;
@@ -36,16 +34,16 @@
 	}[] = [];
 	let satelliteContainers: { container: PIXI.Container; radius: number }[] = [];
 	let orbitNodes: { graphics: PIXI.Graphics; radius: number; entityId: string }[] = [];
-	let hoveredEntityId: string | null = null;
+	let hoveredEntityId = $state<string | null>(null);
 
-	let scaleConfig: ScaleConfig = { auToPixels: 200, mode: 'log' };
-	let focusedObject: {
+	let scaleConfig = $state<ScaleConfig>({ auToPixels: 200, mode: 'log' });
+	let focusedObject = $state<{
 		id: string;
 		worldX: number;
 		worldY: number;
 		maxSatRadius: number;
 		baseRadius: number;
-	} | null = null;
+	} | null>(null);
 	let lastScale = 1;
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
@@ -54,13 +52,13 @@
 	let hoverGraphics: PIXI.Graphics;
 
 	onMount(async () => {
+		if (!container) return;
 		app = new PIXI.Application();
 		await app.init({
 			resizeTo: container,
 			antialias: true,
 			backgroundColor: 0x020617
 		});
-		// eslint-disable-next-line svelte/no-dom-manipulating
 		container.appendChild(app.canvas);
 
 		viewport = new Viewport({
@@ -75,7 +73,6 @@
 		viewport.drag().pinch().wheel().decelerate();
 		viewport.moveCenter(0, 0);
 
-		// Handle resizes
 		resizeHandler = () => {
 			if (viewport && app.renderer) {
 				viewport.resize(app.screen.width, app.screen.height);
@@ -85,7 +82,6 @@
 		app.renderer.on('resize', resizeHandler);
 		viewport.on('zoomed', () => {
 			const currentScale = viewport.scale.x;
-			// Use a small epsilon to avoid jitter at limits
 			const zoomingIn = currentScale > lastScale * 1.0001;
 
 			updateFocus(currentScale);
@@ -93,8 +89,6 @@
 			updateScales();
 
 			if (zoomingIn && focusedObject && currentScale > 0.1) {
-				// Smoothly nudge towards focused object instead of using a long snap plugin
-				// that fights with the wheel interaction.
 				const dx = (focusedObject.worldX - viewport.center.x) * 0.1;
 				const dy = (focusedObject.worldY - viewport.center.y) * 0.1;
 				viewport.moveCenter(viewport.center.x + dx, viewport.center.y + dy);
@@ -105,24 +99,10 @@
 		viewport.on('moved', updateScales);
 
 		if ($activeSystemId) {
-			// First check if we have the system in the cluster store
-			let foundSystem: SolarSystem | undefined;
-			cluster.subscribe((c) => {
-				if (c) {
-					foundSystem = c.systems.find((s) => s.id === $activeSystemId);
-				}
-			})();
-
-			if (foundSystem) {
-				systemData = foundSystem;
+			const found = $cluster?.Systems.find((s) => s.Id === $activeSystemId);
+			if (found) {
+				systemData = found;
 				renderSystem();
-			} else {
-				try {
-					systemData = await invoke<SolarSystem>('get_system', { systemId: $activeSystemId });
-					renderSystem();
-				} catch (e) {
-					console.error('Failed to load system:', e);
-				}
 			}
 		}
 	});
@@ -137,62 +117,55 @@
 	function updateScales() {
 		if (!viewport || !systemData) return;
 		const s = 1 / viewport.scale.x;
-		const visualRadii = new SvelteMap<string, number>();
+		const visualRadii = new Map<string, number>();
 
-		// 1. Update satellite visibility first
 		for (const sat of satelliteContainers) {
 			const screenDistance = sat.radius * viewport.scale.x;
 			sat.container.visible = screenDistance > 10;
 		}
 
 		for (const star of starNodes) {
-			// Find min visible satellite orbit for this star
 			let minVisibleSatOrbit = Infinity;
-			for (const sat of star.star.satellites) {
-				const r = auToPixels(sat.orbit_au, scaleConfig);
+			for (const sat of star.star.Satellites) {
+				const r = auToPixels(sat.OrbitAu, scaleConfig);
 				if (r * viewport.scale.x > 10) {
 					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 				}
 			}
-			for (const region of star.star.orbital_regions) {
-				const r = auToPixels(region.inner_radius_au, scaleConfig);
+			for (const region of star.star.OrbitalRegions) {
+				const r = auToPixels(region.InnerRadiusAu, scaleConfig);
 				if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 			}
 
-			// Also consider system-wide bodies for the star's clamping if it's at the center
-			if (star.star.orbit_au === 0) {
-				for (const body of systemData.orbital_bodies) {
-					const r = auToPixels(body.orbit_au, scaleConfig);
+			if (star.star.OrbitAu === 0) {
+				for (const body of systemData.OrbitalBodies) {
+					const r = auToPixels(body.OrbitAu, scaleConfig);
 					if (r * viewport.scale.x > 10) {
 						if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 					}
 				}
-				for (const region of systemData.orbital_regions) {
-					const r = auToPixels(region.inner_radius_au, scaleConfig);
+				for (const region of systemData.OrbitalRegions) {
+					const r = auToPixels(region.InnerRadiusAu, scaleConfig);
 					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 				}
 			}
 
-			// Clamp star scale so screen radius doesn't exceed 45% of screen min orbit
 			const targetScale = getClampedScale(star.baseRadius, minVisibleSatOrbit, viewport.scale.x);
 			star.container.scale.set(targetScale);
-			// Keep label readable (scale 1 in screen space)
 			star.label.scale.set(s / targetScale);
 
-			visualRadii.set(star.star.id, star.baseRadius * targetScale);
+			visualRadii.set(star.star.Id, star.baseRadius * targetScale);
 		}
 
 		for (const bodyNode of bodyNodes) {
-			// Find min visible satellite orbit for this body
 			let minVisibleSatOrbit = Infinity;
-			for (const sat of bodyNode.body.satellites) {
-				const r = auToPixels(sat.orbit_au, scaleConfig);
+			for (const sat of bodyNode.body.Satellites) {
+				const r = auToPixels(sat.OrbitAu, scaleConfig);
 				if (r * viewport.scale.x > 10) {
 					if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 				}
 			}
 
-			// Avoid overlap with satellites AND parent, and never be bigger than parent
 			const parentVisRadius = bodyNode.parentId ? visualRadii.get(bodyNode.parentId) : undefined;
 			const targetScale = getClampedScale(
 				bodyNode.baseRadius,
@@ -205,19 +178,18 @@
 			bodyNode.container.scale.set(targetScale);
 			bodyNode.label.scale.set(s / targetScale);
 
-			visualRadii.set(bodyNode.body.id, bodyNode.baseRadius * targetScale);
+			visualRadii.set(bodyNode.body.Id, bodyNode.baseRadius * targetScale);
 		}
 
 		for (const orbit of orbitNodes) {
 			const isHovered = hoveredEntityId === orbit.entityId;
-			const isSelected = $selectedEntity?.id === orbit.entityId;
+			const isSelected = ($selectedEntity as any)?.Id === orbit.entityId;
 			const color = isSelected ? 0x38bdf8 : isHovered ? 0xf1f5f9 : 0x334155;
 			const alpha = isSelected || isHovered ? 0.8 : 0.4;
 			const width = (isSelected || isHovered ? 2 : 1) * s;
 
 			orbit.graphics.clear().circle(0, 0, orbit.radius).stroke({ width, color, alpha });
 
-			// Update hit area to be at least 10px in screen space
 			const hitWidth = Math.max(10, 5 / viewport.scale.x);
 			orbit.graphics.hitArea = {
 				contains(x: number, y: number) {
@@ -233,21 +205,20 @@
 		if (!selectionGraphics || !viewport) return;
 		selectionGraphics.clear();
 
-		const entity = $selectedEntity;
+		const entity: any = $selectedEntity;
 		if (!entity) return;
 
-		// Find world coordinates for the selected entity
 		let worldX = 0;
 		let worldY = 0;
 		let radius = 0;
 
-		const starNode = starNodes.find((n) => n.star.id === entity.id);
+		const starNode = starNodes.find((n) => n.star.Id === entity.Id);
 		if (starNode) {
 			worldX = starNode.worldX;
 			worldY = starNode.worldY;
 			radius = starNode.baseRadius * starNode.container.scale.x;
 		} else {
-			const bodyNode = bodyNodes.find((n) => n.body.id === entity.id);
+			const bodyNode = bodyNodes.find((n) => n.body.Id === entity.Id);
 			if (bodyNode) {
 				worldX = bodyNode.worldX;
 				worldY = bodyNode.worldY;
@@ -265,23 +236,22 @@
 
 	function getEntityMaxSatRadius(body: OrbitalBody | Star): number {
 		let maxR: number;
-		if ('radius_km' in body) {
-			maxR = getVisualRadius(body.radius_km);
+		if ('RadiusKm' in body) {
+			maxR = getVisualRadius(body.RadiusKm);
 		} else {
-			// Star radius is radius_sol, convert to km for visual radius logic
-			maxR = getVisualRadius(body.radius_sol * 695700);
+			maxR = getVisualRadius(body.RadiusSol * 695700);
 		}
 
-		if (body.satellites) {
-			for (const sat of body.satellites) {
-				const orbitR = auToPixels(sat.orbit_au, scaleConfig);
+		if (body.Satellites) {
+			for (const sat of body.Satellites) {
+				const orbitR = auToPixels(sat.OrbitAu, scaleConfig);
 				const satBoundary = orbitR + getEntityMaxSatRadius(sat);
 				if (satBoundary > maxR) maxR = satBoundary;
 			}
 		}
-		if ('orbital_regions' in body && body.orbital_regions) {
-			for (const reg of body.orbital_regions) {
-				const regR = auToPixels(reg.outer_radius_au, scaleConfig);
+		if ('OrbitalRegions' in body && body.OrbitalRegions) {
+			for (const reg of body.OrbitalRegions) {
+				const regR = auToPixels(reg.OuterRadiusAu, scaleConfig);
 				if (regR > maxR) maxR = regR;
 			}
 		}
@@ -308,7 +278,7 @@
 			if (dist < minDist) {
 				minDist = dist;
 				closest = {
-					id: node.star.id,
+					id: node.star.Id,
 					worldX: node.worldX,
 					worldY: node.worldY,
 					maxSatRadius: node.maxSatRadius,
@@ -321,7 +291,7 @@
 			if (dist < minDist) {
 				minDist = dist;
 				closest = {
-					id: node.body.id,
+					id: node.body.Id,
 					worldX: node.worldX,
 					worldY: node.worldY,
 					maxSatRadius: node.maxSatRadius,
@@ -331,8 +301,6 @@
 		}
 
 		if (closest) {
-			// Hysteresis: only switch focus if the new one is significantly closer
-			// than the current one to the mouse, preventing flip-flopping jitter.
 			const threshold = currentScale > lastScale * 1.001 ? 0.5 : 0.8;
 			if (
 				!focusedObject ||
@@ -354,13 +322,9 @@
 		const sh = viewport.screenHeight;
 		const scale = viewport.scale.x;
 
-		// Navigation bar height is 56px.
 		const visibleHeight = sh - 56;
-
-		// Zoom out limit: system fits in 80% of visible area
 		const minScale = (0.8 * (Math.min(sw, visibleHeight) / 2)) / Math.max(maxSystemRadius, 100);
 
-		// Zoom in limit: focused object itself occupies at most 80% of viewport
 		let maxScale = 50;
 		if (focusedObject) {
 			maxScale = (Math.min(sw, sh) * 0.8) / (2 * focusedObject.baseRadius);
@@ -399,25 +363,21 @@
 		hoverGraphics = new PIXI.Graphics();
 		viewport.addChild(hoverGraphics);
 
-		// Render Stars
-		systemData.stars.forEach((star, i) => {
-			renderStar(star, i, systemData!.stars.length);
+		systemData.Stars.forEach((star, i) => {
+			renderStar(star, i, systemData!.Stars.length);
 		});
 
-		// Render Orbital Bodies (Circumbinary)
-		systemData.orbital_bodies.forEach((body, i) => {
-			renderBody(body, viewport, i, systemData!.orbital_bodies.length);
+		systemData.OrbitalBodies.forEach((body, i) => {
+			renderBody(body, viewport, i, systemData!.OrbitalBodies.length);
 		});
 
-		// Render Regions (e.g. Asteroid Belts)
-		for (const region of systemData.orbital_regions) {
+		for (const region of systemData.OrbitalRegions) {
 			const r = new PIXI.Graphics();
-			const inner = auToPixels(region.inner_radius_au, scaleConfig);
-			const outer = auToPixels(region.outer_radius_au, scaleConfig);
+			const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
+			const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
 
 			if (outer > maxSystemRadius) maxSystemRadius = outer;
 
-			// Render as a thick ring
 			r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
 			viewport.addChild(r);
 		}
@@ -425,28 +385,23 @@
 		updateScales();
 		updateZoomLimits();
 
-		// Initial fit: center in the visible area
 		viewport.setZoom(lastMinScale, true);
 		viewport.moveCenter(0, 0 - 28 / lastMinScale);
 
-		if (typeof window !== 'undefined') {
-			(window as unknown as { solarSystemMapDebug: unknown }).solarSystemMapDebug = {
+		if (import.meta.env.DEV && typeof window !== 'undefined') {
+			(window as any).solarSystemMapDebug = {
 				viewport,
 				starNodes,
 				bodyNodes,
 				scaleConfig,
-				get lastMinScale() {
-					return lastMinScale;
-				},
-				get lastMaxScale() {
-					return lastMaxScale;
-				}
+				get lastMinScale() { return lastMinScale; },
+				get lastMaxScale() { return lastMaxScale; }
 			};
 		}
 	}
 
 	function renderStar(star: Star, index: number, total: number) {
-		const radius = auToPixels(star.orbit_au, scaleConfig);
+		const radius = auToPixels(star.OrbitAu, scaleConfig);
 		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
 		const worldX = Math.cos(angle) * radius;
 		const worldY = Math.sin(angle) * radius;
@@ -459,12 +414,12 @@
 		const orbitContainer = new PIXI.Container();
 		viewport.addChild(orbitContainer);
 
-		if (star.orbit_au > 0) {
+		if (star.OrbitAu > 0) {
 			const orbit = new PIXI.Graphics();
 			orbit.eventMode = 'static';
 			orbit.cursor = 'pointer';
 			orbit.on('pointerover', () => {
-				hoveredEntityId = star.id;
+				hoveredEntityId = star.Id;
 				updateScales();
 			});
 			orbit.on('pointerout', () => {
@@ -477,7 +432,7 @@
 			});
 
 			orbitContainer.addChild(orbit);
-			orbitNodes.push({ graphics: orbit, radius, entityId: star.id });
+			orbitNodes.push({ graphics: orbit, radius, entityId: star.Id });
 		}
 
 		const starCenter = new PIXI.Container();
@@ -489,12 +444,12 @@
 		starCenter.addChild(starVisual);
 
 		const g = new PIXI.Graphics();
-		const color = star.spectral_class.startsWith('G')
+		const color = star.SpectralClass.startsWith('G')
 			? 0xfde047
-			: star.spectral_class.startsWith('M')
+			: star.SpectralClass.startsWith('M')
 				? 0xf97316
 				: 0x38bdf8;
-		const baseRadius = getVisualRadius(star.radius_sol * 695700);
+		const baseRadius = getVisualRadius(star.RadiusSol * 695700);
 		g.circle(0, 0, baseRadius).fill(color);
 		starVisual.addChild(g);
 
@@ -506,7 +461,7 @@
 		});
 
 		starVisual.on('pointerover', () => {
-			hoveredEntityId = star.id;
+			hoveredEntityId = star.Id;
 			updateScales();
 			const s = 1 / viewport.scale.x;
 			hoverGraphics
@@ -521,9 +476,8 @@
 			hoverGraphics.clear();
 		});
 
-		// Label for star
 		const label = new PIXI.Text({
-			text: star.name,
+			text: star.Name,
 			style: { fontFamily: 'sans-serif', fontSize: 14, fill: 0xf1f5f9 }
 		});
 		label.anchor.set(0.5, 0);
@@ -540,16 +494,14 @@
 			maxSatRadius
 		});
 
-		// Render star's satellites
-		star.satellites.forEach((body, i) => {
-			renderBody(body, starCenter, i, star.satellites.length, worldX, worldY, star.id);
+		star.Satellites.forEach((body, i) => {
+			renderBody(body, starCenter, i, star.Satellites.length, worldX, worldY, star.Id);
 		});
 
-		// Render star's regions
-		for (const region of star.orbital_regions) {
+		for (const region of star.OrbitalRegions) {
 			const r = new PIXI.Graphics();
-			const inner = auToPixels(region.inner_radius_au, scaleConfig);
-			const outer = auToPixels(region.outer_radius_au, scaleConfig);
+			const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
+			const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
 			r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
 			starCenter.addChild(r);
 		}
@@ -564,7 +516,7 @@
 		parentY = 0,
 		parentId?: string
 	) {
-		const radius = auToPixels(body.orbit_au, scaleConfig);
+		const radius = auToPixels(body.OrbitAu, scaleConfig);
 		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
 		const worldX = parentX + Math.cos(angle) * radius;
 		const worldY = parentY + Math.sin(angle) * radius;
@@ -581,12 +533,11 @@
 			satelliteContainers.push({ container: orbitContainer, radius });
 		}
 
-		// Orbit Path
 		const orbit = new PIXI.Graphics();
 		orbit.eventMode = 'static';
 		orbit.cursor = 'pointer';
 		orbit.on('pointerover', () => {
-			hoveredEntityId = body.id;
+			hoveredEntityId = body.Id;
 			updateScales();
 		});
 		orbit.on('pointerout', () => {
@@ -599,9 +550,8 @@
 		});
 
 		orbitContainer.addChild(orbit);
-		orbitNodes.push({ graphics: orbit, radius, entityId: body.id });
+		orbitNodes.push({ graphics: orbit, radius, entityId: body.Id });
 
-		// The Body Node
 		const bodyCenter = new PIXI.Container();
 		bodyCenter.x = Math.cos(angle) * radius;
 		bodyCenter.y = Math.sin(angle) * radius;
@@ -618,8 +568,8 @@
 			DwarfPlanet: 0xa78bfa,
 			Comet: 0x2dd4bf
 		};
-		const baseRadius = getVisualRadius(body.radius_km);
-		g.circle(0, 0, baseRadius).fill(colors[body.body_type] || 0xffffff);
+		const baseRadius = getVisualRadius(body.RadiusKm);
+		g.circle(0, 0, baseRadius).fill(colors[body.BodyType] || 0xffffff);
 		bodyVisual.addChild(g);
 
 		bodyVisual.eventMode = 'static';
@@ -630,7 +580,7 @@
 		});
 
 		bodyVisual.on('pointerover', () => {
-			hoveredEntityId = body.id;
+			hoveredEntityId = body.Id;
 			updateScales();
 			const s = 1 / viewport.scale.x;
 			hoverGraphics
@@ -645,9 +595,8 @@
 			hoverGraphics.clear();
 		});
 
-		// Label
 		const label = new PIXI.Text({
-			text: body.name,
+			text: body.Name,
 			style: { fontFamily: 'sans-serif', fontSize: 12, fill: 0x94a3b8 }
 		});
 		label.anchor.set(0.5, 0);
@@ -666,9 +615,8 @@
 			parentId
 		});
 
-		// Recursive Satellites (Moons)
-		body.satellites.forEach((satellite, i) => {
-			renderBody(satellite, bodyCenter, i, body.satellites.length, worldX, worldY, body.id);
+		body.Satellites.forEach((satellite, i) => {
+			renderBody(satellite, bodyCenter, i, body.Satellites.length, worldX, worldY, body.Id);
 		});
 	}
 
@@ -677,9 +625,11 @@
 		renderSystem();
 	}
 
-	$: if ($selectedEntity !== undefined) {
-		drawSelection();
-	}
+	$effect(() => {
+		if ($selectedEntity !== undefined) {
+			drawSelection();
+		}
+	});
 </script>
 
 <div class="w-full h-full relative" data-testid="solar-system-view">
@@ -687,7 +637,7 @@
 	<div class="absolute top-4 left-4 flex gap-2">
 		<button
 			class="px-4 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 border border-slate-700 transition-colors"
-			on:click={() => viewMode.set('cluster')}
+			onclick={() => viewMode.set('cluster')}
 		>
 			Back to Cluster
 		</button>
@@ -696,19 +646,19 @@
 				class="px-3 py-1 rounded-md text-sm transition-colors {scaleConfig.mode === 'linear'
 					? 'bg-sky-600 text-white'
 					: 'text-slate-400 hover:text-slate-200'}"
-				on:click={() => setMode('linear')}>Linear</button
+				onclick={() => setMode('linear')}>Linear</button
 			>
 			<button
 				class="px-3 py-1 rounded-md text-sm transition-colors {scaleConfig.mode === 'log'
 					? 'bg-sky-600 text-white'
 					: 'text-slate-400 hover:text-slate-200'}"
-				on:click={() => setMode('log')}>Log</button
+				onclick={() => setMode('log')}>Log</button
 			>
 		</div>
 	</div>
 	{#if systemData}
 		<div class="absolute bottom-4 left-4 pointer-events-none">
-			<h1 class="text-3xl font-bold text-slate-100 tracking-tight">{systemData.name} System</h1>
+			<h1 class="text-3xl font-bold text-slate-100 tracking-tight">{systemData.Name} System</h1>
 			<p class="text-slate-500 uppercase text-xs tracking-widest font-semibold mt-1">
 				Solar Scale: {scaleConfig.mode}
 			</p>

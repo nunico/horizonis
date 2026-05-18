@@ -27,6 +27,7 @@ uuid = { version = "1.23.1", features = ["v4", "serde"] }
 petgraph = "0.8.3"
 rand = "0.10.1"
 delaunator = "1.1.0"
+procedural-gen = { path = "../../libs/procedural-gen" }
 
 [dev-dependencies]
 tempfile = "3.27.0"

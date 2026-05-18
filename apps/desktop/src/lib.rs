@@ -1,10 +1,8 @@
-mod models;
 mod storage;
 mod commands;
-mod generation;
 
 use std::sync::Mutex;
-use crate::models::StarCluster;
+use procedural_gen::StarCluster;
 
 pub struct AppState {
     pub cluster: Mutex<Option<StarCluster>>,
@@ -22,8 +20,13 @@ pub fn run() {
             commands::get_cluster,
             commands::get_system,
             commands::save_cluster,
+            commands::generate_cluster,
             commands::find_portal_route
         ])
         .run(tauri::generate_context!())
+        .map_err(|e| {
+            eprintln!("Fatal error during startup: {}", e);
+            e
+        })
         .expect("error while running tauri application");
 }

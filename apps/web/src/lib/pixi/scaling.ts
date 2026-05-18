@@ -16,11 +16,11 @@ export function auToPixels(au: number, config: ScaleConfig): number {
 	}
 }
 
-export function getVisualRadius(radius_km: number): number {
+export function getVisualRadius(radiusKm: number): number {
 	// Logarithmic scaling ensures small moons are visible and large stars
 	// don't dominate the screen too much.
-	// radius_km can be very small for stations, but usually > 0.
-	return 4 + Math.log10(Math.max(radius_km, 1)) * 6;
+	// radiusKm can be very small for stations, but usually > 0.
+	return 4 + Math.log10(Math.max(radiusKm, 1)) * 6;
 }
 
 export function getClampedScale(

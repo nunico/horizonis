@@ -4,14 +4,22 @@
 	import type { Star, OrbitalBody } from '$lib/types/stellar';
 	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle } from 'lucide-svelte';
 
-	export let showHelp = false;
+	let { showHelp = $bindable(false) } = $props();
 
-	$: system = $cluster?.systems.find((s) => s.id === $activeSystemId);
-	$: entity = $selectedEntity;
+	let system = $derived($cluster?.Systems.find((s) => s.Id === $activeSystemId));
+	let entity = $derived($selectedEntity);
 
-	let searchQuery = '';
-	let showResults = false;
-	let searchInput: HTMLInputElement;
+	let searchQuery = $state('');
+	let debouncedQuery = $state('');
+	let showResults = $state(false);
+	let searchInput = $state<HTMLInputElement>();
+
+	$effect(() => {
+		const timeout = setTimeout(() => {
+			debouncedQuery = searchQuery;
+		}, 200);
+		return () => clearTimeout(timeout);
+	});
 
 	interface SearchResult {
 		id: string;
@@ -21,38 +29,38 @@
 		entity: Star | OrbitalBody | null;
 	}
 
-	$: searchResults = searchQuery.length > 1 ? getSearchResults(searchQuery) : [];
+	let searchResults = $derived(debouncedQuery.length > 1 ? getSearchResults(debouncedQuery) : []);
 
 	function getSearchResults(query: string): SearchResult[] {
 		if (!$cluster) return [];
 		const results: SearchResult[] = [];
 		const q = query.toLowerCase();
 
-		$cluster.systems.forEach((sys) => {
-			if (sys.name.toLowerCase().includes(q)) {
+		$cluster.Systems.forEach((sys) => {
+			if (sys.Name.toLowerCase().includes(q)) {
 				results.push({
-					id: sys.id,
-					name: sys.name,
+					id: sys.Id,
+					name: sys.Name,
 					type: 'system',
-					systemId: sys.id,
+					systemId: sys.Id,
 					entity: null
 				});
 			}
 
-			sys.stars.forEach((star) => {
-				if (star.name.toLowerCase().includes(q)) {
+			sys.Stars.forEach((star) => {
+				if (star.Name.toLowerCase().includes(q)) {
 					results.push({
-						id: star.id,
-						name: star.name,
+						id: star.Id,
+						name: star.Name,
 						type: 'star',
-						systemId: sys.id,
+						systemId: sys.Id,
 						entity: star
 					});
 				}
-				flattenBodies(star.satellites, sys.id, q, results);
+				flattenBodies(star.Satellites, sys.Id, q, results);
 			});
 
-			flattenBodies(sys.orbital_bodies, sys.id, q, results);
+			flattenBodies(sys.OrbitalBodies, sys.Id, q, results);
 		});
 
 		return results.slice(0, 10);
@@ -65,11 +73,11 @@
 		results: SearchResult[]
 	) {
 		bodies.forEach((body) => {
-			if (body.name.toLowerCase().includes(q)) {
-				results.push({ id: body.id, name: body.name, type: 'body', systemId, entity: body });
+			if (body.Name.toLowerCase().includes(q)) {
+				results.push({ id: body.Id, name: body.Name, type: 'body', systemId, entity: body });
 			}
-			if (body.satellites) {
-				flattenBodies(body.satellites, systemId, q, results);
+			if (body.Satellites) {
+				flattenBodies(body.Satellites, systemId, q, results);
 			}
 		});
 	}
@@ -85,10 +93,10 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === '/' && document.activeElement !== searchInput) {
 			e.preventDefault();
-			searchInput.focus();
+			searchInput?.focus();
 		} else if (e.key === 'Escape') {
 			showResults = false;
-			searchInput.blur();
+			searchInput?.blur();
 		}
 	}
 
@@ -108,7 +116,7 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 <nav
 	class="absolute top-0 left-0 right-0 h-14 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 flex items-center px-4 justify-between z-50"
@@ -116,7 +124,7 @@
 	<div class="flex items-center gap-4">
 		{#if $viewMode === 'system' || $selectedEntity}
 			<button
-				on:click={goBack}
+				onclick={goBack}
 				class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
 				aria-label="Go back"
 			>
@@ -126,7 +134,7 @@
 
 		<div class="flex items-center gap-2 text-sm font-medium">
 			<button
-				on:click={goToCluster}
+				onclick={goToCluster}
 				class="flex items-center gap-1.5 text-slate-400 hover:text-slate-100 transition-colors"
 			>
 				<Home size={16} />
@@ -136,17 +144,17 @@
 			{#if system}
 				<ChevronRight size={14} class="text-slate-600" />
 				<button
-					on:click={() => selectedEntity.set(null)}
+					onclick={() => selectedEntity.set(null)}
 					class="text-slate-400 hover:text-slate-100 transition-colors"
 					class:text-slate-100={!entity}
 				>
-					{system.name}
+					{system.Name}
 				</button>
 			{/if}
 
 			{#if entity}
 				<ChevronRight size={14} class="text-slate-600" />
-				<span class="text-slate-100">{entity.name}</span>
+				<span class="text-slate-100">{entity.Name}</span>
 			{/if}
 		</div>
 	</div>
@@ -160,7 +168,7 @@
 			<input
 				bind:this={searchInput}
 				bind:value={searchQuery}
-				on:focus={() => (showResults = true)}
+				onfocus={() => (showResults = true)}
 				type="text"
 				placeholder="Search systems..."
 				class="w-64 bg-slate-950/50 border border-slate-800 rounded-md py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all placeholder:text-slate-600"
@@ -178,7 +186,7 @@
 			>
 				{#each searchResults as result (result.id)}
 					<button
-						on:click={() => selectResult(result)}
+						onclick={() => selectResult(result)}
 						class="w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-800 transition-colors text-left border-b border-slate-800/50 last:border-0"
 					>
 						<div>
@@ -202,7 +210,7 @@
 		{/if}
 
 		<button
-			on:click={() => (showHelp = true)}
+			onclick={() => (showHelp = true)}
 			class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
 			title="Help (?)"
 			aria-label="Help"

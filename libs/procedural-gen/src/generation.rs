@@ -1,14 +1,21 @@
 use crate::models::{StarCluster, SolarSystem, Star, OrbitalBody, BodyType, OrbitalRegion, Portal};
 use uuid::Uuid;
 use rand::prelude::*;
-use rand::rngs::ThreadRng;
+use rand::rngs::StdRng;
 use delaunator::{Point, triangulate};
+use std::collections::HashSet;
 
 const SYSTEM_NAMES: &[&str] = &[
     "Alpha Centauri", "Sirius", "Epsilon Eridani", "Procyon", "61 Cygni",
     "Tau Ceti", "Vega", "Altair", "Fomalhaut", "Arcturus",
     "Pollux", "Capella", "Regulus", "Castor", "Spica",
-    "Rigel", "Betelgeuse", "Deneb", "Antares", "Aldebaran"
+    "Rigel", "Betelgeuse", "Deneb", "Antares", "Aldebaran",
+    "Canopus", "Achernar", "Hadar", "Acrux", "Bellatrix",
+    "Elnath", "Alnilam", "Alnitak", "Alioth", "Kaus Australis",
+    "Mirfak", "Dubhe", "Wezen", "Sargas", "Avior",
+    "Menkalinan", "Atria", "Alhena", "Peacock", "Alsephina",
+    "Mirzam", "Alphard", "Hamal", "Algieba", "Diphda",
+    "Nunki", "Menkent", "Mirach", "Alpheratz", "Saiph"
 ];
 
 const SPECTRAL_CLASSES: &[(&str, f32, f32)] = &[
@@ -21,8 +28,9 @@ const SPECTRAL_CLASSES: &[(&str, f32, f32)] = &[
     ("M5V", 0.2, 0.25),
 ];
 
-pub fn generate_cluster(name: &str, system_count: usize) -> StarCluster {
-    let mut rng = rand::rng();
+pub fn generate_cluster(seed: u64) -> StarCluster {
+    let mut rng = StdRng::seed_from_u64(seed);
+    let system_count = rng.random_range(15..25);
     let mut systems = Vec::with_capacity(system_count);
     
     // Generate system positions and basic data
@@ -47,7 +55,7 @@ pub fn generate_cluster(name: &str, system_count: usize) -> StarCluster {
     let tri = triangulate(&points);
     
     // Extract unique edges
-    let mut edges = Vec::new();
+    let mut edges = HashSet::new();
     for i in 0..tri.triangles.len() / 3 {
         let t1 = tri.triangles[3 * i];
         let t2 = tri.triangles[3 * i + 1];
@@ -55,11 +63,10 @@ pub fn generate_cluster(name: &str, system_count: usize) -> StarCluster {
         
         for (u, v) in [(t1, t2), (t2, t3), (t3, t1)] {
             let (start, end) = if u < v { (u, v) } else { (v, u) };
-            if !edges.contains(&(start, end)) {
-                edges.push((start, end));
-            }
+            edges.insert((start, end));
         }
     }
+    let mut edges: Vec<_> = edges.into_iter().collect();
 
     // Prune edges to meet degree constraints
     // Goal: most 2, some 1 or 3, rare 4
@@ -111,12 +118,12 @@ pub fn generate_cluster(name: &str, system_count: usize) -> StarCluster {
     }
 
     StarCluster {
-        name: name.to_string(),
+        name: format!("Cluster {}", seed),
         systems,
     }
 }
 
-fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> SolarSystem {
+fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> SolarSystem {
     let id = Uuid::new_v4();
     
     // Determine number of stars
@@ -159,16 +166,17 @@ fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> S
             let m0 = stars[0].mass_sol;
             let m1 = stars[1].mass_sol;
             stars[0].orbit_au = d * (m1 / (m0 + m1));
-            stars[1].orbit_au = d * (m0 / (m0 + m1));
+            stars[1].orbit_au = -d * (m0 / (m0 + m1)); // Opposite side
         } else {
             let d_inner = rng.random_range(30.0..60.0);
             let d_outer = rng.random_range(200.0..500.0);
             
             // Distances from system barycenter
-            // This is a simplification: Star 0 and 1 are a tight pair orbiting center
-            // and Star 2 is far away.
-            stars[0].orbit_au = d_inner * 0.5;
-            stars[1].orbit_au = d_inner * 0.5;
+            // Star 0 and 1 are a tight pair orbiting each other
+            let m0 = stars[0].mass_sol;
+            let m1 = stars[1].mass_sol;
+            stars[0].orbit_au = d_inner * (m1 / (m0 + m1));
+            stars[1].orbit_au = -d_inner * (m0 / (m0 + m1));
             stars[2].orbit_au = d_outer;
         }
     }
@@ -178,20 +186,13 @@ fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> S
     for i in 0..star_count {
         let mut stable_limit = 50.0;
         if star_count > 1 {
-            // Find distance to closest other star (simplification for linear barycentric setup)
+            // Find distance to closest other star
             let mut min_dist = f32::MAX;
             for j in 0..star_count {
                 if i == j {
                     continue;
                 }
-                // Stars are generated on a line through barycenter
-                // Binary: rA and rB on opposite sides -> dist = rA + rB
-                // Trinary: A, B (opposite sides, d_inner/2), C (d_outer) -> dist(A,B) = d_inner, dist(A,C) = d_outer - d_inner/2
-                let dist = (stars[i].orbit_au + stars[j].orbit_au).abs();
-                // To be safer and handle trinary C star properly:
-                // Actually stars[0] and stars[1] are opposite, stars[2] is same side as one of them or distant.
-                // My trinary setup: stars[0].orbit_au = d_inner * 0.5, stars[1].orbit_au = d_inner * 0.5, stars[2].orbit_au = d_outer
-                // Let's just use a simple heuristic:
+                let dist = (stars[i].orbit_au - stars[j].orbit_au).abs();
                 if dist < min_dist && dist > 0.01 { min_dist = dist; }
             }
             stable_limit = min_dist * 0.35;
@@ -227,16 +228,13 @@ fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> S
     // Circumbinary / System-wide bodies
     let mut orbital_bodies = Vec::new();
     if num_stars > 1 {
-        let mut current_orbit = stars.iter().map(|s| s.orbit_au).fold(0.0, f32::max) * 2.5;
+        let mut current_orbit = stars.iter().map(|s| s.orbit_au.abs()).fold(0.0, f32::max) * 2.5;
         let num_circumbinary = rng.random_range(0..4);
         for i in 0..num_circumbinary {
             current_orbit *= rng.random_range(1.3..1.8);
             orbital_bodies.push(generate_body(rng, i, current_orbit));
         }
     } else {
-        // For single star systems, we can still use orbital_bodies or just star.satellites
-        // Let's keep them in star.satellites for consistency with the multi-star logic,
-        // but maybe add some very distant objects to orbital_bodies.
         if rng.random_bool(0.3) {
             let last_planet_orbit = stars[0].satellites.last().map(|b| b.orbit_au).unwrap_or(1.0);
             let orbit = last_planet_orbit * rng.random_range(5.0..20.0);
@@ -276,22 +274,19 @@ fn generate_solar_system(rng: &mut ThreadRng, name: String, x: f32, y: f32) -> S
     }
 }
 
-fn generate_body(rng: &mut ThreadRng, index: usize, orbit_au: f32) -> OrbitalBody {
+fn generate_body(rng: &mut impl Rng, index: usize, orbit_au: f32) -> OrbitalBody {
     let is_gas_giant = orbit_au > 4.0;
     
     let (body_type, radius_km, mass_earth, tags) = if is_gas_giant {
-        let mass: f32 = rng.random_range(15.0..318.0); // Earth masses (Neptune to Jupiter)
-        let density: f32 = rng.random_range(0.7..1.7); // g/cm3
-        // Volume V = M / density. R = (3V/4pi)^(1/3)
-        // Relative to Earth: R_earth = 6371km, M_earth = 5.97e24kg.
-        // density_earth = 5.51 g/cm3.
+        let mass: f32 = rng.random_range(15.0..318.0);
+        let density: f32 = rng.random_range(0.7..1.7);
         let radius_earth_equiv = (mass / (density / 5.51)).powf(1.0/3.0);
         let radius_km = radius_earth_equiv * 6371.0;
         
         (BodyType::Planet, radius_km, mass, vec!["Gas Giant".to_string()])
     } else {
-        let mass: f32 = rng.random_range(0.05..2.0); // Earth masses
-        let density: f32 = rng.random_range(3.5..5.5); // g/cm3
+        let mass: f32 = rng.random_range(0.05..2.0);
+        let density: f32 = rng.random_range(3.5..5.5);
         let radius_earth_equiv = (mass / (density / 5.51)).powf(1.0/3.0);
         let radius_km = radius_earth_equiv * 6371.0;
         

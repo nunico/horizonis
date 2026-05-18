@@ -1,52 +1,52 @@
 export interface StarCluster {
-	name: string;
-	systems: SolarSystem[];
+	Name: string;
+	Systems: SolarSystem[];
 }
 
 export interface SolarSystem {
-	id: string;
-	name: string;
-	x: number;
-	y: number;
-	stars: Star[];
-	orbital_bodies: OrbitalBody[];
-	orbital_regions: OrbitalRegion[];
-	portals: Portal[];
+	Id: string;
+	Name: string;
+	X: number;
+	Y: number;
+	Stars: Star[];
+	OrbitalBodies: OrbitalBody[];
+	OrbitalRegions: OrbitalRegion[];
+	Portals: Portal[];
 }
 
 export interface Star {
-	id: string;
-	name: string;
-	spectral_class: string;
-	radius_sol: number;
-	mass_sol: number;
-	orbit_au: number;
-	satellites: OrbitalBody[];
-	orbital_regions: OrbitalRegion[];
+	Id: string;
+	Name: string;
+	SpectralClass: string;
+	RadiusSol: number;
+	MassSol: number;
+	OrbitAu: number;
+	Satellites: OrbitalBody[];
+	OrbitalRegions: OrbitalRegion[];
 }
 
 export interface OrbitalBody {
-	id: string;
-	name: string;
-	body_type: BodyType;
-	orbit_au: number;
-	radius_km: number;
-	mass_earth: number;
-	satellites: OrbitalBody[];
-	tags: string[];
+	Id: string;
+	Name: string;
+	BodyType: BodyType;
+	OrbitAu: number;
+	RadiusKm: number;
+	MassEarth: number;
+	Satellites: OrbitalBody[];
+	Tags: string[];
 }
 
 export type BodyType = 'Planet' | 'Moon' | 'SpaceStation' | 'DwarfPlanet' | 'Comet';
 
 export interface OrbitalRegion {
-	name: string;
-	inner_radius_au: number;
-	outer_radius_au: number;
-	region_type: string;
+	Name: string;
+	InnerRadiusAu: number;
+	OuterRadiusAu: number;
+	RegionType: string;
 }
 
 export interface Portal {
-	id: string;
-	name: string;
-	target_system_id: string;
+	Id: string;
+	Name: string;
+	TargetSystemId: string;
 }

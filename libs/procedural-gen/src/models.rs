@@ -2,12 +2,14 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "PascalCase")]
 pub struct StarCluster {
     pub name: String,
     pub systems: Vec<SolarSystem>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "PascalCase")]
 pub struct SolarSystem {
     pub id: Uuid,
     pub name: String,
@@ -20,6 +22,7 @@ pub struct SolarSystem {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "PascalCase")]
 pub struct Star {
     pub id: Uuid,
     pub name: String,
@@ -35,6 +38,7 @@ pub struct Star {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "PascalCase")]
 pub struct OrbitalBody {
     pub id: Uuid,
     pub name: String,
@@ -57,6 +61,7 @@ pub enum BodyType {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "PascalCase")]
 pub struct OrbitalRegion {
     pub name: String,
     pub inner_radius_au: f32,
@@ -65,6 +70,7 @@ pub struct OrbitalRegion {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "PascalCase")]
 pub struct Portal {
     pub id: Uuid,
     pub name: String,

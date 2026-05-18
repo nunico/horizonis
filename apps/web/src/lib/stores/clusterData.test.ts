@@ -1,44 +1,43 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { cluster, loadCluster, saveCluster } from './clusterData';
-import { invoke } from '@tauri-apps/api/core';
 
-vi.mock('@tauri-apps/api/core');
+// Mock procedural-gen
+vi.mock('procedural-gen', () => ({
+	default: vi.fn().mockResolvedValue(undefined),
+	generate_cluster: vi.fn().mockReturnValue({ Name: 'Generated', Systems: [] })
+}));
 
 describe('clusterData store', () => {
 	beforeEach(() => {
 		cluster.set(null);
 		vi.clearAllMocks();
+		// @ts-ignore
+		delete window.__TAURI_INTERNALS__;
+		localStorage.clear();
 	});
 
-	it('loads cluster data correctly', async () => {
-		const mockData = { name: 'Test Cluster', systems: [] };
-		vi.mocked(invoke).mockResolvedValue(mockData);
+	it('loads cluster data from browser storage when not in Tauri', async () => {
+		const mockData = { Name: 'Test Cluster', Systems: [] };
+		localStorage.setItem('horizonis_cluster', JSON.stringify(mockData));
 
 		await loadCluster();
 
-		expect(invoke).toHaveBeenCalledWith('get_cluster');
 		expect(get(cluster)).toEqual(mockData);
 	});
 
-	it('saves cluster data correctly', async () => {
-		const mockData = { name: 'New Cluster', systems: [] };
-		vi.mocked(invoke).mockResolvedValue(undefined);
+	it('generates new cluster when browser storage is empty', async () => {
+		await loadCluster();
 
+		expect(get(cluster)).toEqual({ Name: 'Generated', Systems: [] });
+		expect(localStorage.getItem('horizonis_cluster')).not.toBeNull();
+	});
+
+	it('saves cluster data to browser storage', async () => {
+		const mockData = { Name: 'New Cluster', Systems: [] };
 		await saveCluster(mockData);
 
-		expect(invoke).toHaveBeenCalledWith('save_cluster', { cluster: mockData });
 		expect(get(cluster)).toEqual(mockData);
-	});
-
-	it('handles errors during load', async () => {
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-		vi.mocked(invoke).mockRejectedValue(new Error('Failed'));
-
-		await loadCluster();
-
-		expect(get(cluster)).toBeNull();
-		expect(consoleSpy).toHaveBeenCalled();
-		consoleSpy.mockRestore();
+		expect(JSON.parse(localStorage.getItem('horizonis_cluster')!)).toEqual(mockData);
 	});
 });

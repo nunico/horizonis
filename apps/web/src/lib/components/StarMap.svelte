@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
 	import { cluster } from '../stores/clusterData';
 	import { viewMode, activeSystemId, selectedEntity } from '../stores/appState';
+	import type { SolarSystem } from '../types/stellar';
 
-	let container: HTMLDivElement;
+	let container = $state<HTMLDivElement>();
 	let app: PIXI.Application;
 	let viewport: Viewport;
 	let resizeHandler: () => void;
@@ -19,10 +19,10 @@
 		toPos: { x: number; y: number };
 		key: string;
 	}[] = [];
-	let hoveredSystemId: string | null = null;
-	let hoveredPortalKey: string | null = null;
+	let hoveredSystemId = $state<string | null>(null);
+	let hoveredPortalKey = $state<string | null>(null);
 
-	let focusedSystem: { x: number; y: number; id: string } | null = null;
+	let focusedSystem = $state<{ x: number; y: number; id: string } | null>(null);
 	let lastScale = 1;
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
@@ -31,31 +31,47 @@
 	let selectionGraphics: PIXI.Graphics;
 	let hoverGraphics: PIXI.Graphics;
 
+	// Optimization: System lookup Map
+	let systemsById = $derived(new Map($cluster?.Systems.map(s => [s.Id, s]) || []));
+
+	// Optimization: Spatial Grid for O(log n) lookups
+	const GRID_SIZE = 200;
+	let spatialGrid = $derived.by(() => {
+		const grid = new Map<string, SolarSystem[]>();
+		if (!$cluster) return grid;
+		for (const system of $cluster.Systems) {
+			const gx = Math.floor(system.X / GRID_SIZE);
+			const gy = Math.floor(system.Y / GRID_SIZE);
+			const key = `${gx},${gy}`;
+			if (!grid.has(key)) grid.set(key, []);
+			grid.get(key)!.push(system);
+		}
+		return grid;
+	});
+
 	onMount(async () => {
+		if (!container) return;
 		app = new PIXI.Application();
 		await app.init({
 			resizeTo: container,
 			antialias: true,
 			backgroundColor: 0x020617 // slate-950
 		});
-		// eslint-disable-next-line svelte/no-dom-manipulating
 		container.appendChild(app.canvas);
 
 		viewport = new Viewport({
 			screenWidth: app.screen.width,
 			screenHeight: app.screen.height,
-			worldWidth: 100000,
-			worldHeight: 100000,
+			worldWidth: 10000,
+			worldHeight: 10000,
 			events: app.renderer.events
 		});
 
 		app.stage.addChild(viewport);
 
 		viewport.drag().pinch().wheel().decelerate();
-
 		viewport.moveCenter(0, 0);
 
-		// Handle resizes
 		resizeHandler = () => {
 			if (viewport && app.renderer) {
 				viewport.resize(app.screen.width, app.screen.height);
@@ -63,9 +79,9 @@
 			}
 		};
 		app.renderer.on('resize', resizeHandler);
+
 		viewport.on('zoomed', () => {
 			const currentScale = viewport.scale.x;
-			// Use a small epsilon to avoid jitter at limits
 			const zoomingIn = currentScale > lastScale * 1.0001;
 
 			updateFocus(currentScale);
@@ -82,15 +98,11 @@
 		});
 		viewport.on('moved', updateScales);
 
-		if (typeof window !== 'undefined') {
-			(window as unknown as Record<string, unknown>).starMapDebug = {
+		if (import.meta.env.DEV && typeof window !== 'undefined') {
+			(window as any).starMapDebug = {
 				viewport,
-				get lastMinScale() {
-					return lastMinScale;
-				},
-				get lastMaxScale() {
-					return lastMaxScale;
-				},
+				get lastMinScale() { return lastMinScale; },
+				get lastMaxScale() { return lastMaxScale; },
 				updateZoomLimits
 			};
 		}
@@ -119,7 +131,6 @@
 		hoverGraphics.clear();
 		const s = 1 / viewport.scale.x;
 
-		// If a portal is hovered, highlight its systems
 		if (hoveredPortalKey) {
 			const portal = portalNodes.find((p) => p.key === hoveredPortalKey);
 			if (portal) {
@@ -131,12 +142,11 @@
 			}
 		}
 
-		// If a system is hovered, highlight it
 		if (hoveredSystemId) {
-			const system = $cluster?.systems.find((s) => s.id === hoveredSystemId);
+			const system = systemsById.get(hoveredSystemId);
 			if (system) {
 				hoverGraphics
-					.circle(system.x, system.y, 14 * s)
+					.circle(system.X, system.Y, 14 * s)
 					.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
 			}
 		}
@@ -146,12 +156,12 @@
 		if (!selectionGraphics || !viewport) return;
 		selectionGraphics.clear();
 
-		const entity = $selectedEntity;
-		if (!entity || !('x' in entity) || !('y' in entity)) return;
+		const entity: any = $selectedEntity;
+		if (!entity || entity.X === undefined || entity.Y === undefined) return;
 
 		const s = 1 / viewport.scale.x;
 		selectionGraphics
-			.circle(entity.x, entity.y, 18 * s)
+			.circle(entity.X, entity.Y, 18 * s)
 			.stroke({ width: 2 * s, color: 0x38bdf8, alpha: 0.8 });
 	}
 
@@ -164,25 +174,35 @@
 		let minDist = Infinity;
 		let closest = null;
 
-		for (const system of $cluster.systems) {
-			const dist = Math.hypot(system.x - mouseWorld.x, system.y - mouseWorld.y);
-			if (dist < minDist) {
-				minDist = dist;
-				closest = system;
+		// Use spatial grid for faster lookup
+		const gx = Math.floor(mouseWorld.x / GRID_SIZE);
+		const gy = Math.floor(mouseWorld.y / GRID_SIZE);
+
+		for (let dx = -1; dx <= 1; dx++) {
+			for (let dy = -1; dy <= 1; dy++) {
+				const key = `${gx + dx},${gy + dy}`;
+				const cellSystems = spatialGrid.get(key);
+				if (cellSystems) {
+					for (const system of cellSystems) {
+						const dist = Math.hypot(system.X - mouseWorld.x, system.Y - mouseWorld.y);
+						if (dist < minDist) {
+							minDist = dist;
+							closest = system;
+						}
+					}
+				}
 			}
 		}
 
 		if (closest) {
-			// Hysteresis: only switch focus if the new one is significantly closer
-			// than the current one to the mouse, preventing flip-flopping jitter.
 			const threshold = currentScale > lastScale * 1.001 ? 0.6 : 0.8;
 			if (
 				!focusedSystem ||
-				closest.id === focusedSystem.id ||
+				closest.Id === focusedSystem.id ||
 				minDist <
 					Math.hypot(focusedSystem.x - mouseWorld.x, focusedSystem.y - mouseWorld.y) * threshold
 			) {
-				focusedSystem = { x: closest.x, y: closest.y, id: closest.id };
+				focusedSystem = { x: closest.X, y: closest.Y, id: closest.Id };
 			}
 		} else {
 			focusedSystem = null;
@@ -195,14 +215,9 @@
 		const sh = viewport.screenHeight;
 		const scale = viewport.scale.x;
 
-		// Navigation bar height is 56px.
-		// We want to center the cluster in the visible area (56 to screenHeight).
 		const visibleHeight = sh - 56;
-
-		// Zoom out limit: cluster fits in 80% of the visible area
 		const minScale = (0.8 * (Math.min(sw, visibleHeight) / 2)) / Math.max(maxClusterRadius, 100);
 
-		// Zoom in limit: focused object boundaries never exceed viewport
 		let maxScale = 10;
 		if (focusedSystem) {
 			maxScale = Math.min(sw, sh) / 2 / 20;
@@ -214,11 +229,9 @@
 			lastMaxScale = maxScale;
 		}
 
-		// Manual clamping logic to allow panning when window is small
-		// but center it when window is large.
 		const hwx = sw / 2 / scale;
 		const hwy = sh / 2 / scale;
-		const offY = 28 / scale; // Shift center by 28px down on screen
+		const offY = 28 / scale;
 
 		viewport.clamp({
 			left: Math.min(clusterCenter.x - hwx, clusterCenter.x - maxClusterRadius),
@@ -232,7 +245,7 @@
 		if (!$cluster || !viewport) return;
 
 		const s = 1 / viewport.scale.x;
-		const selectedId = $selectedEntity?.id;
+		const selectedId = ($selectedEntity as any)?.Id;
 
 		for (const portal of portalNodes) {
 			const isHovered = hoveredPortalKey === portal.key;
@@ -253,8 +266,8 @@
 				.lineTo(portal.toPos.x, portal.toPos.y)
 				.stroke({ width, color, alpha });
 
-			// Custom hit area for the line
 			const hitWidth = Math.max(10, 5 / viewport.scale.x);
+			// Cache hitArea object if possible, but it depends on viewport scale here
 			portal.graphics.hitArea = {
 				contains(x: number, y: number) {
 					const { x: x1, y: y1 } = portal.fromPos;
@@ -277,22 +290,19 @@
 		systemNodes = [];
 		portalNodes = [];
 
-		if ($cluster.systems.length > 0) {
-			let minX = Infinity,
-				maxX = -Infinity,
-				minY = Infinity,
-				maxY = -Infinity;
-			for (const system of $cluster.systems) {
-				if (system.x < minX) minX = system.x;
-				if (system.x > maxX) maxX = system.x;
-				if (system.y < minY) minY = system.y;
-				if (system.y > maxY) maxY = system.y;
+		if ($cluster.Systems.length > 0) {
+			let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+			for (const system of $cluster.Systems) {
+				if (system.X < minX) minX = system.X;
+				if (system.X > maxX) maxX = system.X;
+				if (system.Y < minY) minY = system.Y;
+				if (system.Y > maxY) maxY = system.Y;
 			}
 			clusterCenter = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
 
 			maxClusterRadius = 0;
-			for (const system of $cluster.systems) {
-				const dist = Math.hypot(system.x - clusterCenter.x, system.y - clusterCenter.y);
+			for (const system of $cluster.Systems) {
+				const dist = Math.hypot(system.X - clusterCenter.x, system.Y - clusterCenter.y);
 				if (dist + 40 > maxClusterRadius) maxClusterRadius = dist + 40;
 			}
 		} else {
@@ -300,12 +310,11 @@
 			maxClusterRadius = 100;
 		}
 
-		// Deduplicate and Create Portal Nodes
-		const uniquePortals = new SvelteMap<string, { from: string; to: string }>();
-		for (const system of $cluster.systems) {
-			for (const portal of system.portals) {
-				const id1 = system.id;
-				const id2 = portal.target_system_id;
+		const uniquePortals = new Map<string, { from: string; to: string }>();
+		for (const system of $cluster.Systems) {
+			for (const portal of system.Portals) {
+				const id1 = system.Id;
+				const id2 = portal.TargetSystemId;
 				const key = [id1, id2].sort().join('-');
 				if (!uniquePortals.has(key)) {
 					uniquePortals.set(key, { from: id1, to: id2 });
@@ -314,8 +323,8 @@
 		}
 
 		for (const [key, pair] of uniquePortals) {
-			const sys1 = $cluster.systems.find((s) => s.id === pair.from);
-			const sys2 = $cluster.systems.find((s) => s.id === pair.to);
+			const sys1 = systemsById.get(pair.from);
+			const sys2 = systemsById.get(pair.to);
 			if (sys1 && sys2) {
 				const g = new PIXI.Graphics();
 				g.eventMode = 'static';
@@ -335,27 +344,25 @@
 					graphics: g,
 					fromId: pair.from,
 					toId: pair.to,
-					fromPos: { x: sys1.x, y: sys1.y },
-					toPos: { x: sys2.x, y: sys2.y },
+					fromPos: { x: sys1.X, y: sys1.Y },
+					toPos: { x: sys2.X, y: sys2.Y },
 					key
 				});
 			}
 		}
 
-		// Selection and Hover graphics
 		selectionGraphics = new PIXI.Graphics();
 		viewport.addChild(selectionGraphics);
 
 		hoverGraphics = new PIXI.Graphics();
 		viewport.addChild(hoverGraphics);
 
-		// Render systems
-		for (const system of $cluster.systems) {
+		for (const system of $cluster.Systems) {
 			const node = new PIXI.Graphics();
 			node.circle(0, 0, 10).fill(0x38bdf8);
 
-			node.x = system.x;
-			node.y = system.y;
+			node.x = system.X;
+			node.y = system.Y;
 			node.eventMode = 'static';
 			node.cursor = 'pointer';
 
@@ -365,7 +372,7 @@
 			});
 
 			node.on('pointerover', () => {
-				hoveredSystemId = system.id;
+				hoveredSystemId = system.Id;
 				updateScales();
 			});
 
@@ -374,21 +381,19 @@
 				updateScales();
 			});
 
-			// Double click logic
 			let lastClickTime = 0;
 			node.on('pointertap', (e) => {
 				e.stopPropagation();
 				const now = Date.now();
 				if (now - lastClickTime < 350) {
-					activeSystemId.set(system.id);
+					activeSystemId.set(system.Id);
 					viewMode.set('system');
 				}
 				lastClickTime = now;
 			});
 
-			// Label
 			const label = new PIXI.Text({
-				text: system.name,
+				text: system.Name,
 				style: {
 					fontFamily: 'sans-serif',
 					fontSize: 14,
@@ -406,18 +411,21 @@
 		updateScales();
 		updateZoomLimits();
 
-		// Initial fit: center in the visible area
 		viewport.setZoom(lastMinScale, true);
 		viewport.moveCenter(clusterCenter.x, clusterCenter.y - 28 / lastMinScale);
 	}
 
-	$: if ($cluster && viewport) {
-		renderCluster();
-	}
+	$effect(() => {
+		if ($cluster && viewport) {
+			renderCluster();
+		}
+	});
 
-	$: if ($selectedEntity !== undefined) {
-		drawSelection();
-	}
+	$effect(() => {
+		if ($selectedEntity !== undefined) {
+			drawSelection();
+		}
+	});
 </script>
 
 <div bind:this={container} data-testid="star-map" class="w-full h-full"></div>

@@ -6,7 +6,7 @@
 	let { children } = $props();
 
 	onMount(() => {
-		if (typeof window !== 'undefined') {
+		if (import.meta.env.DEV && typeof window !== 'undefined') {
 			(window as unknown as { stores: unknown }).stores = {
 				viewMode,
 				selectedEntity,

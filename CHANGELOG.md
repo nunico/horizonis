@@ -2,6 +2,18 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-18] - Procedural Generation Native Library & Storage Refactor
+
+- **Summary**: Switched desktop app to use native Rust library via Tauri commands instead of WASM for procedural generation.
+- **Changes**:
+  - Extracted procedural generation logic into a shared `procedural-gen` Rust library with feature-gated WASM support.
+  - Implemented `generate_cluster`, `get_cluster`, and `compute_route` as native Tauri commands.
+  - Updated `StorageProvider` to support both Tauri and Browser environments, using native commands for desktop.
+  - Refactored frontend to use dynamic imports for WASM, ensuring it's not loaded in the desktop application.
+  - Enhanced solar system generation logic for binary and trinary systems in the native library.
+- **Files Affected**: `libs/procedural-gen/`, `apps/desktop/src/commands.rs`, `apps/web/src/lib/storage/`, `apps/web/src/lib/stores/clusterData.ts`, `Cargo.toml`.
+- **Context**: Optimized desktop performance by leveraging native Rust execution while maintaining web compatibility through WASM.
+
 ###### [2026-05-18] - Added AGPL-3.0 licensing to the project
 
 - **Summary**: Added AGPL-3.0 licensing to the project.

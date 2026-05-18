@@ -7,20 +7,20 @@ import { cluster } from '../stores/clusterData';
 import type { StarCluster } from '../types/stellar';
 
 const mockCluster: StarCluster = {
-	name: 'Test Cluster',
-	systems: [
+	Name: 'Test Cluster',
+	Systems: [
 		{
-			id: 'sys-1',
-			name: 'Alpha Centauri',
-			x: 100,
-			y: 200,
-			stars: [],
-			orbital_bodies: [],
-			orbital_regions: [],
-			portals: []
+			Id: 'sys-1',
+			Name: 'Alpha Centauri',
+			X: 100,
+			Y: 200,
+			Stars: [],
+			OrbitalBodies: [],
+			OrbitalRegions: [],
+			Portals: []
 		}
 	]
-};
+} as unknown as StarCluster;
 
 describe('Navigation component', () => {
 	beforeEach(() => {
@@ -51,15 +51,15 @@ describe('Navigation component', () => {
 		activeSystemId.set('sys-1');
 		viewMode.set('system');
 		selectedEntity.set({
-			id: 'entity-1',
-			name: 'Gaia Prime',
-			body_type: 'Planet',
-			orbit_au: 1,
-			radius_km: 6371,
-			mass_earth: 1,
-			satellites: [],
-			tags: []
-		});
+			Id: 'entity-1',
+			Name: 'Gaia Prime',
+			BodyType: 'Planet',
+			OrbitAu: 1,
+			RadiusKm: 6371,
+			MassEarth: 1,
+			Satellites: [],
+			Tags: []
+		} as any);
 
 		render(Navigation);
 
@@ -70,15 +70,15 @@ describe('Navigation component', () => {
 		activeSystemId.set('sys-1');
 		viewMode.set('system');
 		selectedEntity.set({
-			id: 'entity-1',
-			name: 'Gaia Prime',
-			body_type: 'Planet',
-			orbit_au: 1,
-			radius_km: 6371,
-			mass_earth: 1,
-			satellites: [],
-			tags: []
-		});
+			Id: 'entity-1',
+			Name: 'Gaia Prime',
+			BodyType: 'Planet',
+			OrbitAu: 1,
+			RadiusKm: 6371,
+			MassEarth: 1,
+			Satellites: [],
+			Tags: []
+		} as any);
 
 		render(Navigation);
 
@@ -99,15 +99,15 @@ describe('Navigation component', () => {
 		activeSystemId.set('sys-1');
 		viewMode.set('system');
 		selectedEntity.set({
-			id: 'entity-1',
-			name: 'Gaia Prime',
-			body_type: 'Planet',
-			orbit_au: 1,
-			radius_km: 6371,
-			mass_earth: 1,
-			satellites: [],
-			tags: []
-		});
+			Id: 'entity-1',
+			Name: 'Gaia Prime',
+			BodyType: 'Planet',
+			OrbitAu: 1,
+			RadiusKm: 6371,
+			MassEarth: 1,
+			Satellites: [],
+			Tags: []
+		} as any);
 
 		render(Navigation);
 
@@ -119,22 +119,29 @@ describe('Navigation component', () => {
 	});
 
 	it('filters and displays search results', async () => {
+		vi.useFakeTimers();
 		render(Navigation);
 
 		const input = screen.getByPlaceholderText(/search systems/i);
 		await fireEvent.focus(input);
 		await fireEvent.input(input, { target: { value: 'Alpha' } });
+		
+		vi.advanceTimersByTime(200);
 
 		expect(screen.getByText('Alpha Centauri')).toBeInTheDocument();
 		expect(screen.getByText('system')).toBeInTheDocument();
+		vi.useRealTimers();
 	});
 
 	it('selects search result and navigates', async () => {
+		vi.useFakeTimers();
 		render(Navigation);
 
 		const input = screen.getByPlaceholderText(/search systems/i);
 		await fireEvent.focus(input);
 		await fireEvent.input(input, { target: { value: 'Alpha' } });
+
+		vi.advanceTimersByTime(200);
 
 		const resultButton = screen.getByText('Alpha Centauri').closest('button');
 		await fireEvent.click(resultButton!);
@@ -143,6 +150,7 @@ describe('Navigation component', () => {
 		expect(get(viewMode)).toBe('system');
 		expect(get(selectedEntity)).toBeNull();
 		expect(input).toHaveValue('');
+		vi.useRealTimers();
 	});
 
 	it('focuses search input on "/" keydown', async () => {

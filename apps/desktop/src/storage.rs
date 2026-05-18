@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
-use crate::models::StarCluster;
+use procedural_gen::{StarCluster, generate_cluster};
 use tauri::{AppHandle, Manager};
 
 pub struct StorageManager {
@@ -42,13 +42,15 @@ impl StorageManager {
 
     pub fn save(&self, cluster: &StarCluster) -> Result<(), String> {
         let content = serde_json::to_string_pretty(cluster)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Failed to serialize cluster: {}", e))?;
         
-        fs::write(&self.file_path, content).map_err(|e| e.to_string())
+        let temp_path = self.file_path.with_extension("json.tmp");
+        fs::write(&temp_path, content).map_err(|e| format!("Failed to write temp file: {}", e))?;
+        fs::rename(&temp_path, &self.file_path).map_err(|e| format!("Failed to rename temp file: {}", e))
     }
 
     fn create_default_cluster(&self) -> StarCluster {
-        crate::generation::generate_cluster("Horizonis Sector", 15)
+        generate_cluster(42) // Use fixed seed for default cluster
     }
 }
 
@@ -78,7 +80,7 @@ mod tests {
         let storage = StorageManager::from_path(file_path);
 
         let cluster = storage.load().unwrap();
-        assert_eq!(cluster.name, "Horizonis Sector");
-        assert_eq!(cluster.systems.len(), 15);
+        assert!(cluster.name.contains("Cluster 42"));
+        assert!(cluster.systems.len() >= 15);
     }
 }

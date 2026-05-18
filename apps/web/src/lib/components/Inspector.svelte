@@ -6,16 +6,18 @@
 
 	type Entity = SolarSystem | Star | OrbitalBody;
 
-	let entity: Entity | null = null;
-	let nameInput: HTMLInputElement;
+	let entity = $state<Entity | null>(null);
+	let nameInput = $state<HTMLInputElement>();
 
-	selectedEntity.subscribe((v) => {
-		entity = v ? { ...v } : null;
+	$effect(() => {
+		entity = $selectedEntity ? { ...$selectedEntity } : null;
 	});
 
-	$: if (entity && nameInput) {
-		nameInput.focus();
-	}
+	$effect(() => {
+		if (entity && nameInput) {
+			nameInput.focus();
+		}
+	});
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
@@ -26,11 +28,11 @@
 	}
 
 	function isStar(e: Entity): e is Star {
-		return 'spectral_class' in e;
+		return 'SpectralClass' in e;
 	}
 
 	function isOrbitalBody(e: Entity): e is OrbitalBody {
-		return 'body_type' in e;
+		return 'BodyType' in e;
 	}
 
 	function isSolarSystem(e: Entity): e is SolarSystem {
@@ -40,42 +42,42 @@
 	async function handleSave() {
 		if (!$cluster || !entity) return;
 
-		const newCluster = JSON.parse(JSON.stringify($cluster));
+		const newCluster: any = structuredClone($cluster);
 		let found = false;
 
 		const updateBody = (bodies: OrbitalBody[]): boolean => {
 			for (const b of bodies) {
-				if (b.id === entity!.id) {
+				if (b.Id === entity!.Id) {
 					Object.assign(b, entity);
 					return true;
 				}
-				if (b.satellites && updateBody(b.satellites)) return true;
+				if (b.Satellites && updateBody(b.Satellites)) return true;
 			}
 			return false;
 		};
 
-		for (const system of newCluster.systems) {
-			if (system.id === entity.id) {
+		for (const system of newCluster.Systems) {
+			if (system.Id === entity.Id) {
 				Object.assign(system, entity);
 				found = true;
 				break;
 			}
 
 			// Search in stars and their satellites
-			for (const star of system.stars) {
-				if (star.id === entity.id) {
+			for (const star of system.Stars) {
+				if (star.Id === entity.Id) {
 					Object.assign(star, entity);
 					found = true;
 					break;
 				}
-				if (star.satellites && updateBody(star.satellites)) {
+				if (star.Satellites && updateBody(star.Satellites)) {
 					found = true;
 					break;
 				}
 			}
 			if (found) break;
 
-			if (updateBody(system.orbital_bodies)) {
+			if (updateBody(system.OrbitalBodies)) {
 				found = true;
 				break;
 			}
@@ -90,7 +92,7 @@
 
 {#if entity}
 	<div
-		on:keydown={handleKeydown}
+		onkeydown={handleKeydown}
 		role="dialog"
 		tabindex="-1"
 		aria-labelledby="inspector-title"
@@ -101,7 +103,7 @@
 				Inspector
 			</h2>
 			<button
-				on:click={() => selectedEntity.set(null)}
+				onclick={() => selectedEntity.set(null)}
 				class="text-slate-500 hover:text-slate-300 transition-colors"
 				title="Close (Esc)"
 				aria-label="Close"
@@ -119,7 +121,7 @@
 				<input
 					id="name"
 					bind:this={nameInput}
-					bind:value={entity.name}
+					bind:value={entity.Name}
 					class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100 focus:outline-none focus:border-sky-500 transition-colors"
 				/>
 			</div>
@@ -132,20 +134,20 @@
 					<p
 						class="text-slate-300 font-mono bg-slate-950/50 px-2 py-1 rounded border border-slate-800"
 					>
-						{entity.spectral_class}
+						{entity.SpectralClass}
 					</p>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Mass</span
 					>
-					<p class="text-slate-300 font-mono">{entity.mass_sol?.toFixed(2)} M☉</p>
+					<p class="text-slate-300 font-mono">{entity.MassSol?.toFixed(2)} M☉</p>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Radius</span
 					>
-					<p class="text-slate-300 font-mono">{entity.radius_sol?.toFixed(2)} R☉</p>
+					<p class="text-slate-300 font-mono">{entity.RadiusSol?.toFixed(2)} R☉</p>
 				</div>
 			{/if}
 
@@ -154,27 +156,27 @@
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Type</span
 					>
-					<p class="text-slate-300">{entity.body_type}</p>
+					<p class="text-slate-300">{entity.BodyType}</p>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Mass</span
 					>
-					<p class="text-slate-300 font-mono">{entity.mass_earth?.toFixed(2)} M⊕</p>
+					<p class="text-slate-300 font-mono">{entity.MassEarth?.toFixed(2)} M⊕</p>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Radius</span
 					>
-					<p class="text-slate-300 font-mono">{entity.radius_km?.toFixed(0)} km</p>
+					<p class="text-slate-300 font-mono">{entity.RadiusKm?.toFixed(0)} km</p>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Gravity</span
 					>
-					{#if entity.mass_earth && entity.radius_km}
+					{#if entity.MassEarth && entity.RadiusKm}
 						<p class="text-slate-300 font-mono">
-							{(entity.mass_earth / (entity.radius_km / 6371) ** 2).toFixed(2)} g
+							{(entity.MassEarth / (entity.RadiusKm / 6371) ** 2).toFixed(2)} g
 						</p>
 					{/if}
 				</div>
@@ -185,17 +187,17 @@
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Orbit Radius</span
 					>
-					<p class="text-slate-300 font-mono">{entity.orbit_au} AU</p>
+					<p class="text-slate-300 font-mono">{entity.OrbitAu} AU</p>
 				</div>
 			{/if}
 
-			{#if isOrbitalBody(entity) && entity.tags && entity.tags.length > 0}
+			{#if isOrbitalBody(entity) && entity.Tags && entity.Tags.length > 0}
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Tags</span
 					>
 					<div class="flex flex-wrap gap-1 mt-1">
-						{#each entity.tags as tag (tag)}
+						{#each entity.Tags as tag (tag)}
 							<span
 								class="flex items-center gap-1 bg-sky-900/30 text-sky-400 border border-sky-800/50 px-2 py-0.5 rounded text-[10px] font-medium"
 							>
@@ -207,15 +209,15 @@
 				</div>
 			{/if}
 
-			{#if 'orbital_regions' in entity && entity.orbital_regions && entity.orbital_regions.length > 0}
+			{#if 'OrbitalRegions' in entity && entity.OrbitalRegions && entity.OrbitalRegions.length > 0}
 				<div>
 					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
 						>Orbital Regions</span
 					>
 					<ul class="text-slate-300 text-xs space-y-1">
-						{#each entity.orbital_regions as region (region.name)}
+						{#each entity.OrbitalRegions as region (region.Name)}
 							<li class="bg-slate-950/30 px-2 py-1 rounded border border-slate-800/50">
-								{region.name} ({region.inner_radius_au} - {region.outer_radius_au} AU)
+								{region.Name} ({region.InnerRadiusAu} - {region.OuterRadiusAu} AU)
 							</li>
 						{/each}
 					</ul>
@@ -225,7 +227,7 @@
 
 		<div class="p-4 border-t border-slate-700 bg-slate-800/30">
 			<button
-				on:click={handleSave}
+				onclick={handleSave}
 				class="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 rounded-lg transition-colors shadow-lg shadow-sky-900/20"
 				title="Save changes (Enter)"
 			>

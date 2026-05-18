@@ -10,20 +10,20 @@ describe('Inspector component', () => {
 	beforeEach(() => {
 		selectedEntity.set(null);
 		cluster.set({
-			name: 'Test Cluster',
-			systems: [
+			Name: 'Test Cluster',
+			Systems: [
 				{
-					id: 'sys-1',
-					name: 'Old Name',
-					x: 0,
-					y: 0,
-					stars: [],
-					orbital_bodies: [],
-					orbital_regions: [],
-					portals: []
+					Id: 'sys-1',
+					Name: 'Old Name',
+					X: 0,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
 				}
 			]
-		} as StarCluster);
+		} as unknown as StarCluster);
 	});
 
 	it('does not render when no entity is selected', () => {
@@ -32,14 +32,14 @@ describe('Inspector component', () => {
 	});
 
 	it('renders when an entity is selected', async () => {
-		selectedEntity.set(get(cluster)!.systems[0]);
+		selectedEntity.set(get(cluster)!.Systems[0]);
 		render(Inspector);
 		expect(screen.getByText('Inspector')).toBeInTheDocument();
 		expect(screen.getByDisplayValue('Old Name')).toBeInTheDocument();
 	});
 
 	it('updates the store when saved', async () => {
-		const system = get(cluster)!.systems[0];
+		const system = get(cluster)!.Systems[0];
 		selectedEntity.set(system);
 		render(Inspector);
 
@@ -49,12 +49,12 @@ describe('Inspector component', () => {
 		const saveButton = screen.getByText('Save Changes');
 		await fireEvent.click(saveButton);
 
-		expect(get(cluster)!.systems[0].name).toBe('New Name');
+		expect(get(cluster)!.Systems[0].Name).toBe('New Name');
 		expect(get(selectedEntity)).toBeNull();
 	});
 
 	it('saves on Enter keydown', async () => {
-		const system = get(cluster)!.systems[0];
+		const system = get(cluster)!.Systems[0];
 		selectedEntity.set(system);
 		render(Inspector);
 
@@ -62,12 +62,12 @@ describe('Inspector component', () => {
 		await fireEvent.input(input, { target: { value: 'Key Name' } });
 		await fireEvent.keyDown(input, { key: 'Enter' });
 
-		expect(get(cluster)!.systems[0].name).toBe('Key Name');
+		expect(get(cluster)!.Systems[0].Name).toBe('Key Name');
 		expect(get(selectedEntity)).toBeNull();
 	});
 
 	it('closes on Escape keydown', async () => {
-		selectedEntity.set(get(cluster)!.systems[0]);
+		selectedEntity.set(get(cluster)!.Systems[0]);
 		render(Inspector);
 
 		const inspector = screen.getByText('Inspector').closest('div');
@@ -77,7 +77,7 @@ describe('Inspector component', () => {
 	});
 
 	it('focuses the name input on mount', async () => {
-		selectedEntity.set(get(cluster)!.systems[0]);
+		selectedEntity.set(get(cluster)!.Systems[0]);
 		render(Inspector);
 
 		const input = screen.getByDisplayValue('Old Name');
