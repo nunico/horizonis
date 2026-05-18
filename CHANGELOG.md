@@ -2,14 +2,16 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
-###### [2026-05-19] - Update Agent Guidelines for Code Quality
+###### [2026-05-19] - Update Agent Guidelines for Code Quality & Multi-Target Support
 
-- **Summary**: Updated `AGENTS.md` to mandate code quality checks in the testing and workflow sections.
+- **Summary**: Updated `AGENTS.md` and E2E infrastructure to ensure quality across Web and Desktop targets.
 - **Changes**:
-  - Added mandatory type checking, linting, and formatting checks to Section 4 (Testing & Validation).
-  - Updated Section 6 (Standard Workflow) to include "Quality Check" as a new step (step 5) before Review and Document.
-- **Files Affected**: `AGENTS.md`
-- **Context**: None.
+  - Mandated type checking, linting, and formatting checks for both targets in `AGENTS.md`.
+  - Updated `Standard Workflow` to include cross-target testing and quality checks.
+  - Refactored `wdio.conf.js` to support switching between Web (Firefox) and Desktop (Tauri) E2E testing.
+  - Verified Web/Desktop builds and unit tests are functional.
+- **Files Affected**: `AGENTS.md`, `apps/e2e-tests/wdio.conf.js`, `CHANGELOG.md`
+- **Context**: Added `TARGET=web` support to WDIO to allow testing without `tauri-driver` where necessary.
 
 ###### [2026-05-18] - TypeScript & Type Safety Improvements
 

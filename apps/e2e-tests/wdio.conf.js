@@ -5,19 +5,27 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let tauriDriver;
 
+const isDesktop = process.env.TARGET !== 'web';
+
 export const config = {
-	hostname: '127.0.0.1',
-	port: 4444,
 	specs: ['./test/specs/**/*.js'],
 	maxInstances: 1,
 	capabilities: [
-		{
-			maxInstances: 1,
-			browserName: 'wry',
-			'tauri:options': {
-				application: path.resolve(__dirname, '../../target/debug/tauri-app')
-			}
-		}
+		isDesktop
+			? {
+					maxInstances: 1,
+					browserName: 'wry',
+					'tauri:options': {
+						application: path.resolve(__dirname, '../../target/debug/tauri-app')
+					}
+				}
+			: {
+					maxInstances: 1,
+					browserName: 'firefox',
+					'moz:firefoxOptions': {
+						args: ['--headless']
+					}
+				}
 	],
 	reporters: ['spec'],
 	framework: 'mocha',
@@ -26,6 +34,7 @@ export const config = {
 		timeout: 60000
 	},
 	onPrepare: () => {
+		if (!isDesktop) return;
 		if (process.env.SKIP_BUILD === 'true') {
 			console.log('Skipping Tauri app build as requested.');
 			return;
@@ -48,6 +57,7 @@ export const config = {
 		}
 	},
 	beforeSession: () => {
+		if (!isDesktop) return;
 		console.log('Starting tauri-driver...');
 		tauriDriver = spawn('tauri-driver', [], { stdio: 'inherit', shell: true });
 	},
