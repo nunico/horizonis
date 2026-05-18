@@ -15,7 +15,7 @@
 		"e2e": "nx test e2e-tests",
 		"format": "prettier --write ."
 	},
-	"license": "MIT",
+	"license": "AGPL-3.0-only",
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@tauri-apps/cli": "^2",

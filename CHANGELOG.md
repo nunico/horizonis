@@ -2,6 +2,17 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-18] - Added AGPL-3.0 licensing to the project
+
+- **Summary**: Added AGPL-3.0 licensing to the project.
+- **Changes**:
+  - Added LICENSE file with GNU Affero General Public License v3.0 text.
+  - Updated package.json files (root, apps/web, apps/e2e-tests) to specify AGPL-3.0-only.
+  - Updated apps/desktop/Cargo.toml to specify AGPL-3.0-only.
+  - Added License section to README.md.
+- **Files Affected**: LICENSE, package.json, apps/web/package.json, apps/e2e-tests/package.json, apps/desktop/Cargo.toml, README.md.
+- **Context**: Transitioned from MIT (as previously stated in root package.json) to AGPL-3.0 to ensure copyleft for network server software.
+
 ###### [2026-05-18] - Move E2E tests to apps/e2e-tests
 
 - **Summary**: Relocated e2e-tests to the apps directory and configured Nx integration.
