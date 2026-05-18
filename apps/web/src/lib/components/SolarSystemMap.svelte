@@ -8,8 +8,8 @@
 	import { auToPixels, getVisualRadius, getClampedScale, type ScaleConfig } from '../pixi/scaling';
 
 	let container = $state<HTMLDivElement>();
-	let app: PIXI.Application;
-	let viewport: Viewport;
+	let app = $state<PIXI.Application>();
+	let viewport = $state<Viewport>();
 	let systemData = $state<SolarSystem | null>(null);
 	let resizeHandler: () => void;
 	let starNodes: {
@@ -53,35 +53,38 @@
 
 	onMount(async () => {
 		if (!container) return;
-		app = new PIXI.Application();
-		await app.init({
+		const pixiApp = new PIXI.Application();
+		await pixiApp.init({
 			resizeTo: container,
 			antialias: true,
 			backgroundColor: 0x020617
 		});
-		container.appendChild(app.canvas);
+		app = pixiApp;
+		container.appendChild(pixiApp.canvas);
 
-		viewport = new Viewport({
-			screenWidth: app.screen.width,
-			screenHeight: app.screen.height,
+		const v = new Viewport({
+			screenWidth: pixiApp.screen.width,
+			screenHeight: pixiApp.screen.height,
 			worldWidth: 100000,
 			worldHeight: 100000,
-			events: app.renderer.events
+			events: pixiApp.renderer.events
 		});
 
-		app.stage.addChild(viewport);
-		viewport.drag().pinch().wheel().decelerate();
-		viewport.moveCenter(0, 0);
+		viewport = v;
+
+		pixiApp.stage.addChild(v);
+		v.drag().pinch().wheel().decelerate();
+		v.moveCenter(0, 0);
 
 		resizeHandler = () => {
-			if (viewport && app.renderer) {
-				viewport.resize(app.screen.width, app.screen.height);
+			if (v && pixiApp.renderer) {
+				v.resize(pixiApp.screen.width, pixiApp.screen.height);
 				updateZoomLimits();
 			}
 		};
-		app.renderer.on('resize', resizeHandler);
-		viewport.on('zoomed', () => {
-			const currentScale = viewport.scale.x;
+		pixiApp.renderer.on('resize', resizeHandler);
+		v.on('zoomed', () => {
+			const currentScale = v.scale.x;
 			const zoomingIn = currentScale > lastScale * 1.0001;
 
 			updateFocus(currentScale);
@@ -89,21 +92,26 @@
 			updateScales();
 
 			if (zoomingIn && focusedObject && currentScale > 0.1) {
-				const dx = (focusedObject.worldX - viewport.center.x) * 0.1;
-				const dy = (focusedObject.worldY - viewport.center.y) * 0.1;
-				viewport.moveCenter(viewport.center.x + dx, viewport.center.y + dy);
+				const dx = (focusedObject.worldX - v.center.x) * 0.1;
+				const dy = (focusedObject.worldY - v.center.y) * 0.1;
+				v.moveCenter(v.center.x + dx, v.center.y + dy);
 			}
 
 			lastScale = currentScale;
 		});
-		viewport.on('moved', updateScales);
+		v.on('moved', updateScales);
 
-		if ($activeSystemId) {
-			const found = $cluster?.Systems.find((s) => s.Id === $activeSystemId);
-			if (found) {
-				systemData = found;
-				renderSystem();
-			}
+		if (import.meta.env.DEV && typeof window !== 'undefined') {
+			(window as any).solarSystemDebug = {
+				viewport: v,
+				get lastMinScale() {
+					return lastMinScale;
+				},
+				get lastMaxScale() {
+					return lastMaxScale;
+				},
+				updateZoomLimits
+			};
 		}
 	});
 
@@ -349,8 +357,9 @@
 	}
 
 	function renderSystem() {
-		if (!systemData || !viewport) return;
-		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
+		const v = viewport;
+		if (!systemData || !v) return;
+		v.removeChildren().forEach((child) => child.destroy({ children: true }));
 		starNodes = [];
 		bodyNodes = [];
 		satelliteContainers = [];
@@ -358,17 +367,17 @@
 		maxSystemRadius = 0;
 
 		selectionGraphics = new PIXI.Graphics();
-		viewport.addChild(selectionGraphics);
+		v.addChild(selectionGraphics);
 
 		hoverGraphics = new PIXI.Graphics();
-		viewport.addChild(hoverGraphics);
+		v.addChild(hoverGraphics);
 
 		systemData.Stars.forEach((star, i) => {
 			renderStar(star, i, systemData!.Stars.length);
 		});
 
 		systemData.OrbitalBodies.forEach((body, i) => {
-			renderBody(body, viewport, i, systemData!.OrbitalBodies.length);
+			renderBody(body, v, i, systemData!.OrbitalBodies.length);
 		});
 
 		for (const region of systemData.OrbitalRegions) {
@@ -379,18 +388,18 @@
 			if (outer > maxSystemRadius) maxSystemRadius = outer;
 
 			r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
-			viewport.addChild(r);
+			v.addChild(r);
 		}
 
 		updateScales();
 		updateZoomLimits();
 
-		viewport.setZoom(lastMinScale, true);
-		viewport.moveCenter(0, 0 - 28 / lastMinScale);
+		v.setZoom(lastMinScale, true);
+		v.moveCenter(0, 0 - 28 / lastMinScale);
 
 		if (import.meta.env.DEV && typeof window !== 'undefined') {
 			(window as any).solarSystemMapDebug = {
-				viewport,
+				viewport: v,
 				starNodes,
 				bodyNodes,
 				scaleConfig,
@@ -411,8 +420,10 @@
 			maxSystemRadius = Math.hypot(worldX, worldY) + maxSatRadius;
 		}
 
+		const v = viewport;
+		if (!v) return;
 		const orbitContainer = new PIXI.Container();
-		viewport.addChild(orbitContainer);
+		v.addChild(orbitContainer);
 
 		if (star.OrbitAu > 0) {
 			const orbit = new PIXI.Graphics();
@@ -463,6 +474,7 @@
 		starVisual.on('pointerover', () => {
 			hoveredEntityId = star.Id;
 			updateScales();
+			if (!viewport) return;
 			const s = 1 / viewport.scale.x;
 			hoverGraphics
 				.clear()
@@ -582,6 +594,7 @@
 		bodyVisual.on('pointerover', () => {
 			hoveredEntityId = body.Id;
 			updateScales();
+			if (!viewport) return;
 			const s = 1 / viewport.scale.x;
 			hoverGraphics
 				.clear()
@@ -624,6 +637,16 @@
 		scaleConfig.mode = mode;
 		renderSystem();
 	}
+
+	$effect(() => {
+		if ($activeSystemId && $cluster && viewport) {
+			const found = $cluster.Systems.find((s) => s.Id === $activeSystemId);
+			if (found) {
+				systemData = found;
+				renderSystem();
+			}
+		}
+	});
 
 	$effect(() => {
 		if ($selectedEntity !== undefined) {

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import Inspector from './Inspector.svelte';
 import { selectedEntity } from '../stores/appState';
@@ -23,7 +24,7 @@ describe('Inspector component', () => {
 					Portals: []
 				}
 			]
-		} as unknown as StarCluster);
+		});
 	});
 
 	it('does not render when no entity is selected', () => {

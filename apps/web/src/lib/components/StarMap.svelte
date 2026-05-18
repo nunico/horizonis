@@ -7,8 +7,8 @@
 	import type { SolarSystem } from '../types/stellar';
 
 	let container = $state<HTMLDivElement>();
-	let app: PIXI.Application;
-	let viewport: Viewport;
+	let app = $state<PIXI.Application>();
+	let viewport = $state<Viewport>();
 	let resizeHandler: () => void;
 	let systemNodes: PIXI.Graphics[] = [];
 	let portalNodes: {
@@ -51,37 +51,40 @@
 
 	onMount(async () => {
 		if (!container) return;
-		app = new PIXI.Application();
-		await app.init({
+		const pixiApp = new PIXI.Application();
+		await pixiApp.init({
 			resizeTo: container,
 			antialias: true,
 			backgroundColor: 0x020617 // slate-950
 		});
-		container.appendChild(app.canvas);
+		app = pixiApp;
+		container.appendChild(pixiApp.canvas);
 
-		viewport = new Viewport({
-			screenWidth: app.screen.width,
-			screenHeight: app.screen.height,
+		const v = new Viewport({
+			screenWidth: pixiApp.screen.width,
+			screenHeight: pixiApp.screen.height,
 			worldWidth: 10000,
 			worldHeight: 10000,
-			events: app.renderer.events
+			events: pixiApp.renderer.events
 		});
 
-		app.stage.addChild(viewport);
+		viewport = v;
 
-		viewport.drag().pinch().wheel().decelerate();
-		viewport.moveCenter(0, 0);
+		pixiApp.stage.addChild(v);
+
+		v.drag().pinch().wheel().decelerate();
+		v.moveCenter(0, 0);
 
 		resizeHandler = () => {
-			if (viewport && app.renderer) {
-				viewport.resize(app.screen.width, app.screen.height);
+			if (v && pixiApp.renderer) {
+				v.resize(pixiApp.screen.width, pixiApp.screen.height);
 				updateZoomLimits();
 			}
 		};
-		app.renderer.on('resize', resizeHandler);
+		pixiApp.renderer.on('resize', resizeHandler);
 
-		viewport.on('zoomed', () => {
-			const currentScale = viewport.scale.x;
+		v.on('zoomed', () => {
+			const currentScale = v.scale.x;
 			const zoomingIn = currentScale > lastScale * 1.0001;
 
 			updateFocus(currentScale);
@@ -89,18 +92,18 @@
 			updateScales();
 
 			if (zoomingIn && focusedSystem && currentScale > 0.5) {
-				const dx = (focusedSystem.x - viewport.center.x) * 0.1;
-				const dy = (focusedSystem.y - viewport.center.y) * 0.1;
-				viewport.moveCenter(viewport.center.x + dx, viewport.center.y + dy);
+				const dx = (focusedSystem.x - v.center.x) * 0.1;
+				const dy = (focusedSystem.y - v.center.y) * 0.1;
+				v.moveCenter(v.center.x + dx, v.center.y + dy);
 			}
 
 			lastScale = currentScale;
 		});
-		viewport.on('moved', updateScales);
+		v.on('moved', updateScales);
 
 		if (import.meta.env.DEV && typeof window !== 'undefined') {
 			(window as any).starMapDebug = {
-				viewport,
+				viewport: v,
 				get lastMinScale() { return lastMinScale; },
 				get lastMaxScale() { return lastMaxScale; },
 				updateZoomLimits

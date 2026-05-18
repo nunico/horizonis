@@ -15,7 +15,7 @@ export const config = {
 			maxInstances: 1,
 			browserName: 'wry',
 			'tauri:options': {
-				application: path.resolve(__dirname, '../desktop/target/debug/tauri-app')
+				application: path.resolve(__dirname, '../../target/debug/tauri-app')
 			}
 		}
 	],

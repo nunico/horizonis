@@ -1,6 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { get } from 'svelte/store';
+import { tick } from 'svelte';
 import Navigation from './Navigation.svelte';
 import { activeSystemId, selectedEntity, viewMode } from '../stores/appState';
 import { cluster } from '../stores/clusterData';
@@ -20,7 +22,7 @@ const mockCluster: StarCluster = {
 			Portals: []
 		}
 	]
-} as unknown as StarCluster;
+};
 
 describe('Navigation component', () => {
 	beforeEach(() => {
@@ -59,7 +61,7 @@ describe('Navigation component', () => {
 			MassEarth: 1,
 			Satellites: [],
 			Tags: []
-		} as any);
+		});
 
 		render(Navigation);
 
@@ -78,7 +80,7 @@ describe('Navigation component', () => {
 			MassEarth: 1,
 			Satellites: [],
 			Tags: []
-		} as any);
+		});
 
 		render(Navigation);
 
@@ -107,7 +109,7 @@ describe('Navigation component', () => {
 			MassEarth: 1,
 			Satellites: [],
 			Tags: []
-		} as any);
+		});
 
 		render(Navigation);
 
@@ -127,6 +129,7 @@ describe('Navigation component', () => {
 		await fireEvent.input(input, { target: { value: 'Alpha' } });
 		
 		vi.advanceTimersByTime(200);
+		await tick();
 
 		expect(screen.getByText('Alpha Centauri')).toBeInTheDocument();
 		expect(screen.getByText('system')).toBeInTheDocument();
@@ -142,6 +145,7 @@ describe('Navigation component', () => {
 		await fireEvent.input(input, { target: { value: 'Alpha' } });
 
 		vi.advanceTimersByTime(200);
+		await tick();
 
 		const resultButton = screen.getByText('Alpha Centauri').closest('button');
 		await fireEvent.click(resultButton!);

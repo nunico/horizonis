@@ -2,6 +2,39 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-18] - Fix Test Suite and Svelte Component Typing Errors
+
+- **Summary**: Resolved TypeScript typing errors in Svelte components and the web app's test suite by refining reactive state handling and ensuring proper integration of jest-dom matchers with Vitest.
+- **Changes**:
+  - Fixed `apps/web/src/lib/components/SolarSystemMap.svelte` by properly narrowing the `viewport` reactive state using local variables and guard clauses.
+  - Added missing `vi` import from `vitest` and explicit `import '@testing-library/jest-dom/vitest'` to `Navigation.test.ts`.
+  - Added `import '@testing-library/jest-dom/vitest'` to `Inspector.test.ts` and `HelpOverlay.test.ts` to fix missing matcher types.
+  - Removed redundant and potentially masking type assertions (`as any`, `as unknown as StarCluster`) in test files to allow better type checking.
+  - Updated `src/test/setup.ts` to use the correct Vitest-compatible `jest-dom` entry point.
+- **Files Affected**: `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/components/Navigation.test.ts`, `apps/web/src/lib/components/Inspector.test.ts`, `apps/web/src/lib/components/HelpOverlay.test.ts`, `apps/web/src/test/setup.ts`
+- **Context**: Transitioning to Svelte 5 and Vitest requires explicit type narrowing for reactive objects and specific entry points for test matchers to be recognized by both the compiler and IDEs.
+
+###### [2026-05-18] - Map Rendering E2E Regression Test & Fixes
+
+- **Summary**: Added an E2E regression test to validate that the star map and solar system map are rendered correctly and fixed a timing issue in Navigation component tests.
+- **Changes**:
+  - Created `apps/e2e-tests/test/specs/map-rendering.e2e.js` with tests for StarMap and SolarSystemMap.
+  - Updated `apps/web/src/lib/components/SolarSystemMap.svelte` to expose `solarSystemDebug` for E2E verification.
+  - Updated `apps/e2e-tests/wdio.conf.js` to use the correct workspace root target path for the Tauri binary.
+  - Fixed `apps/web/src/lib/components/Navigation.test.ts` by adding `tick()` after timer advancement to handle Svelte 5 effect timing.
+- **Files Affected**: `apps/e2e-tests/test/specs/map-rendering.e2e.js`, `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/e2e-tests/wdio.conf.js`, `apps/web/src/lib/components/Navigation.test.ts`
+- **Context**: None.
+
+###### [2026-05-18] - Fix Empty Star Map Canvas Reactivity
+
+- **Summary**: Fixed a bug where the star map canvas remained empty on startup due to improper reactivity in Svelte 5 components.
+- **Changes**:
+  - Declared `app` and `viewport` as reactive state using `$state` in `StarMap.svelte` and `SolarSystemMap.svelte`.
+  - Added a reactive `$effect` in `SolarSystemMap.svelte` to handle re-rendering when the active system ID changes.
+  - Cleaned up temporary diagnostic logs in `apps/web/src/lib/stores/clusterData.ts`.
+- **Files Affected**: `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/stores/clusterData.ts`
+- **Context**: Svelte 5 requires explicit `$state` declarations for variables used in effects to trigger re-runs correctly.
+
 ###### [2026-05-18] - Fix WebDriverIO MCP Server Configuration
 
 - **Summary**: Resolved performance, compatibility, and resource leakage issues in the WebDriverIO MCP server configuration.
