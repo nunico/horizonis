@@ -1,10 +1,9 @@
 {
     "mcpServers": {
         "WebDriverIO": {
-            "command": "npx",
+            "command": "node",
             "args": [
-                "-y",
-                "@wdio/mcp@latest"
+                "scripts/wdio-mcp-adapter.cjs"
             ]
         }
     }

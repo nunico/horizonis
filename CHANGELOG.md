@@ -2,6 +2,17 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-18] - Fix WebDriverIO MCP Server Configuration
+
+- **Summary**: Resolved performance, compatibility, and resource leakage issues in the WebDriverIO MCP server configuration.
+- **Changes**:
+  - Installed `@wdio/mcp` as a local devDependency to eliminate `npx` overhead.
+  - Created `scripts/wdio-mcp-adapter.cjs` to provide `list_tools` compatibility and improve process management.
+  - Updated `.junie/mcp/mcp.json` to use the local adapter instead of `npx @latest`.
+  - Cleaned up orphaned browser processes from previous failed sessions.
+- **Files Affected**: `.junie/mcp/mcp.json`, `package.json`, `scripts/wdio-mcp-adapter.cjs`.
+- **Context**: The previous configuration used `npx @latest`, which was extremely slow and caused orphaned browser processes that consumed system resources.
+
 ###### [2026-05-18] - Procedural Generation Native Library & Storage Refactor
 
 - **Summary**: Switched desktop app to use native Rust library via Tauri commands instead of WASM for procedural generation.
