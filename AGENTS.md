@@ -13,13 +13,14 @@ Guidelines for AI agents on the Horizonis project. Covers token efficiency, memo
 ## 2. Memory & Context
 
 - Review `.junie/plans/` for project structure before exploring.
-- Review `CHANGELOG.md` at session start for recent changes and decisions.
+- Read `.junie/STATE.md` for current architecture, active decisions, and known constraints.
 - Use `search_contents_by_grep` to find symbol definitions before assuming behavior.
+- **Do not read `CHANGELOG.md`** — it is a human-facing history log. Write to it only.
 
 ## 3. Changelog
 
 - Location: `CHANGELOG.md` in project root.
-- After every task or major step, delegate to `changelog-writer`.
+- After every task or major step, delegate to `changelog-writer`. Do not open or read the file yourself.
 - Format (subagent handles automatically):
 
   ```markdown
