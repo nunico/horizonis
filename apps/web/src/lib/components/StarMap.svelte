@@ -3,9 +3,9 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
-	import { cluster } from '../stores/clusterData';
-	import { viewMode, activeSystemId, selectedEntity, type Entity } from '../stores/appState';
-	import type { SolarSystem } from '../types/stellar';
+	import { cluster } from '$lib/stores/clusterData';
+	import { viewMode, activeSystemId, selectedEntity, type Entity } from '$lib/stores/appState';
+	import type { SolarSystem } from '$lib/types/stellar';
 
 	let container = $state<HTMLDivElement>();
 	let app = $state<PIXI.Application>();
@@ -33,13 +33,13 @@
 	let hoverGraphics: PIXI.Graphics;
 
 	// Optimization: System lookup Map
-	let systemsById = $derived(new SvelteMap($cluster?.Systems.map((s) => [s.Id, s]) || []));
+	let systemsById = $derived(new SvelteMap($cluster?.Systems?.map((s) => [s.Id, s]) || []));
 
 	// Optimization: Spatial Grid for O(log n) lookups
 	const GRID_SIZE = 200;
 	let spatialGrid = $derived.by(() => {
 		const grid = new SvelteMap<string, SolarSystem[]>();
-		if (!$cluster) return grid;
+		if (!$cluster?.Systems) return grid;
 		for (const system of $cluster.Systems) {
 			const gx = Math.floor(system.X / GRID_SIZE);
 			const gy = Math.floor(system.Y / GRID_SIZE);
@@ -336,8 +336,8 @@
 		}
 
 		const uniquePortals = new SvelteMap<string, { from: string; to: string }>();
-		for (const system of $cluster.Systems) {
-			for (const portal of system.Portals) {
+		for (const system of $cluster?.Systems || []) {
+			for (const portal of system.Portals || []) {
 				const id1 = system.Id;
 				const id2 = portal.TargetSystemId;
 				const key = [id1, id2].sort().join('-');

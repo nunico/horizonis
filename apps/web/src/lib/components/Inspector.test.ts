@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import Inspector from './Inspector.svelte';
-import { selectedEntity } from '../stores/appState';
-import { cluster } from '../stores/clusterData';
+import { selectedEntity } from '$lib/stores/appState';
+import { cluster } from '$lib/stores/clusterData';
 import { get } from 'svelte/store';
 
 describe('Inspector component', () => {

@@ -1,4 +1,4 @@
-import type { StarCluster } from '../types/stellar';
+import type { StarCluster } from '$lib/types/stellar';
 
 export interface StorageProvider {
 	getCluster(): Promise<StarCluster>;

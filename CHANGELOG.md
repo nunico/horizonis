@@ -1,6 +1,26 @@
  # Changelog
  
  All notable changes to the Horizonis project by AI agents will be documented in this file.
+
+ ###### [2026-05-19] - Fix runtime TypeError and resolve 39 code analysis errors
+
+ - **Summary**: Fixed runtime crash in Navigation.svelte and SolarSystemMap.svelte by adding safer optional chaining. Resolved 39 type-related errors by standardizing imports to $lib alias and adding explicit type guards in Inspector.svelte. Added regression tests.
+ - **Changes**:
+   - Added safer optional chaining in `Navigation.svelte` and `SolarSystemMap.svelte` to prevent runtime `TypeError`.
+   - Standardized imports in `apps/web` to use `$lib` alias, resolving unresolved type references.
+   - Added explicit type guards and improved type safety in `Inspector.svelte`.
+   - Added regression tests for cluster state edge cases in `Navigation.test.ts`.
+   - Synchronized `svelte-check` and IDE analysis by ensuring correct `tsconfig` resolution.
+ - **Files Affected**:
+   - apps/web/src/lib/components/Navigation.svelte
+   - apps/web/src/lib/components/SolarSystemMap.svelte
+   - apps/web/src/lib/components/StarMap.svelte
+   - apps/web/src/lib/components/Inspector.svelte
+   - apps/web/src/lib/stores/appState.ts
+   - apps/web/src/lib/stores/clusterData.ts
+   - apps/web/src/lib/components/Navigation.test.ts
+   - apps/web/src/lib/components/Inspector.test.ts
+ - **Context**: Resolved a discrepancy between WebStorm and CLI analysis by verifying `.svelte-kit/tsconfig.json` sync and fixing relative import paths.
  
  ###### [2026-05-19] - Lint fixes for horizonis-web (@apps/web)
  

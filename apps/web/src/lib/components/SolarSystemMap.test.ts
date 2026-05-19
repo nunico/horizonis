@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/svelte';
 import SolarSystemMap from './SolarSystemMap.svelte';
-import { cluster } from '../stores/clusterData';
-import { activeSystemId } from '../stores/appState';
+import { cluster } from '$lib/stores/clusterData';
+import { activeSystemId } from '$lib/stores/appState';
 import * as PIXI from 'pixi.js';
 import { Viewport } from 'pixi-viewport';
 

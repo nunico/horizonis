@@ -2,15 +2,20 @@
 	import { onMount, onDestroy, untrack } from 'svelte';
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
-	import { cluster } from '../stores/clusterData';
-	import { activeSystemId, viewMode, selectedEntity, type Entity } from '../stores/appState';
-	import type { OrbitalBody, Star } from '../types/stellar';
-	import { auToPixels, getVisualRadius, getClampedScale, type ScaleConfig } from '../pixi/scaling';
+	import { cluster } from '$lib/stores/clusterData';
+	import { activeSystemId, viewMode, selectedEntity, type Entity } from '$lib/stores/appState';
+	import type { OrbitalBody, Star } from '$lib/types/stellar';
+	import {
+		auToPixels,
+		getVisualRadius,
+		getClampedScale,
+		type ScaleConfig
+	} from '$lib/pixi/scaling';
 
 	let container = $state<HTMLDivElement>();
 	let app = $state<PIXI.Application>();
 	let viewport = $state<Viewport>();
-	let systemData = $derived($cluster?.Systems.find((s) => s.Id === $activeSystemId) || null);
+	let systemData = $derived($cluster?.Systems?.find((s) => s.Id === $activeSystemId) || null);
 	let resizeHandler: () => void;
 	let starNodes: {
 		container: PIXI.Container<PIXI.ContainerChild>;
@@ -386,11 +391,11 @@
 		hoverGraphics = new PIXI.Graphics();
 		v.addChild(hoverGraphics);
 
-		systemData.Stars.forEach((star, i) => {
+		systemData.Stars?.forEach((star, i) => {
 			renderStar(star, i, systemData!.Stars.length);
 		});
 
-		systemData.OrbitalBodies.forEach((body, i) => {
+		systemData.OrbitalBodies?.forEach((body, i) => {
 			renderBody(body, v, i, systemData!.OrbitalBodies.length);
 		});
 
@@ -525,11 +530,11 @@
 			maxSatRadius
 		});
 
-		star.Satellites.forEach((body, i) => {
+		star.Satellites?.forEach((body, i) => {
 			renderBody(body, starCenter, i, star.Satellites.length, worldX, worldY, star.Id);
 		});
 
-		for (const region of star.OrbitalRegions) {
+		for (const region of star.OrbitalRegions || []) {
 			const r = new PIXI.Graphics();
 			const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
 			const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
@@ -647,7 +652,7 @@
 			parentId
 		});
 
-		body.Satellites.forEach((satellite, i) => {
+		body.Satellites?.forEach((satellite, i) => {
 			renderBody(satellite, bodyCenter, i, body.Satellites.length, worldX, worldY, body.Id);
 		});
 	}

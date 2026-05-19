@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/svelte';
 import StarMap from './StarMap.svelte';
-import { cluster } from '../stores/clusterData';
+import { cluster } from '$lib/stores/clusterData';
 import * as PIXI from 'pixi.js';
 import { Viewport } from 'pixi-viewport';
 

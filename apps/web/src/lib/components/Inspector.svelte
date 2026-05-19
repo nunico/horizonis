@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { selectedEntity } from '../stores/appState';
-	import { cluster, saveCluster } from '../stores/clusterData';
+	import { selectedEntity } from '$lib/stores/appState';
+	import { cluster, saveCluster } from '$lib/stores/clusterData';
 	import { X, Save, Tag } from 'lucide-svelte';
-	import type { SolarSystem, Star, OrbitalBody, StarCluster } from '../types/stellar';
+	import type { SolarSystem, Star, OrbitalBody, StarCluster } from '$lib/types/stellar';
 
 	type Entity = SolarSystem | Star | OrbitalBody;
 
@@ -48,7 +48,7 @@
 
 		const updateBody = (bodies: OrbitalBody[]): boolean => {
 			for (const b of bodies) {
-				if (b.Id === entity!.Id) {
+				if (b.Id === entity!.Id && isOrbitalBody(entity!)) {
 					Object.assign(b, entity);
 					return true;
 				}
@@ -57,16 +57,16 @@
 			return false;
 		};
 
-		for (const system of newCluster.Systems) {
-			if (system.Id === entity.Id) {
+		for (const system of newCluster.Systems || []) {
+			if (system.Id === entity.Id && isSolarSystem(entity)) {
 				Object.assign(system, entity);
 				found = true;
 				break;
 			}
 
 			// Search in stars and their satellites
-			for (const star of system.Stars) {
-				if (star.Id === entity.Id) {
+			for (const star of system.Stars || []) {
+				if (star.Id === entity.Id && isStar(entity)) {
 					Object.assign(star, entity);
 					found = true;
 					break;
@@ -78,7 +78,7 @@
 			}
 			if (found) break;
 
-			if (updateBody(system.OrbitalBodies)) {
+			if (updateBody(system.OrbitalBodies || [])) {
 				found = true;
 				break;
 			}

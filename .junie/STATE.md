@@ -6,10 +6,10 @@
 - Backend: [your backend summary]
 
 ## Active Decisions
-- [Decision]: [Rationale and date]
+- Standardize on `$lib` alias for all internal imports in `apps/web` to ensure consistent IDE and CLI type analysis (2026-05-19).
 
 ## Known Constraints
-- [Constraint or tech debt item]
+- Svelte 5 runes (`$derived`, `$state`) require careful handling of optional chaining for store values to avoid runtime `TypeError`.
 
 ## Current Focus
-- [What is actively being worked on]
+- Performance optimization and feature parity between web and desktop targets.

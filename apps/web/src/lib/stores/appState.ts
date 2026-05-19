@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { SolarSystem, Star, OrbitalBody } from '../types/stellar';
+import type { SolarSystem, Star, OrbitalBody } from '$lib/types/stellar';
 
 export type ViewMode = 'cluster' | 'system';
 export type Entity = SolarSystem | Star | OrbitalBody;

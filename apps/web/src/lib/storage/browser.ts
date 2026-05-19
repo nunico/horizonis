@@ -1,5 +1,5 @@
-import type { StarCluster } from '../types/stellar';
-import type { StorageProvider } from './index';
+import type { StarCluster } from '$lib/types/stellar';
+import type { StorageProvider } from '$lib/storage';
 export class BrowserStorage implements StorageProvider {
 	private readonly STORAGE_KEY = 'horizonis_cluster';
 

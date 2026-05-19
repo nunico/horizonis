@@ -1,8 +1,8 @@
 import { writable } from 'svelte/store';
-import { TauriStorage } from '../storage/tauri';
-import { BrowserStorage } from '../storage/browser';
-import type { StorageProvider } from '../storage';
-import type { StarCluster } from '../types/stellar';
+import { TauriStorage } from '$lib/storage/tauri';
+import { BrowserStorage } from '$lib/storage/browser';
+import type { StorageProvider } from '$lib/storage';
+import type { StarCluster } from '$lib/types/stellar';
 export const cluster = writable<StarCluster | null>(null);
 export const isInitialized = writable(false);
 

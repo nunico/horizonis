@@ -4,9 +4,9 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import { tick } from 'svelte';
 import Navigation from './Navigation.svelte';
-import { activeSystemId, selectedEntity, viewMode } from '../stores/appState';
-import { cluster } from '../stores/clusterData';
-import type { StarCluster } from '../types/stellar';
+import { activeSystemId, selectedEntity, viewMode } from '$lib/stores/appState';
+import { cluster } from '$lib/stores/clusterData';
+import type { StarCluster } from '$lib/types/stellar';
 
 const mockCluster: StarCluster = {
 	Name: 'Test Cluster',
@@ -163,5 +163,13 @@ describe('Navigation component', () => {
 
 		await fireEvent.keyDown(window, { key: '/' });
 		expect(document.activeElement).toBe(input);
+	});
+
+	it('handles invalid cluster state without crashing', () => {
+		// Simulate cluster being an empty object (e.g. during partial load or error)
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		cluster.set({} as any);
+		render(Navigation);
+		expect(screen.getByRole('button', { name: /cluster/i })).toBeInTheDocument();
 	});
 });

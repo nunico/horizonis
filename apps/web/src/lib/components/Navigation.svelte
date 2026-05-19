@@ -6,7 +6,7 @@
 
 	let { showHelp = $bindable(false) } = $props();
 
-	let system = $derived($cluster?.Systems.find((s) => s.Id === $activeSystemId));
+	let system = $derived($cluster?.Systems?.find((s) => s.Id === $activeSystemId));
 	let entity = $derived($selectedEntity);
 
 	let searchQuery = $state('');
@@ -32,7 +32,7 @@
 	let searchResults = $derived(debouncedQuery.length > 1 ? getSearchResults(debouncedQuery) : []);
 
 	function getSearchResults(query: string): SearchResult[] {
-		if (!$cluster) return [];
+		if (!$cluster?.Systems) return [];
 		const results: SearchResult[] = [];
 		const q = query.toLowerCase();
 
@@ -47,7 +47,7 @@
 				});
 			}
 
-			sys.Stars.forEach((star) => {
+			sys.Stars?.forEach((star) => {
 				if (star.Name.toLowerCase().includes(q)) {
 					results.push({
 						id: star.Id,
@@ -57,10 +57,10 @@
 						entity: star
 					});
 				}
-				flattenBodies(star.Satellites, sys.Id, q, results);
+				flattenBodies(star.Satellites || [], sys.Id, q, results);
 			});
 
-			flattenBodies(sys.OrbitalBodies, sys.Id, q, results);
+			flattenBodies(sys.OrbitalBodies || [], sys.Id, q, results);
 		});
 
 		return results.slice(0, 10);
