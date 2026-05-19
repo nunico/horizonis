@@ -1,139 +1,157 @@
 # Agent Guidelines
 
-This document provides guidelines for AI agents working on the Horizonis project to ensure efficient token usage, maintain long-term memory, and provide clear documentation of changes.
+Guidelines for AI agents on the Horizonis project. Covers token efficiency, memory, TDD, and code standards.
 
-## 1. Token Usage Optimization
+## 1. Token Efficiency
 
-To minimize token consumption and speed up response times:
+- Use `search_contents_by_grep` with specific `file_extension_list` (e.g., `[*.rs]`, `[*.svelte]`).
+- Use `open` with `line_number` for large files. Avoid `open_entire_file` on files >100 lines unless critical.
+- Keep `update_status` brief and high-signal.
+- Use `multi_edit` for multiple changes to the same file.
+- Delegate to subagents (Section 5) instead of handling specialized tasks inline.
 
-- Targeted Code Search: Use `search_contents_by_grep` with specific `file_extension_list` (e.g., `[*.rs]` or `[*.svelte]`) instead of broad searches.
-- Efficient File Reading: Use `open` with `line_number` to read specific sections of large files. Avoid `open_entire_file` for files over 100 lines unless the full context is critical.
-- Concise Status Updates: Keep `update_status` reports high-signal and brief. Focus on critical findings and next actions.
-- Batched Operations: Use `multi_edit` when making several changes to the same file.
-- Delegate to Subagents: Offload specialized tasks to the subagents defined in Section 5 rather than handling them inline. Subagents run on cheaper, task-optimized models.
+## 2. Memory & Context
 
-## 2. Memory & Context Management
+- Review `.junie/plans/` for project structure before exploring.
+- Review `CHANGELOG.md` at session start for recent changes and decisions.
+- Use `search_contents_by_grep` to find symbol definitions before assuming behavior.
 
-To maintain continuity across sessions:
+## 3. Changelog
 
-- Project Structure: Reference the file structure documented in the plan (`.junie/plans/`) before exploring.
-- Architectural Context: Review `CHANGELOG.md` at the start of each session to understand recent modifications and design decisions.
-- Symbol Resolution: Before assuming a function's behavior, use `search_contents_by_grep` to find its definition.
-
-## 3. Changelog Documentation
-
-Documenting changes is mandatory for all agent-led tasks to provide a clear audit trail.
-
-- Changelog Location: Maintain `CHANGELOG.md` in the project root.
-- Entry Timing: After completing a task or major step, delegate immediately to the `changelog-writer` subagent.
-
-- Entry Format (handled automatically by the subagent):
+- Location: `CHANGELOG.md` in project root.
+- After every task or major step, delegate to `changelog-writer`.
+- Format (subagent handles automatically):
 
   ```markdown
   ### [YYYY-MM-DD] - Task Title
-
-  - **Summary**: Brief description of the goal.
-  - **Changes**: Bulleted list of technical changes.
-  - **Files Affected**: Paths to key modified files.
-  - **Context**: Any non-obvious design choices or technical debt introduced.
+  - **Summary**: Goal.
+  - **Changes**: Bulleted technical changes.
+  - **Files Affected**: Key paths.
+  - **Context**: Non-obvious design choices or technical debt.
   ```
 
-## 4. Testing & Validation
+## 4. Testing & Validation (TDD)
 
-- Regression Testing: Always run existing tests (`pnpm test`, `cargo test`) and E2E tests for both Web and Desktop targets after modifications. Delegate test writing to the `test-writer` subagent for any new logic.
-- Quality Assurance: Always perform type checking, linting, and formatting checks (`pnpm nx run-many --targets=check`, `pnpm lint`) after completing any task to maintain code quality. Ensure these checks pass for both Web and Desktop codebases.
-- New Coverage: Add unit tests for any new logic added to `apps/desktop/src` or `apps/web/src/lib`.
-- Code Review: Before finalizing a task, delegate to the `code-reviewer` subagent to catch logic errors, security issues, and performance regressions.
-- Bug Diagnosis: When investigating a bug or stack trace, delegate to the `bug-detective` subagent before attempting a fix.
-- Implement end-to-end tests for critical user flows
-- Test both positive and negative scenarios
-- Test component/function/class behavior, not implementation details
+All code follows **Red-Green-Refactor**. Untested code is considered broken.
+
+### 4.1 TDD Cycle
+
+1. **Red**: Write a failing test defining the desired behavior. No implementation yet.
+2. **Green**: Write the minimum code to pass the test.
+3. **Refactor**: Clean up while keeping tests green.
+
+### 4.2 Coverage Requirements
+
+| Scope | Requirement |
+|---|---|
+| Business logic (calculators, state machines, parsers, validators) | 100% path coverage via unit tests |
+| New user-facing features | E2E tests for happy path + critical error states |
+| Bug fixes | Regression test reproducing the bug before the fix |
+| New Svelte components in `apps/web/src/lib` | Unit tests with Vitest + Testing Library |
+| New Rust logic in `apps/desktop/src` | `#[cfg(test)]` unit tests + `tests/` integration tests |
+
+### 4.3 Testing Best Practices
+
+- **AAA Pattern**: Every test must have distinct Arrange / Act / Assert sections.
+- **Behavior, not implementation**: Assert outputs and observable side effects. Never test private methods or internal state.
+- **F.A.S.T**:
+  - *Fast*: Unit tests run in milliseconds.
+  - *Autonomous*: Tests are fully self-contained and order-independent.
+  - *Self-validating*: Unambiguous pass/fail — no manual inspection.
+  - *Timely*: Tests are written before or alongside implementation, never after.
+- **Edge cases**: Test empty collections, `null`/`undefined`, boundary values, and invalid types.
+- **Positive + negative**: Test both success and failure paths for every behavior.
+- **Mocking**: Mock external dependencies (APIs, DBs, hardware). Never mock internal business logic — if tempted, refactor instead.
+- **Naming**: Use descriptive sentence-style names, e.g., `it("returns an error when input is empty")`.
+
+### 4.4 Tooling
+
+| Stack | Unit / Integration | E2E |
+|---|---|---|
+| TypeScript / Svelte | Vitest | Playwright |
+| Rust | `#[test]` + `proptest` for complex logic | — |
+
+- Run `pnpm test` and `cargo test` after every change.
+- Run `pnpm nx run-many --targets=check` and `pnpm lint` before marking any task complete.
 
 ## 5. Subagents
 
-All subagents are installed at `~/.junie/agents/`. Use them to delegate specialized tasks and keep the main agent context lean.
+All subagents installed at `~/.junie/agents/`.
 
-| Subagent             | Model          | When to Use                                                               |
-| -------------------- | -------------- | ------------------------------------------------------------------------- |
-| `planner`            | `sonnet`       | Decompose any non-trivial task into a phased plan before implementing     |
-| `implementer`        | `gpt-codex`    | Execute a plan or scoped coding task against the codebase                 |
-| `librarian`          | `gemini-flash` | Look up library or API docs and return a compact usage summary            |
-| `code-reviewer`      | `sonnet`       | Review a diff or file for bugs, security issues, and performance          |
-| `test-writer`        | `gpt-codex`    | Generate unit/integration tests for a function or module                  |
-| `bug-detective`      | `grok`         | Trace a bug, error, or stack trace to its root cause                      |
-| `devops-engineer`    | `gpt-codex`    | Create or update CI/CD pipelines, Dockerfiles, and deployment configs     |
-| `migration-agent`    | `sonnet`       | Plan and execute database schema or API version migrations                |
-| `dependency-auditor` | `gemini-flash` | Audit packages for vulnerabilities, outdated versions, and license issues |
-| `doc-writer`         | `gemini-flash` | Write or update docstrings, inline comments, and README sections          |
-| `changelog-writer`   | `gemini-flash` | Append a structured entry to `CHANGELOG.md` after each task               |
+| Subagent | Model | When to Use |
+|---|---|---|
+| `planner` | `sonnet` | Decompose non-trivial tasks into a phased plan |
+| `implementer` | `gpt-codex` | Execute a plan or scoped coding task |
+| `librarian` | `gemini-flash` | Look up library/API docs; returns compact summary |
+| `code-reviewer` | `sonnet` | Review for bugs, security issues, performance |
+| `test-writer` | `gpt-codex` | Write unit/integration tests (use in the Red phase) |
+| `bug-detective` | `grok` | Trace a bug or stack trace to root cause |
+| `devops-engineer` | `gpt-codex` | CI/CD pipelines, Dockerfiles, deployment configs |
+| `migration-agent` | `sonnet` | Database schema or API version migrations |
+| `dependency-auditor` | `gemini-flash` | Audit packages for vulnerabilities and outdated versions |
+| `doc-writer` | `gemini-flash` | Write/update docstrings, comments, READMEs |
+| `changelog-writer` | `gemini-flash` | Append structured entry to `CHANGELOG.md` |
 
-### 6. Standard Workflow
+## 6. Standard Workflow
 
-For every non-trivial task, follow this sequence:
+1. **Plan** — `planner`: define architecture, scope, and testing strategy.
+2. **Research** — `librarian`: look up unfamiliar APIs or libraries.
+3. **Test (Red)** — `test-writer`: write failing tests before any implementation.
+4. **Implement (Green)** — write minimum code to pass the tests.
+5. **Refactor** — clean up; confirm `pnpm test` and `cargo test` are green.
+6. **Quality Check** — `pnpm nx run-many --targets=check` + `pnpm lint`.
+7. **Review** — `code-reviewer`: check for bugs, security, and performance.
+8. **Document** — `doc-writer` for inline docs/READMEs; `changelog-writer` for `CHANGELOG.md`.
 
-1. Plan
-2. Research (if unfamiliar APIs are involved)
-3. Implement
-4. Test (including unit tests and regression testing for Web & Desktop)
-5. Quality Check (run `pnpm nx run-many --targets=check` and `pnpm lint` for all targets)
-6. Review
-7. Document
+> **Bugs**: run `bug-detective` before step 4.
+> **Migrations**: use `migration-agent` instead of `implementer`.
+> **Infra**: use `devops-engineer` instead of `implementer`.
+> **New dependencies**: run `dependency-auditor` before committing `package.json` or `Cargo.toml` changes.
 
-> For bugs: run `bug-detective` before step 3. For migrations: substitute `migration-agent` for `implementer`. For infra changes: use `devops-engineer` instead of `implementer`.
+## 7. Coding Guidelines
 
-## Coding Guidelines
+Prioritize **readability**, **safety**, and **maintainability**.
 
-- Always prioritize readability, safety, and maintainability.
-- Refactor code to improve efficiency and reduce complexity.
-- Break up long or complex functions into smaller, more manageable pieces
-- Use descriptive variable/function/constant names, comments and error messages
-- Use comments to explain complex logic and why decisions were made
-- Define interfaces and types for data structures
-- For algorithm-related code, include explanations of the approach used.
-- For external dependencies, mention their usage and purpose in documentation.
-- Ensure code compiles without warnings.
-- Don't rely on global mutable state—use dependency injection or thread-safe containers.
-- Avoid deeply nested logic—refactor with functions or combinators.
-- Don't ignore warnings—treat them as errors during CI.
-- Keep lines under 80 characters when possible.
-- Keep dependencies up to date and audit for security vulnerabilities
+### General
+
+- Break complex functions into smaller, well-named pieces.
+- Use names that communicate intent; comments explain *why*, not *what*.
+- Define explicit interfaces and types for all data structures.
+- Document algorithm complexity (time/space) and external dependency purpose.
+- No global mutable state — use dependency injection or thread-safe containers.
+- No deeply nested logic — use early returns, helpers, or combinators.
+- Treat all compiler warnings as errors; none are permitted in CI.
+- Keep lines ≤80 characters where possible.
+- Keep dependencies current; audit with `dependency-auditor` when adding or updating packages.
 
 ### TypeScript
 
-- Use ESLint and Prettier for consistent code style
-- Use async/await for asynchronous operations
-- Use TypeScript for type safety and better code completion
-- Use modern JavaScript features and libraries (ES6+)
-- Use generics when appropriate
-- Leverage auto-imports for types
-- Avoid using "any" type
-- Write erasableSyntaxOnly compliant code only (no enums, namespaces, and class parameter properties)
-- Use template literals for string concatenation
+- ESLint + Prettier for style.
+- `async`/`await` for all async operations.
+- No `any` — use `unknown` and narrow explicitly.
+- `erasableSyntaxOnly`: no enums, namespaces, or class parameter properties.
+- Use generics for reusable abstractions.
+- Use template literals for string concatenation.
+- Leverage auto-imports and SvelteKit-generated `$types.ts`.
 
 ### Svelte
 
-- Organize components in subdirectories by feature
-- Create reusable components in a package's `$lib/components` directory
-- Implement proper component naming (PascalCase)
-- Annotate props with TypeScript: `let { name }: { name: string } = $props()`
-- Type event handlers, refs, and SvelteKit's generated types
-- Use generic types for reusable components
-- Leverage `$types.ts` files generated by SvelteKit
-- Implement proper type checking with `svelte-check`
-- Use type inference where possible to reduce boilerplate
-- Use keyed `{#each}` blocks for efficient list rendering
-- Use `$derived()` for expensive computations to avoid unnecessary recalculations
-- Use `$derived.by()` for complex derived values that require multiple statements
-- Avoid `$effect()` for derived state - it's less efficient than `$derived()
-- Use `$effect.tracking()` in abstractions to conditionally create reactive listeners
-- Implement `+error.svelte` pages for route-level error boundaries
-- Write unit tests for components using Vitest and Testing Library
+- Organize by feature; reusable components in `$lib/components`.
+- PascalCase component filenames.
+- Type props explicitly: `let { name }: { name: string } = $props()`.
+- Type all event handlers, refs, and SvelteKit types.
+- Use `$derived()` for computed values; `$derived.by()` for multi-statement derivations.
+- Never use `$effect()` for derived state — use `$derived()` instead.
+- Use `$effect.tracking()` in abstractions for conditional reactive listeners.
+- Use keyed `{#each}` blocks.
+- Implement `+error.svelte` for route-level error boundaries.
+- Type-check with `svelte-check`.
 
 ### Rust
 
-- Follow the Rust Style Guide and use `rustfmt` for automatic formatting.
-- Use strong typing and leverage Rust's ownership system for memory safety.
-- Handle errors gracefully using `Result<T, E>` and provide meaningful error messages.
-- Use consistent naming conventions following [RFC 430](https://github.com/rust-lang/rfcs/blob/master/text/0430-finalizing-naming-conventions.md).
-- Write idiomatic, safe, and efficient Rust code that follows the borrow checker's rules.
-- Use `cargo clippy` to catch common mistakes and enforce best practices.
+- `rustfmt` for formatting; `cargo clippy` with zero warnings permitted.
+- Follow [RFC 430](https://github.com/rust-lang/rfcs/blob/master/text/0430-finalizing-naming-conventions.md) naming conventions.
+- All `Result<T, E>` and `Option<T>` must be handled explicitly.
+- No `.unwrap()` or `.expect()` in production code paths — only in tests or `main`.
+- Use `proptest` for property-based testing of complex or data-driven logic.
+- Unit tests in `#[cfg(test)]` modules in the same file; integration tests in `tests/`.
