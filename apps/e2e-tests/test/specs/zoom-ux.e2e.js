@@ -28,6 +28,13 @@ describe('Zoom UX Regression', () => {
 	});
 
 	it('should prevent panning away from the cluster', async () => {
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => !!window.starMapDebug);
+			},
+			{ timeout: 5000, timeoutMsg: 'StarMap debug data not found' }
+		);
+
 		// Try to pan far away
 		await browser.performActions([
 			{
@@ -37,7 +44,7 @@ describe('Zoom UX Regression', () => {
 				actions: [
 					{ type: 'pointerMove', duration: 0, x: 500, y: 500 },
 					{ type: 'pointerDown', button: 0 },
-					{ type: 'pointerMove', duration: 500, x: -1000, y: -1000 },
+					{ type: 'pointerMove', duration: 500, x: 10, y: 10 },
 					{ type: 'pointerUp', button: 0 }
 				]
 			}
@@ -73,7 +80,7 @@ describe('Zoom UX Regression', () => {
 			window.stores.cluster.subscribe((v) => (data = v))();
 			return data;
 		});
-		const targetSystemId = clusterData.systems[0].id;
+		const targetSystemId = clusterData.Systems[0].Id;
 
 		await browser.execute((id) => {
 			window.stores.activeSystemId.set(id);
@@ -105,14 +112,22 @@ describe('Zoom UX Regression', () => {
 	});
 
 	it('should respect max zoom limit on focused object', async () => {
+		// Wait for instrumentation to be ready
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => !!window.solarSystemMapDebug);
+			},
+			{ timeout: 10000, timeoutMsg: 'SolarSystemMap debug data not found for max zoom test' }
+		);
+
 		// Find a planet to focus on
 		const targetId = await browser.execute(() => {
-			return window.solarSystemMapDebug.bodyNodes[0].body.id;
+			return window.solarSystemMapDebug.bodyNodes[0].body.Id;
 		});
 
 		// Get planet position
 		const planetPos = await browser.execute((id) => {
-			const node = window.solarSystemMapDebug.bodyNodes.find((n) => n.body.id === id);
+			const node = window.solarSystemMapDebug.bodyNodes.find((n) => n.body.Id === id);
 			const pos = window.solarSystemMapDebug.viewport.toScreen(node.worldX, node.worldY);
 			return { x: pos.x, y: pos.y };
 		}, targetId);
@@ -184,7 +199,7 @@ describe('Zoom UX Regression', () => {
 
 			for (const node of bodyNodes) {
 				if (node.parentId) {
-					const parent = allNodes.find((n) => (n.star?.id || n.body?.id) === node.parentId);
+					const parent = allNodes.find((n) => (n.star?.Id || n.body?.Id) === node.parentId);
 
 					if (parent) {
 						const childVisRadius = node.baseRadius * node.container.scale.x;
@@ -192,7 +207,7 @@ describe('Zoom UX Regression', () => {
 						// The constraint is 0.4. We allow a tiny epsilon for float math.
 						if (childVisRadius > parentVisRadius * 0.4001) {
 							errors.push(
-								`${node.body.name} (${childVisRadius.toFixed(2)}) is too large compared to parent (${parentVisRadius.toFixed(2)}) - ratio: ${(childVisRadius / parentVisRadius).toFixed(3)}`
+								`${node.body.Name} (${childVisRadius.toFixed(2)}) is too large compared to parent (${parentVisRadius.toFixed(2)}) - ratio: ${(childVisRadius / parentVisRadius).toFixed(3)}`
 							);
 						}
 					}

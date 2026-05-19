@@ -24,7 +24,7 @@ describe('App Responsiveness', () => {
 			return data;
 		});
 
-		const targetSystemId = clusterData.systems[0].id;
+		const targetSystemId = clusterData.Systems[0].Id;
 		const startTime = Date.now();
 
 		await browser.execute((id) => {

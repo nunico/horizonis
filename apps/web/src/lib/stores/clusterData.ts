@@ -27,11 +27,13 @@ export async function initWasm() {
 		return;
 	}
 	try {
+		console.log('Initializing WASM...');
 		const [{ default: init }, { default: wasmUrl }] = await Promise.all([
 			import('procedural-gen'),
 			import('procedural-gen/procedural_gen_bg.wasm?url') as Promise<{ default: string }>
 		]);
 		await init(wasmUrl);
+		console.log('WASM initialized successfully');
 		isInitialized.set(true);
 	} catch (e) {
 		console.error('Failed to init WASM:', e);
@@ -39,13 +41,16 @@ export async function initWasm() {
 }
 
 export async function loadCluster() {
+	console.log('Loading cluster...');
 	const provider = await getStorage();
 	try {
 		const data = await provider.getCluster();
+		console.log('Cluster loaded from storage');
 		cluster.set(data);
 	} catch (e) {
 		console.warn('Failed to load cluster, generating new one:', e);
 		const newCluster = await provider.generateCluster();
+		console.log('New cluster generated');
 		cluster.set(newCluster);
 	}
 }

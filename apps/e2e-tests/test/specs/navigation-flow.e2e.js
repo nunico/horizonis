@@ -2,6 +2,10 @@ describe('Navigation Flow', () => {
 	it('should search for a system and navigate to it', async () => {
 		await browser.url('http://localhost:1420');
 
+		// Wait for loading screen to disappear
+		const loadingScreen = await $('[data-testid="loading-screen"]');
+		await loadingScreen.waitForDisplayed({ reverse: true, timeout: 15000 });
+
 		const nav = await $('nav');
 		await nav.waitForDisplayed();
 
@@ -48,12 +52,24 @@ describe('Navigation Flow', () => {
 	});
 
 	it('should use Inspector keyboard shortcuts', async () => {
+		// Wait for cluster data to be loaded
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => {
+					let data;
+					window.stores.cluster.subscribe((v) => (data = v))();
+					return !!data && !!data.Systems && data.Systems.length > 0;
+				});
+			},
+			{ timeout: 10000, timeoutMsg: 'Cluster data not loaded for selection' }
+		);
+
 		// Select a system from cluster to open inspector
 		await browser.execute(() => {
 			const c = window.stores.cluster;
 			let data;
 			c.subscribe((v) => (data = v))();
-			window.stores.selectedEntity.set(data.systems[0]);
+			window.stores.selectedEntity.set(data.Systems[0]);
 		});
 
 		const inspector = await $('[role="dialog"]');
@@ -70,7 +86,7 @@ describe('Navigation Flow', () => {
 		const systemName = await browser.execute(() => {
 			let data;
 			window.stores.cluster.subscribe((v) => (data = v))();
-			return data.systems[0].name;
+			return data.Systems[0].Name;
 		});
 		expect(systemName).toBe('Renamed System');
 	});

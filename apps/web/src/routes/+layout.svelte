@@ -1,19 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import { viewMode, selectedEntity, activeSystemId } from '$lib/stores/appState';
-	import { cluster } from '$lib/stores/clusterData';
+	import { viewMode, selectedEntity } from '$lib/stores/appState';
+	import * as appState from '$lib/stores/appState';
+	import * as clusterData from '$lib/stores/clusterData';
 	let { children } = $props();
 
+	if (import.meta.env.DEV && typeof window !== 'undefined') {
+		// @ts-expect-error - Expose stores for E2E tests
+		window.stores = {
+			...appState,
+			...clusterData
+		};
+	}
+
 	onMount(() => {
-		if (import.meta.env.DEV && typeof window !== 'undefined') {
-			(window as unknown as { stores: unknown }).stores = {
-				viewMode,
-				selectedEntity,
-				activeSystemId,
-				cluster
-			};
-		}
 		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
 				selectedEntity.set(null);
