@@ -2,6 +2,21 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-19] - Comprehensive Test Suite Expansion and Component Reliability
+
+- **Summary**: Increased test coverage and fixed non-determinism, connectivity, and reactivity issues across Rust and Svelte components.
+- **Changes**:
+  - Added comprehensive proptests and unit tests for `procedural-gen` (invariants, seeding, connectivity).
+  - Fixed non-determinism in cluster generation caused by `Uuid::new_v4()` and `HashSet` iteration.
+  - Guaranteed cluster connectivity using DSU in the generation algorithm.
+  - Enhanced `routing.rs` with edge case and error handling tests.
+  - Expanded `clusterData` store tests to cover Tauri integration and async error fallbacks.
+  - Implemented `onDestroy` cleanup for PIXI.js in `StarMap.svelte` and `SolarSystemMap.svelte`.
+  - Refactored `SolarSystemMap.svelte` to use `$derived` for system data, resolving a reactivity loop.
+  - Added interaction tests for map components using Vitest and PIXI mocks.
+- **Files Affected**: `libs/procedural-gen/src/generation.rs`, `libs/procedural-gen/src/routing.rs`, `apps/web/src/lib/stores/clusterData.ts`, `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`.
+- **Context**: Improved reliability of procedural generation and resolved potential memory leaks and reactivity loops in the UI.
+
 ###### [2026-05-19] - TypeScript & Svelte 5 Quality Fixes
 
 - **Summary**: Resolved 46+ TypeScript errors and Svelte 5 reactivity warnings.

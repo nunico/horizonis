@@ -16,6 +16,9 @@ petgraph = "0.8.3"
 wasm-bindgen = { version = "0.2", optional = true }
 serde-wasm-bindgen = { version = "0.6", optional = true }
 
+[dev-dependencies]
+proptest = "1.6.0"
+
 [features]
 default = []
 wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen"]

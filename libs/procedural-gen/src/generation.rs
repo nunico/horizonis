@@ -67,11 +67,34 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
         }
     }
     let mut edges: Vec<_> = edges.into_iter().collect();
+    edges.sort_unstable();
 
-    // Prune edges to meet degree constraints
-    // Goal: most 2, some 1 or 3, rare 4
+    // Prune edges to meet degree constraints while ensuring connectivity
     let mut degrees = vec![0; system_count];
     let mut final_edges = Vec::new();
+    let mut dsu = (0..system_count).collect::<Vec<_>>();
+    let mut components = system_count;
+
+    fn find(dsu: &mut [usize], i: usize) -> usize {
+        if dsu[i] == i {
+            i
+        } else {
+            dsu[i] = find(dsu, dsu[i]);
+            dsu[i]
+        }
+    }
+
+    fn union(dsu: &mut [usize], components: &mut usize, i: usize, j: usize) -> bool {
+        let root_i = find(dsu, i);
+        let root_j = find(dsu, j);
+        if root_i != root_j {
+            dsu[root_i] = root_j;
+            *components -= 1;
+            true
+        } else {
+            false
+        }
+    }
 
     // Shuffle edges to prune randomly
     edges.shuffle(&mut rng);
@@ -80,18 +103,29 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
         let deg_u = degrees[u];
         let deg_v = degrees[v];
 
-        // Probability to keep an edge based on current degrees
-        let keep_prob = if deg_u < 2 && deg_v < 2 {
-            0.9
-        } else if deg_u < 3 && deg_v < 3 {
-            0.4
-        } else if deg_u < 4 && deg_v < 4 {
-            0.05
+        let root_u = find(&mut dsu, u);
+        let root_v = find(&mut dsu, v);
+        let merges = root_u != root_v;
+
+        // Force keep if it merges components
+        // Otherwise, keep based on probability and degree limits
+        let keep = if merges {
+            true
         } else {
-            0.01
+            let keep_prob = if deg_u < 2 && deg_v < 2 {
+                0.6
+            } else if deg_u < 3 && deg_v < 3 {
+                0.2
+            } else {
+                0.02
+            };
+            rng.random_bool(keep_prob)
         };
 
-        if rng.random_bool(keep_prob) || (deg_u == 0 || deg_v == 0) { // Keep if it connects an isolated node
+        if keep {
+            if merges {
+                union(&mut dsu, &mut components, u, v);
+            }
             final_edges.push((u, v));
             degrees[u] += 1;
             degrees[v] += 1;
@@ -106,12 +140,12 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
         let name_u = systems[u].name.clone();
 
         systems[u].portals.push(Portal {
-            id: Uuid::new_v4(),
+            id: gen_uuid(&mut rng),
             name: format!("Jump to {}", name_v),
             target_system_id: id_v,
         });
         systems[v].portals.push(Portal {
-            id: Uuid::new_v4(),
+            id: gen_uuid(&mut rng),
             name: format!("Jump to {}", name_u),
             target_system_id: id_u,
         });
@@ -124,7 +158,7 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
 }
 
 fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> SolarSystem {
-    let id = Uuid::new_v4();
+    let id = gen_uuid(rng);
     
     // Determine number of stars
     let num_stars = if rng.random_bool(0.2) { // 20% binary/trinary
@@ -146,7 +180,7 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
         let mass = class_info.1 * rng.random_range(0.9..1.1);
         
         stars.push(Star {
-            id: Uuid::new_v4(),
+            id: gen_uuid(rng),
             name: star_name,
             spectral_class: class_info.0.to_string(),
             mass_sol: mass,
@@ -307,7 +341,7 @@ fn generate_body(rng: &mut impl Rng, index: usize, orbit_au: f32) -> OrbitalBody
             let moon_radius_earth_equiv = (moon_mass / (moon_density / 5.51)).powf(1.0/3.0);
             
             satellites.push(OrbitalBody {
-                id: Uuid::new_v4(),
+                id: gen_uuid(rng),
                 name: format!("Moon {}", j + 1),
                 body_type: BodyType::Moon,
                 orbit_au: 0.005 * (j as f32 + 1.0) * rng.random_range(0.8..1.2),
@@ -320,7 +354,7 @@ fn generate_body(rng: &mut impl Rng, index: usize, orbit_au: f32) -> OrbitalBody
     }
 
     OrbitalBody {
-        id: Uuid::new_v4(),
+        id: gen_uuid(rng),
         name: format!("Planet {}", index + 1),
         body_type,
         orbit_au,
@@ -328,5 +362,279 @@ fn generate_body(rng: &mut impl Rng, index: usize, orbit_au: f32) -> OrbitalBody
         mass_earth,
         satellites,
         tags,
+    }
+}
+
+fn gen_uuid(rng: &mut impl Rng) -> Uuid {
+    let bytes: [u8; 16] = rng.random();
+    Uuid::from_bytes(bytes)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::prelude::*;
+    use std::collections::{HashMap, HashSet, VecDeque};
+
+    const MIN_ORBIT_GAP_AU: f32 = 0.0001;
+
+    fn body_type_name(body_type: &BodyType) -> &'static str {
+        match body_type {
+            BodyType::Planet => "Planet",
+            BodyType::Moon => "Moon",
+            BodyType::SpaceStation => "SpaceStation",
+            BodyType::DwarfPlanet => "DwarfPlanet",
+            BodyType::Comet => "Comet",
+        }
+    }
+
+    fn body_signature(body: &OrbitalBody) -> Vec<u64> {
+        let mut signature = vec![
+            body.orbit_au.to_bits() as u64,
+            body.radius_km.to_bits() as u64,
+            body.mass_earth.to_bits() as u64,
+            body.satellites.len() as u64,
+        ];
+        signature.extend(body.name.as_bytes().iter().map(|b| *b as u64));
+        signature.extend(
+            body_type_name(&body.body_type)
+                .as_bytes()
+                .iter()
+                .map(|b| *b as u64),
+        );
+        for tag in &body.tags {
+            signature.extend(tag.as_bytes().iter().map(|b| *b as u64));
+        }
+        for satellite in &body.satellites {
+            signature.extend(body_signature(satellite));
+        }
+        signature
+    }
+
+    fn cluster_signature(cluster: &StarCluster) -> Vec<Vec<u64>> {
+        let id_to_name: HashMap<_, _> = cluster
+            .systems
+            .iter()
+            .map(|system| (system.id, system.name.clone()))
+            .collect();
+
+        cluster
+            .systems
+            .iter()
+            .map(|system| {
+                let mut signature = vec![
+                    system.x.to_bits() as u64,
+                    system.y.to_bits() as u64,
+                    system.stars.len() as u64,
+                    system.orbital_bodies.len() as u64,
+                    system.orbital_regions.len() as u64,
+                    system.portals.len() as u64,
+                ];
+
+                signature.extend(system.name.as_bytes().iter().map(|b| *b as u64));
+
+                let mut portal_targets: Vec<_> = system
+                    .portals
+                    .iter()
+                    .map(|portal| {
+                        id_to_name
+                            .get(&portal.target_system_id)
+                            .expect("portal target must exist")
+                            .clone()
+                    })
+                    .collect();
+                portal_targets.sort();
+                for target in portal_targets {
+                    signature.extend(target.as_bytes().iter().map(|b| *b as u64));
+                }
+
+                for star in &system.stars {
+                    signature.push(star.mass_sol.to_bits() as u64);
+                    signature.push(star.radius_sol.to_bits() as u64);
+                    signature.push(star.orbit_au.to_bits() as u64);
+                    signature.push(star.satellites.len() as u64);
+                    signature.push(star.orbital_regions.len() as u64);
+                    signature.extend(star.name.as_bytes().iter().map(|b| *b as u64));
+                    signature.extend(
+                        star.spectral_class
+                            .as_bytes()
+                            .iter()
+                            .map(|b| *b as u64),
+                    );
+
+                    for body in &star.satellites {
+                        signature.extend(body_signature(body));
+                    }
+
+                    for region in &star.orbital_regions {
+                        signature.push(region.inner_radius_au.to_bits() as u64);
+                        signature.push(region.outer_radius_au.to_bits() as u64);
+                        signature.extend(
+                            region.name.as_bytes().iter().map(|b| *b as u64),
+                        );
+                    }
+                }
+
+                for body in &system.orbital_bodies {
+                    signature.extend(body_signature(body));
+                }
+
+                for region in &system.orbital_regions {
+                    signature.push(region.inner_radius_au.to_bits() as u64);
+                    signature.push(region.outer_radius_au.to_bits() as u64);
+                    signature.extend(region.name.as_bytes().iter().map(|b| *b as u64));
+                }
+
+                signature
+            })
+            .collect()
+    }
+
+    fn assert_positive_body_invariants(body: &OrbitalBody) {
+        assert!(body.radius_km > 0.0, "body radius must be positive");
+        assert!(body.mass_earth > 0.0, "body mass must be positive");
+
+        for satellite in &body.satellites {
+            assert_positive_body_invariants(satellite);
+        }
+    }
+
+    fn assert_non_overlapping_orbits(bodies: &[OrbitalBody]) {
+        let mut orbits: Vec<f32> = bodies.iter().map(|body| body.orbit_au).collect();
+        orbits.sort_by(f32::total_cmp);
+
+        for window in orbits.windows(2) {
+            let gap = window[1] - window[0];
+            assert!(
+                gap > MIN_ORBIT_GAP_AU,
+                "detected overlapping orbits, gap={gap}"
+            );
+        }
+    }
+
+    fn assert_cluster_is_connected(cluster: &StarCluster) {
+        let systems = &cluster.systems;
+        let mut id_to_index = HashMap::new();
+        for (index, system) in systems.iter().enumerate() {
+            id_to_index.insert(system.id, index);
+        }
+
+        let mut visited = HashSet::new();
+        let mut queue = VecDeque::new();
+        queue.push_back(systems[0].id);
+        visited.insert(systems[0].id);
+
+        while let Some(current) = queue.pop_front() {
+            let index = *id_to_index
+                .get(&current)
+                .expect("visited system id must be valid");
+            for portal in &systems[index].portals {
+                if visited.insert(portal.target_system_id) {
+                    queue.push_back(portal.target_system_id);
+                }
+            }
+        }
+
+        assert_eq!(
+            visited.len(),
+            systems.len(),
+            "cluster contains isolated systems"
+        );
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(64))]
+
+        #[test]
+        fn test_generate_cluster_same_seed_returns_identical_results(seed in any::<u64>()) {
+            let first = generate_cluster(seed);
+            let second = generate_cluster(seed);
+
+            prop_assert_eq!(cluster_signature(&first), cluster_signature(&second));
+        }
+
+        #[test]
+        fn test_generate_cluster_seeded_structure_has_system_count_in_range(seed in any::<u64>()) {
+            let cluster = generate_cluster(seed);
+
+            prop_assert!((15..=25).contains(&cluster.systems.len()));
+        }
+
+        #[test]
+        fn test_generate_cluster_seeded_portals_keep_every_system_reachable(seed in any::<u64>()) {
+            let cluster = generate_cluster(seed);
+            assert_cluster_is_connected(&cluster);
+        }
+
+        #[test]
+        fn test_generate_cluster_seeded_bodies_obey_physical_invariants(seed in any::<u64>()) {
+            let cluster = generate_cluster(seed);
+
+            for system in &cluster.systems {
+                assert_non_overlapping_orbits(&system.orbital_bodies);
+
+                for star in &system.stars {
+                    prop_assert!(star.radius_sol > 0.0);
+                    prop_assert!(star.mass_sol > 0.0);
+
+                    assert_non_overlapping_orbits(&star.satellites);
+
+                    for body in &star.satellites {
+                        assert_positive_body_invariants(body);
+                    }
+                }
+
+                for body in &system.orbital_bodies {
+                    assert_positive_body_invariants(body);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_multistar_systems_have_individual_orbits_and_planetary_limits() {
+        let mut found_multi_star_system = false;
+
+        for seed in 0_u64..512 {
+            let cluster = generate_cluster(seed);
+            for system in &cluster.systems {
+                if system.stars.len() < 2 {
+                    continue;
+                }
+
+                found_multi_star_system = true;
+                assert!((2..=3).contains(&system.stars.len()));
+
+                for (index, star) in system.stars.iter().enumerate() {
+                    assert_ne!(star.orbit_au, 0.0);
+
+                    let mut min_star_distance = f32::MAX;
+                    for (other_index, other_star) in system.stars.iter().enumerate() {
+                        if index == other_index {
+                            continue;
+                        }
+                        let distance = (star.orbit_au - other_star.orbit_au).abs();
+                        if distance > 0.01 {
+                            min_star_distance = min_star_distance.min(distance);
+                        }
+                    }
+
+                    if min_star_distance.is_finite() && !star.satellites.is_empty() {
+                        let max_orbit = star
+                            .satellites
+                            .iter()
+                            .map(|body| body.orbit_au)
+                            .fold(0.0, f32::max);
+                        let stable_limit = min_star_distance * 0.35;
+                        assert!(max_orbit <= stable_limit + f32::EPSILON);
+                    }
+                }
+            }
+        }
+
+        assert!(
+            found_multi_star_system,
+            "expected at least one generated multi-star system"
+        );
     }
 }

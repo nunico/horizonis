@@ -6,7 +6,11 @@ import type { StarCluster } from '../types/stellar';
 export const cluster = writable<StarCluster | null>(null);
 export const isInitialized = writable(false);
 
-let storage: StorageProvider;
+let storage: StorageProvider | null = null;
+
+export function _resetStorage() {
+	storage = null;
+}
 
 async function getStorage() {
 	if (storage) return storage;

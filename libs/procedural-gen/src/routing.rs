@@ -108,5 +108,149 @@ mod tests {
 
         let result = compute_route(&cluster, id1, id2);
         assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "No route found");
+    }
+
+    #[test]
+    fn test_start_equals_end() {
+        let id1 = Uuid::new_v4();
+        let cluster = StarCluster {
+            name: "Test".to_string(),
+            systems: vec![
+                SolarSystem {
+                    id: id1,
+                    name: "S1".to_string(),
+                    x: 0.0, y: 0.0,
+                    stars: vec![], orbital_bodies: vec![], orbital_regions: vec![],
+                    portals: vec![],
+                },
+            ],
+        };
+
+        let route = compute_route(&cluster, id1, id1).unwrap();
+        assert_eq!(route.len(), 1);
+        assert_eq!(route[0], id1);
+    }
+
+    #[test]
+    fn test_system_not_found() {
+        let id1 = Uuid::new_v4();
+        let id2 = Uuid::new_v4();
+        let cluster = StarCluster {
+            name: "Test".to_string(),
+            systems: vec![],
+        };
+
+        let result = compute_route(&cluster, id1, id2);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "Start system not found");
+
+        let cluster_with_start = StarCluster {
+            name: "Test".to_string(),
+            systems: vec![
+                SolarSystem {
+                    id: id1,
+                    name: "S1".to_string(),
+                    x: 0.0, y: 0.0,
+                    stars: vec![], orbital_bodies: vec![], orbital_regions: vec![],
+                    portals: vec![],
+                },
+            ],
+        };
+
+        let result = compute_route(&cluster_with_start, id1, id2);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "End system not found");
+    }
+
+    #[test]
+    fn test_shortest_path_with_cycles() {
+        let id1 = Uuid::new_v4();
+        let id2 = Uuid::new_v4();
+        let id3 = Uuid::new_v4();
+        let id4 = Uuid::new_v4();
+
+        // Path 1: 1 -> 2 -> 4 (length 3)
+        // Path 2: 1 -> 3 -> 4 (length 3)
+        // Path 3: 1 -> 4 (length 2) - Should pick this one
+
+        let cluster = StarCluster {
+            name: "Test".to_string(),
+            systems: vec![
+                SolarSystem {
+                    id: id1,
+                    name: "S1".to_string(),
+                    x: 0.0, y: 0.0,
+                    stars: vec![], orbital_bodies: vec![], orbital_regions: vec![],
+                    portals: vec![
+                        Portal { id: Uuid::new_v4(), name: "to S2".to_string(), target_system_id: id2 },
+                        Portal { id: Uuid::new_v4(), name: "to S3".to_string(), target_system_id: id3 },
+                        Portal { id: Uuid::new_v4(), name: "to S4".to_string(), target_system_id: id4 },
+                    ],
+                },
+                SolarSystem {
+                    id: id2,
+                    name: "S2".to_string(),
+                    x: 1.0, y: 0.0,
+                    stars: vec![], orbital_bodies: vec![], orbital_regions: vec![],
+                    portals: vec![Portal { id: Uuid::new_v4(), name: "to S4".to_string(), target_system_id: id4 }],
+                },
+                SolarSystem {
+                    id: id3,
+                    name: "S3".to_string(),
+                    x: 0.0, y: 1.0,
+                    stars: vec![], orbital_bodies: vec![], orbital_regions: vec![],
+                    portals: vec![Portal { id: Uuid::new_v4(), name: "to S4".to_string(), target_system_id: id4 }],
+                },
+                SolarSystem {
+                    id: id4,
+                    name: "S4".to_string(),
+                    x: 1.0, y: 1.0,
+                    stars: vec![], orbital_bodies: vec![], orbital_regions: vec![],
+                    portals: vec![],
+                },
+            ],
+        };
+
+        let route = compute_route(&cluster, id1, id4).unwrap();
+        assert_eq!(route.len(), 2);
+        assert_eq!(route[0], id1);
+        assert_eq!(route[1], id4);
+    }
+
+    #[test]
+    fn test_large_linear_path() {
+        let n = 20;
+        let mut systems = Vec::new();
+        let ids: Vec<Uuid> = (0..n).map(|_| Uuid::new_v4()).collect();
+
+        for i in 0..n {
+            let mut portals = Vec::new();
+            if i + 1 < n {
+                portals.push(Portal {
+                    id: Uuid::new_v4(),
+                    name: format!("to {}", i + 1),
+                    target_system_id: ids[i + 1],
+                });
+            }
+            systems.push(SolarSystem {
+                id: ids[i],
+                name: format!("S{}", i),
+                x: i as f32, y: 0.0,
+                stars: vec![], orbital_bodies: vec![], orbital_regions: vec![],
+                portals,
+            });
+        }
+
+        let cluster = StarCluster {
+            name: "Linear".to_string(),
+            systems,
+        };
+
+        let route = compute_route(&cluster, ids[0], ids[n - 1]).unwrap();
+        assert_eq!(route.len(), n);
+        for i in 0..n {
+            assert_eq!(route[i], ids[i]);
+        }
     }
 }

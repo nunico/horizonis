@@ -10,7 +10,7 @@
 	let container = $state<HTMLDivElement>();
 	let app = $state<PIXI.Application>();
 	let viewport = $state<Viewport>();
-	let systemData = $state<SolarSystem | null>(null);
+	let systemData = $derived($cluster?.Systems.find((s) => s.Id === $activeSystemId) || null);
 	let resizeHandler: () => void;
 	let starNodes: {
 		container: PIXI.Container<PIXI.ContainerChild>;
@@ -55,12 +55,13 @@
 	onMount(async () => {
 		if (!container) return;
 		const pixiApp = new PIXI.Application();
+		app = pixiApp;
 		await pixiApp.init({
 			resizeTo: container,
 			antialias: true,
 			backgroundColor: 0x020617
 		});
-		app = pixiApp;
+		if (!container) return;
 		// eslint-disable-next-line svelte/no-dom-manipulating
 		container.appendChild(pixiApp.canvas);
 
@@ -360,6 +361,15 @@
 		});
 	}
 
+	onDestroy(() => {
+		if (app) {
+			if (resizeHandler) {
+				app.renderer.off('resize', resizeHandler);
+			}
+			app.destroy(true, { children: true, texture: true });
+		}
+	});
+
 	function renderSystem() {
 		const v = viewport;
 		if (!systemData || !v) return;
@@ -648,12 +658,8 @@
 	}
 
 	$effect(() => {
-		if ($activeSystemId && $cluster && viewport) {
-			const found = $cluster.Systems.find((s) => s.Id === $activeSystemId);
-			if (found) {
-				systemData = found;
-				renderSystem();
-			}
+		if (systemData && viewport) {
+			renderSystem();
 		}
 	});
 

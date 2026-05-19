@@ -53,12 +53,13 @@
 	onMount(async () => {
 		if (!container) return;
 		const pixiApp = new PIXI.Application();
+		app = pixiApp;
 		await pixiApp.init({
 			resizeTo: container,
 			antialias: true,
 			backgroundColor: 0x020617 // slate-950
 		});
-		app = pixiApp;
+		if (!container) return;
 		// eslint-disable-next-line svelte/no-dom-manipulating
 		container.appendChild(pixiApp.canvas);
 
@@ -294,6 +295,15 @@
 			} as PIXI.IHitArea;
 		}
 	}
+
+	onDestroy(() => {
+		if (app) {
+			if (resizeHandler) {
+				app.renderer.off('resize', resizeHandler);
+			}
+			app.destroy(true, { children: true, texture: true });
+		}
+	});
 
 	function renderCluster() {
 		if (!$cluster || !viewport) return;

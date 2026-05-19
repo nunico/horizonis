@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { cluster, loadCluster, saveCluster } from './clusterData';
+import { cluster, loadCluster, saveCluster, _resetStorage } from './clusterData';
 
 // Mock procedural-gen
 vi.mock('procedural-gen', () => ({
@@ -8,9 +8,15 @@ vi.mock('procedural-gen', () => ({
 	generate_cluster: vi.fn().mockReturnValue({ Name: 'Generated', Systems: [] })
 }));
 
+// Mock Tauri
+vi.mock('@tauri-apps/api/core', () => ({
+	invoke: vi.fn()
+}));
+
 describe('clusterData store', () => {
 	beforeEach(() => {
 		cluster.set(null);
+		_resetStorage();
 		vi.clearAllMocks();
 		// @ts-expect-error - Mocking storage
 		delete window.__TAURI_INTERNALS__;
@@ -39,5 +45,49 @@ describe('clusterData store', () => {
 
 		expect(get(cluster)).toEqual(mockData);
 		expect(JSON.parse(localStorage.getItem('horizonis_cluster')!)).toEqual(mockData);
+	});
+
+	it('uses TauriStorage when __TAURI_INTERNALS__ is present', async () => {
+		const { invoke } = await import('@tauri-apps/api/core');
+		const mockData = { Name: 'Tauri Cluster', Systems: [] };
+		vi.mocked(invoke).mockResolvedValue(mockData);
+
+		// @ts-expect-error - Mocking
+		window.__TAURI_INTERNALS__ = {};
+
+		await loadCluster();
+
+		expect(invoke).toHaveBeenCalledWith('get_cluster');
+		expect(get(cluster)).toEqual(mockData);
+	});
+
+	it('falls back to generation when Tauri storage fails', async () => {
+		const { invoke } = await import('@tauri-apps/api/core');
+		vi.mocked(invoke).mockRejectedValueOnce(new Error('Tauri error'));
+		const generatedData = { Name: 'Tauri Generated', Systems: [] };
+		vi.mocked(invoke).mockResolvedValueOnce(generatedData);
+
+		// @ts-expect-error - Mocking
+		window.__TAURI_INTERNALS__ = {};
+
+		await loadCluster();
+
+		expect(invoke).toHaveBeenCalledWith('get_cluster');
+		expect(invoke).toHaveBeenCalledWith('generate_cluster', { seed: null });
+		expect(get(cluster)).toEqual(generatedData);
+	});
+
+	it('logs error when saveCluster fails', async () => {
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		// Force failure in BrowserStorage by making localStorage.setItem throw
+		vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+			throw new Error('Disk full');
+		});
+
+		const mockData = { Name: 'Fail Cluster', Systems: [] };
+		await saveCluster(mockData);
+
+		expect(consoleSpy).toHaveBeenCalledWith('Failed to save cluster:', expect.any(Error));
+		consoleSpy.mockRestore();
 	});
 });
