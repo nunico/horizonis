@@ -6,7 +6,12 @@
 
 	type Entity = SolarSystem | Star | OrbitalBody;
 
-	let entity = $derived($selectedEntity ? { ...$selectedEntity } : null);
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let entity = $state<Entity | null>(null);
+
+	$effect(() => {
+		entity = $selectedEntity ? { ...$selectedEntity } : null;
+	});
 	let nameInput = $state<HTMLInputElement>();
 
 	$effect(() => {

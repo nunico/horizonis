@@ -7,7 +7,6 @@
 	let { children } = $props();
 
 	if (import.meta.env.DEV && typeof window !== 'undefined') {
-		// @ts-expect-error - Expose stores for E2E tests
 		window.stores = {
 			...appState,
 			...clusterData

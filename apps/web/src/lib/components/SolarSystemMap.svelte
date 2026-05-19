@@ -104,8 +104,7 @@
 		v.on('moved', updateScales);
 
 		if (import.meta.env.DEV && typeof window !== 'undefined') {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(window as any).solarSystemDebug = {
+			window.solarSystemDebug = {
 				viewport: v,
 				get lastMinScale() {
 					return lastMinScale;

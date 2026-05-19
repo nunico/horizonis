@@ -104,7 +104,6 @@
 		v.on('moved', updateScales);
 
 		if (import.meta.env.DEV && typeof window !== 'undefined') {
-			// @ts-expect-error - Debug global
 			window.starMapDebug = {
 				viewport: v,
 				get lastMinScale() {

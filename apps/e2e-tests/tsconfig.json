@@ -1,0 +1,11 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"moduleResolution": "bundler",
+		"allowJs": true,
+		"checkJs": false,
+		"noEmit": true,
+		"types": ["node", "expect-webdriverio", "@wdio/mocha-framework"]
+	},
+	"include": ["**/*.js", "**/*.cjs", "test/specs/**/*.js"]
+}

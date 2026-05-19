@@ -2,6 +2,17 @@
 
 All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+###### [2026-05-19] - TypeScript & Svelte 5 Quality Fixes
+
+- **Summary**: Resolved 46+ TypeScript errors and Svelte 5 reactivity warnings.
+- **Changes**:
+  - Fixed Svelte 5 reactivity in `Inspector.svelte` by replacing `$derived` with `$state` + `$effect` for local mutable entity copy.
+  - Augmented `Window` interface in `apps/web/src/app.d.ts` to include debug and E2E properties.
+  - Added `apps/e2e-tests/tsconfig.json` to correctly type WebDriverIO tests and eliminate analysis errors.
+  - Removed multiple redundant `@ts-expect-error` and `any` casts in map components.
+- **Files Affected**: `apps/web/src/lib/components/Inspector.svelte`, `apps/web/src/app.d.ts`, `apps/e2e-tests/tsconfig.json`, `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/routes/+layout.svelte`.
+- **Context**: Improved IDE experience and code robustness by ensuring 100% type safety and Svelte 5 idiomaticity.
+
 ###### [2026-05-19] - Update Agent Guidelines for Code Quality & Multi-Target Support
 
 - **Summary**: Updated `AGENTS.md` and E2E infrastructure to ensure quality across Web and Desktop targets.
