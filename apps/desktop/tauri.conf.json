@@ -1,18 +1,18 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "tauri-app",
+	"productName": "horizonis-desktop",
 	"version": "0.1.0",
-	"identifier": "com.admin.tauri-app",
+	"identifier": "dev.tea-driven.horizonis.desktop",
 	"build": {
-		"beforeDevCommand": "pnpm nx run web:dev",
+		"beforeDevCommand": "pnpm run web:dev",
 		"devUrl": "http://localhost:1420",
-		"beforeBuildCommand": "pnpm nx run web:build",
+		"beforeBuildCommand": "pnpm run web:build",
 		"frontendDist": "../web/build"
 	},
 	"app": {
 		"windows": [
 			{
-				"title": "tauri-app",
+				"title": "Horizonis",
 				"width": 800,
 				"height": 600
 			}

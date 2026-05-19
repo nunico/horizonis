@@ -1,5 +1,5 @@
 {
-	"name": "desktop",
+	"name": "horizonis-desktop",
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"projectType": "application",
 	"sourceRoot": "apps/desktop/src",
