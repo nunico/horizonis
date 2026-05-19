@@ -1,9 +1,12 @@
 import { spawn, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import net from 'node:net';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.resolve(__dirname, '../..');
 let tauriDriver;
+let webServerProcess;
 
 const isDesktop = process.env.TARGET !== 'web';
 
@@ -16,7 +19,7 @@ export const config = {
 					maxInstances: 1,
 					browserName: 'wry',
 					'tauri:options': {
-						application: path.resolve(__dirname, '../../target/debug/tauri-app')
+						application: path.resolve(__dirname, '../../target/debug/horizonis-shell')
 					}
 				}
 			: {
@@ -33,27 +36,90 @@ export const config = {
 		ui: 'bdd',
 		timeout: 60000
 	},
-	onPrepare: () => {
-		if (!isDesktop) return;
-		if (process.env.SKIP_BUILD === 'true') {
-			console.log('Skipping Tauri app build as requested.');
-			return;
-		}
-		console.log('Building Tauri app...');
-		const env = { ...process.env, CI: 'true' };
-		delete env.NODE_OPTIONS;
-		const result = spawnSync(
-			'mise',
-			['exec', '--', 'pnpm', 'tauri', 'build', '--debug', '--no-bundle'],
-			{
-				cwd: path.resolve(__dirname, '../..'),
-				stdio: 'inherit',
-				shell: true,
-				env
+	onPrepare: async () => {
+		if (isDesktop) {
+			if (process.env.SKIP_BUILD === 'true') {
+				console.log('Skipping Tauri app build as requested.');
+				return;
 			}
-		);
-		if (result.status !== 0) {
-			throw new Error('Tauri build failed');
+			console.log('Building Tauri app...');
+			const env = { ...process.env, CI: 'true' };
+			delete env.NODE_OPTIONS;
+			const result = spawnSync(
+				'mise',
+				['exec', '--', 'pnpm', 'tauri', 'build', '--debug', '--no-bundle'],
+				{
+					cwd: rootDir,
+					stdio: 'inherit',
+					shell: true,
+					env
+				}
+			);
+			if (result.status !== 0) {
+				throw new Error('Tauri build failed');
+			}
+		} else {
+			const isPortOpen = await new Promise((resolve) => {
+				const socket = new net.Socket();
+				const onError = () => {
+					socket.destroy();
+					resolve(false);
+				};
+				socket.setTimeout(1000);
+				socket.on('error', onError);
+				socket.on('timeout', onError);
+				socket.connect(1420, 'localhost', () => {
+					socket.end();
+					resolve(true);
+				});
+			});
+
+			if (!isPortOpen) {
+				console.log('Web server not running on port 1420. Starting it...');
+				spawnSync('pnpm', ['run', 'build:web'], {
+					cwd: rootDir,
+					stdio: 'inherit',
+					shell: true
+				});
+				webServerProcess = spawn('pnpm', ['run', 'preview:web'], {
+					cwd: rootDir,
+					stdio: 'inherit',
+					shell: true
+				});
+
+				// Wait for port to open
+				let attempts = 0;
+				while (attempts < 30) {
+					const ready = await new Promise((resolve) => {
+						const socket = new net.Socket();
+						socket.setTimeout(500);
+						socket.on('error', () => {
+							socket.destroy();
+							resolve(false);
+						});
+						socket.on('timeout', () => {
+							socket.destroy();
+							resolve(false);
+						});
+						socket.connect(1420, 'localhost', () => {
+							socket.end();
+							resolve(true);
+						});
+					});
+					if (ready) break;
+					await new Promise((r) => setTimeout(r, 1000));
+					attempts++;
+				}
+				if (attempts === 30) {
+					throw new Error('Timeout waiting for web server to start');
+				}
+			}
+		}
+	},
+	onComplete: () => {
+		if (webServerProcess) {
+			console.log('Stopping web server...');
+			webServerProcess.kill();
 		}
 	},
 	beforeSession: () => {

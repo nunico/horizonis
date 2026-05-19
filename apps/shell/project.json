@@ -1,22 +1,22 @@
 {
-	"name": "horizonis-desktop",
+	"name": "horizonis-shell",
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"projectType": "application",
-	"sourceRoot": "apps/desktop/src",
+	"sourceRoot": "apps/shell/src",
 	"targets": {
 		"dev": {
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "pnpm exec tauri dev",
-				"cwd": "apps/desktop"
+				"cwd": "apps/shell"
 			}
 		},
 		"build": {
-			"dependsOn": ["web:build"],
+			"dependsOn": ["horizonis-client:build"],
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "pnpm exec tauri build",
-				"cwd": "apps/desktop"
+				"cwd": "apps/shell"
 			},
 			"outputs": ["{projectRoot}/target/release/bundle"]
 		},
@@ -24,7 +24,7 @@
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "cargo clippy",
-				"cwd": "apps/desktop"
+				"cwd": "apps/shell"
 			}
 		}
 	}

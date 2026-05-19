@@ -1,43 +1,50 @@
 {
-	"name": "horizonis-web",
+	"name": "horizonis-client",
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"projectType": "application",
-	"sourceRoot": "apps/web/src",
+	"sourceRoot": "apps/client/src",
 	"targets": {
 		"dev": {
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "vite dev",
-				"cwd": "apps/web"
+				"cwd": "apps/client"
 			}
 		},
 		"build": {
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "vite build",
-				"cwd": "apps/web"
+				"cwd": "apps/client"
 			},
 			"outputs": ["{projectRoot}/build"]
+		},
+		"preview": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "vite preview --port 1420",
+				"cwd": "apps/client"
+			}
 		},
 		"check": {
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "svelte-kit sync && svelte-check",
-				"cwd": "apps/web"
+				"cwd": "apps/client"
 			}
 		},
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "pnpm exec eslint . && pnpm exec prettier --check .",
-				"cwd": "apps/web"
+				"cwd": "apps/client"
 			}
 		},
 		"test": {
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "vitest run",
-				"cwd": "apps/web"
+				"cwd": "apps/client"
 			}
 		}
 	}

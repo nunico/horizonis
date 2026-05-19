@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "apps/desktop",
+    "apps/shell",
     "libs/procedural-gen"
 ]
 resolver = "2"

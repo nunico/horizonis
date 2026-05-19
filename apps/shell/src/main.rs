@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    horizonis_desktop_lib::run()
+    horizonis_shell_lib::run()
 }

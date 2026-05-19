@@ -6,7 +6,7 @@
 	import * as clusterData from '$lib/stores/clusterData';
 	let { children } = $props();
 
-	if (import.meta.env.DEV && typeof window !== 'undefined') {
+	if (typeof window !== 'undefined' && (import.meta.env.DEV || window.navigator.webdriver)) {
 		window.stores = {
 			...appState,
 			...clusterData

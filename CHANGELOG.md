@@ -2,6 +2,18 @@
  
  All notable changes to the Horizonis project by AI agents will be documented in this file.
 
+ ###### [2026-05-19] - Reorganization of apps and targets
+
+ - **Summary**: Reorganized `apps/web` to `apps/client` and `apps/desktop` to `apps/shell` to clarify the distinction between source code modules and build targets.
+ - **Changes**:
+   - Moved `apps/web` to `apps/client` and `apps/desktop` to `apps/shell`.
+   - Renamed Nx projects to `horizonis-client` and `horizonis-shell`.
+   - Updated root scripts to follow `<command>:<target>` pattern (e.g., `build:web`, `dev:desktop`).
+   - Enhanced E2E tests with auto-starting web server and dual-target support.
+   - Exposed `window.stores` in production builds when `navigator.webdriver` is true to support E2E testing against production builds.
+ - **Files Affected**: root `package.json`, `apps/client/*`, `apps/shell/*`, `apps/e2e-tests/wdio.conf.js`, root `Cargo.toml`.
+ - **Context**: This change separates the "what" (client/shell) from the "how" (web/desktop build targets).
+
  ###### [2026-05-19] - Fix runtime TypeError and resolve 39 code analysis errors
 
  - **Summary**: Fixed runtime crash in Navigation.svelte and SolarSystemMap.svelte by adding safer optional chaining. Resolved 39 type-related errors by standardizing imports to $lib alias and adding explicit type guards in Inspector.svelte. Added regression tests.
