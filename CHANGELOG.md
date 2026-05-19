@@ -1,8 +1,22 @@
-# Changelog
-
-All notable changes to the Horizonis project by AI agents will be documented in this file.
-
-###### [2026-05-19] - Comprehensive Test Suite Expansion and Component Reliability
+ # Changelog
+ 
+ All notable changes to the Horizonis project by AI agents will be documented in this file.
+ 
+ ###### [2026-05-19] - Lint fixes for horizonis-web (@apps/web)
+ 
+ - **Summary**: Ran ESLint and Prettier on @apps/web; resolved all lint errors and formatting issues so that `nx run horizonis-web:lint` passes.
+ - **Changes**:
+   - Removed unused `SolarSystem` type import in `SolarSystemMap.svelte`.
+   - Replaced `any` and `Function` types in `StarMap.test.ts` and `SolarSystemMap.test.ts` with explicit, safe typings.
+   - Adjusted mocks to avoid implicit `any` on `this` and properties.
+   - Formatted affected files with Prettier.
+ - **Files Affected**:
+   - apps/web/src/lib/components/SolarSystemMap.svelte
+   - apps/web/src/lib/components/StarMap.test.ts
+   - apps/web/src/lib/components/SolarSystemMap.test.ts
+ - **Context**: Enforced TypeScript lint rules (`@typescript-eslint/no-explicit-any`, `no-unused-vars`, and `no-unsafe-function-type`) while preserving test behavior.
+ 
+ ###### [2026-05-19] - Comprehensive Test Suite Expansion and Component Reliability
 
 - **Summary**: Increased test coverage and fixed non-determinism, connectivity, and reactivity issues across Rust and Svelte components.
 - **Changes**:
@@ -533,3 +547,18 @@ All notable changes to the Horizonis project by AI agents will be documented in 
   - Implemented Pixi.js renderer for Cluster and Solar System views.
   - Created Rust backend with JSON persistence.
 - **Files Affected**: Entire repository scaffolding.
+
+ ###### [2026-05-19] - Lint fixes for horizonis-web (@apps/web)
+ 
+ - **Summary**: Ran ESLint and Prettier on @apps/web; resolved all lint errors and formatting issues so that `nx run horizonis-web:lint` passes.
+ - **Changes**:
+   - Removed unused `SolarSystem` type import in `SolarSystemMap.svelte`.
+   - Replaced `any` and `Function` types in `StarMap.test.ts` and `SolarSystemMap.test.ts` with explicit, safe typings.
+   - Adjusted mocks to avoid implicit `any` on `this` and properties.
+   - Formatted affected files with Prettier.
+ - **Files Affected**:
+   - apps/web/src/lib/components/SolarSystemMap.svelte
+   - apps/web/src/lib/components/StarMap.test.ts
+   - apps/web/src/lib/components/SolarSystemMap.test.ts
+ - **Context**: Enforced TypeScript lint rules (`@typescript-eslint/no-explicit-any`, `no-unused-vars`, and `no-unsafe-function-type`) while preserving test behavior.
+ 

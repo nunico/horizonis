@@ -4,7 +4,7 @@
 	import { Viewport } from 'pixi-viewport';
 	import { cluster } from '../stores/clusterData';
 	import { activeSystemId, viewMode, selectedEntity, type Entity } from '../stores/appState';
-	import type { SolarSystem, OrbitalBody, Star } from '../types/stellar';
+	import type { OrbitalBody, Star } from '../types/stellar';
 	import { auToPixels, getVisualRadius, getClampedScale, type ScaleConfig } from '../pixi/scaling';
 
 	let container = $state<HTMLDivElement>();
