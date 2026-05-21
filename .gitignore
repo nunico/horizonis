@@ -24,3 +24,4 @@ WixTools/
 
 .nx/
 /test-results/
+playwright-report/

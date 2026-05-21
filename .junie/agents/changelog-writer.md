@@ -2,7 +2,7 @@
 name: 'changelog-writer'
 description: 'Append a structured changelog entry to CHANGELOG.md and conditionally update .junie/STATE.md'
 tools: ['Read', 'Edit']
-model: 'gpt-5'
+model: 'gemini-flash'
 reasoningLevel: 'low'
 allowPromptArgument: true
 ---

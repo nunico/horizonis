@@ -70,19 +70,19 @@ All code follows the TDD-Cycle **Red-Green-Refactor**. Untested code is consider
 
 All subagents installed at `~/.junie/agents/`.
 
-| Subagent             | Model       | When to Use                                              |
-| -------------------- | ----------- | -------------------------------------------------------- |
-| `planner`            | `sonnet`    | Decompose non-trivial tasks into a phased plan           |
-| `implementer`        | `gpt-codex` | Execute a plan or scoped coding task                     |
-| `librarian`          | `gpt-5`     | Look up library/API docs; returns compact summary        |
-| `code-reviewer`      | `sonnet`    | Review for bugs, security issues, performance            |
-| `test-writer`        | `gpt-codex` | Write unit/integration tests (use in the Red phase)      |
-| `bug-detective`      | `grok`      | Trace a bug or stack trace to root cause                 |
-| `devops-engineer`    | `gpt-codex` | CI/CD pipelines, Dockerfiles, deployment configs         |
-| `migration-agent`    | `sonnet`    | Database schema or API version migrations                |
-| `dependency-auditor` | `gpt-5`     | Audit packages for vulnerabilities and outdated versions |
-| `doc-writer`         | `gpt-5`     | Write/update docstrings, comments, READMEs               |
-| `changelog-writer`   | `gpt-5`     | Append structured entry to `CHANGELOG.md`                |
+| Subagent             | Model          | When to Use                                              |
+|----------------------|----------------|----------------------------------------------------------|
+| `planner`            | `sonnet`       | Decompose non-trivial tasks into a phased plan           |
+| `implementer`        | `gpt-codex`    | Execute a plan or scoped coding task                     |
+| `librarian`          | `gpt-5`        | Look up library/API docs; returns compact summary        |
+| `code-reviewer`      | `sonnet`       | Review for bugs, security issues, performance            |
+| `test-writer`        | `gpt-codex`    | Write unit/integration tests (use in the Red phase)      |
+| `bug-detective`      | `grok`         | Trace a bug or stack trace to root cause                 |
+| `devops-engineer`    | `gpt-codex`    | CI/CD pipelines, Dockerfiles, deployment configs         |
+| `migration-agent`    | `sonnet`       | Database schema or API version migrations                |
+| `dependency-auditor` | `gpt-5`        | Audit packages for vulnerabilities and outdated versions |
+| `doc-writer`         | `gemini-flash` | Write/update docstrings, comments, READMEs               |
+| `changelog-writer`   | `gemini-flash` | Append structured entry to `CHANGELOG.md`                |
 
 ## 6. Standard Workflow
 
