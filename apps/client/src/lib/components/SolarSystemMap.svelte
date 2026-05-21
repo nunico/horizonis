@@ -11,6 +11,7 @@
 		getClampedScale,
 		type ScaleConfig
 	} from '$lib/pixi/scaling';
+	import { setupPixi } from '$lib/pixi/setup';
 	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
 
 	type WindowWithDebug = Window & {
@@ -75,93 +76,73 @@
 		const pixiApp = new PIXI.Application();
 		app = pixiApp;
 		try {
-			await pixiApp.init({
-				resizeTo: container,
-				antialias: true,
-				backgroundColor: 0x020617
-			});
-		} catch (e) {
-			console.error('[SolarSystemMap] pixiApp.init failed:', e);
-			return;
-		}
-		if (!container) return;
-		// eslint-disable-next-line svelte/no-dom-manipulating
-		container.appendChild(pixiApp.canvas);
-
-		const v = new Viewport({
-			screenWidth: pixiApp.screen.width,
-			screenHeight: pixiApp.screen.height,
-			worldWidth: 100000,
-			worldHeight: 100000,
-			events: pixiApp.renderer.events
-		});
-
-		viewport = v;
-		if (systemData) {
-			renderSystem();
-		}
-
-		pixiApp.stage.addChild(v);
-		v.drag().pinch().wheel().decelerate();
-		v.moveCenter(0, 0);
-
-		resizeHandler = () => {
-			if (v && pixiApp.renderer) {
-				v.resize(pixiApp.screen.width, pixiApp.screen.height);
-				updateZoomLimits();
-			}
-		};
-		pixiApp.renderer.on('resize', resizeHandler);
-		v.on('zoomed', () => {
-			const currentScale = v.scale.x;
-			const zoomingIn = currentScale > lastScale * 1.0001;
-
-			updateFocus(currentScale);
-			updateZoomLimits();
-			updateScales();
-
-			if (zoomingIn && focusedObject && currentScale > 0.1) {
-				const dx = (focusedObject.worldX - v.center.x) * 0.1;
-				const dy = (focusedObject.worldY - v.center.y) * 0.1;
-				v.moveCenter(v.center.x + dx, v.center.y + dy);
-			}
-
-			lastScale = currentScale;
-		});
-		v.on('moved', updateScales);
-
-		// Stable E2E debug hook: expose a persistent object with live getters
-		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
-		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-			(window as WindowWithDebug).solarSystemMapDebug = {
-				viewport: v,
-				get starNodes() {
-					return starNodes;
-				},
-				get bodyNodes() {
-					return bodyNodes;
-				},
-				scaleConfig,
-				get lastMinScale() {
-					return lastMinScale;
-				},
-				get lastMaxScale() {
-					return lastMaxScale;
-				}
-			};
-		}
-
-		if (import.meta.env.DEV && typeof window !== 'undefined') {
-			window.solarSystemDebug = {
-				viewport: v,
-				get lastMinScale() {
-					return lastMinScale;
-				},
-				get lastMaxScale() {
-					return lastMaxScale;
-				},
+			const setup = await setupPixi(
+				{ container, app: pixiApp, worldWidth: 100000, worldHeight: 100000 },
 				updateZoomLimits
-			};
+			);
+			viewport = setup.viewport;
+			resizeHandler = setup.resizeHandler;
+
+			if (systemData) {
+				renderSystem();
+			}
+
+			setup.viewport.moveCenter(0, 0);
+
+			setup.viewport.on('zoomed', () => {
+				const currentScale = setup.viewport.scale.x;
+				const zoomingIn = currentScale > lastScale * 1.0001;
+
+				updateFocus(currentScale);
+				updateZoomLimits();
+				updateScales();
+
+				if (zoomingIn && focusedObject && currentScale > 0.1) {
+					const dx = (focusedObject.worldX - setup.viewport.center.x) * 0.1;
+					const dy = (focusedObject.worldY - setup.viewport.center.y) * 0.1;
+					setup.viewport.moveCenter(setup.viewport.center.x + dx, setup.viewport.center.y + dy);
+				}
+
+				lastScale = currentScale;
+			});
+			setup.viewport.on('moved', updateScales);
+
+			// Stable E2E debug hook: expose a persistent object with live getters
+			const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
+			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+				(window as WindowWithDebug).solarSystemMapDebug = {
+					viewport: setup.viewport,
+					get starNodes() {
+						return starNodes;
+					},
+					get bodyNodes() {
+						return bodyNodes;
+					},
+					scaleConfig,
+					get lastMinScale() {
+						return lastMinScale;
+					},
+					get lastMaxScale() {
+						return lastMaxScale;
+					}
+				};
+			}
+
+			if (import.meta.env.DEV && typeof window !== 'undefined') {
+				window.solarSystemDebug = {
+					viewport: setup.viewport,
+					get lastMinScale() {
+						return lastMinScale;
+					},
+					get lastMaxScale() {
+						return lastMaxScale;
+					},
+					updateZoomLimits
+				};
+			}
+		} catch (e) {
+			console.error('[SolarSystemMap] setupPixi failed:', e);
+			return;
 		}
 	});
 

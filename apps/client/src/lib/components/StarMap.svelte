@@ -6,6 +6,8 @@
 	import { cluster } from '$lib/stores/clusterData';
 	import { viewMode, activeSystemId, selectedEntity, type Entity } from '$lib/stores/appState';
 	import type { SolarSystem } from '$lib/types/stellar';
+	import { SpatialGrid } from '$lib/utils/spatial';
+	import { setupPixi } from '$lib/pixi/setup';
 	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
 
 	type WindowWithDebug = Window & {
@@ -45,93 +47,57 @@
 
 	// Optimization: Spatial Grid for O(log n) lookups
 	const GRID_SIZE = 200;
-	let spatialGrid = $derived.by(() => {
-		const grid = new SvelteMap<string, SolarSystem[]>();
-		if (!$cluster?.Systems) return grid;
-		for (const system of $cluster.Systems) {
-			const gx = Math.floor(system.X / GRID_SIZE);
-			const gy = Math.floor(system.Y / GRID_SIZE);
-			const key = `${gx},${gy}`;
-			if (!grid.has(key)) grid.set(key, []);
-			grid.get(key)!.push(system);
-		}
-		return grid;
-	});
+	let spatialGrid = $derived(new SpatialGrid($cluster?.Systems || [], GRID_SIZE));
 
 	onMount(async () => {
 		if (!container) return;
 		const pixiApp = new PIXI.Application();
 		app = pixiApp;
 		try {
-			await pixiApp.init({
-				resizeTo: container,
-				antialias: true,
-				backgroundColor: 0x020617 // slate-950
-			});
-		} catch (e) {
-			console.error('[StarMap] pixiApp.init failed:', e);
-			return;
-		}
-		if (!container) return;
-		// eslint-disable-next-line svelte/no-dom-manipulating
-		container.appendChild(pixiApp.canvas);
+			const setup = await setupPixi({ container, app: pixiApp }, updateZoomLimits);
+			viewport = setup.viewport;
+			resizeHandler = setup.resizeHandler;
 
-		const v = new Viewport({
-			screenWidth: pixiApp.screen.width,
-			screenHeight: pixiApp.screen.height,
-			worldWidth: 10000,
-			worldHeight: 10000,
-			events: pixiApp.renderer.events
-		});
+			if ($cluster) {
+				renderCluster();
+			}
 
-		viewport = v;
-		if ($cluster) {
-			renderCluster();
-		}
+			setup.viewport.moveCenter(0, 0);
 
-		pixiApp.stage.addChild(v);
+			setup.viewport.on('zoomed', () => {
+				const currentScale = setup.viewport.scale.x;
+				const zoomingIn = currentScale > lastScale * 1.0001;
 
-		v.drag().pinch().wheel().decelerate();
-		v.moveCenter(0, 0);
-
-		resizeHandler = () => {
-			if (v && pixiApp.renderer) {
-				v.resize(pixiApp.screen.width, pixiApp.screen.height);
+				updateFocus(currentScale);
 				updateZoomLimits();
+				updateScales();
+
+				if (zoomingIn && focusedSystem && currentScale > 0.5) {
+					const dx = (focusedSystem.x - setup.viewport.center.x) * 0.1;
+					const dy = (focusedSystem.y - setup.viewport.center.y) * 0.1;
+					setup.viewport.moveCenter(setup.viewport.center.x + dx, setup.viewport.center.y + dy);
+				}
+
+				lastScale = currentScale;
+			});
+			setup.viewport.on('moved', updateScales);
+
+			const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
+			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+				(window as WindowWithDebug).starMapDebug = {
+					viewport: setup.viewport,
+					get lastMinScale() {
+						return lastMinScale;
+					},
+					get lastMaxScale() {
+						return lastMaxScale;
+					},
+					updateZoomLimits
+				};
 			}
-		};
-		pixiApp.renderer.on('resize', resizeHandler);
-
-		v.on('zoomed', () => {
-			const currentScale = v.scale.x;
-			const zoomingIn = currentScale > lastScale * 1.0001;
-
-			updateFocus(currentScale);
-			updateZoomLimits();
-			updateScales();
-
-			if (zoomingIn && focusedSystem && currentScale > 0.5) {
-				const dx = (focusedSystem.x - v.center.x) * 0.1;
-				const dy = (focusedSystem.y - v.center.y) * 0.1;
-				v.moveCenter(v.center.x + dx, v.center.y + dy);
-			}
-
-			lastScale = currentScale;
-		});
-		v.on('moved', updateScales);
-
-		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
-		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-			(window as WindowWithDebug).starMapDebug = {
-				viewport: v,
-				get lastMinScale() {
-					return lastMinScale;
-				},
-				get lastMaxScale() {
-					return lastMaxScale;
-				},
-				updateZoomLimits
-			};
+		} catch (e) {
+			console.error('[StarMap] setupPixi failed:', e);
+			return;
 		}
 	});
 
@@ -203,22 +169,12 @@
 		let closest = null;
 
 		// Use spatial grid for faster lookup
-		const gx = Math.floor(mouseWorld.x / GRID_SIZE);
-		const gy = Math.floor(mouseWorld.y / GRID_SIZE);
-
-		for (let dx = -1; dx <= 1; dx++) {
-			for (let dy = -1; dy <= 1; dy++) {
-				const key = `${gx + dx},${gy + dy}`;
-				const cellSystems = spatialGrid.get(key);
-				if (cellSystems) {
-					for (const system of cellSystems) {
-						const dist = Math.hypot(system.X - mouseWorld.x, system.Y - mouseWorld.y);
-						if (dist < minDist) {
-							minDist = dist;
-							closest = system;
-						}
-					}
-				}
+		const cellSystems = spatialGrid.getNearby(mouseWorld.x, mouseWorld.y);
+		for (const system of cellSystems) {
+			const dist = Math.hypot(system.X - mouseWorld.x, system.Y - mouseWorld.y);
+			if (dist < minDist) {
+				minDist = dist;
+				closest = system;
 			}
 		}
 
@@ -312,20 +268,20 @@
 		}
 	}
 
-	function renderCluster() {
-		if (!$cluster || !viewport) return;
-
-		// E2E instrumentation: signal not ready while (re)rendering the cluster view
+	function setClusterReady(ready: boolean) {
 		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
 		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(window as any).e2eClusterReady = false;
+			if (ready) {
+				queueMicrotask(() => {
+					(window as WindowWithDebug).e2eClusterReady = true;
+				});
+			} else {
+				(window as WindowWithDebug).e2eClusterReady = false;
+			}
 		}
+	}
 
-		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
-		systemNodes = [];
-		portalNodes = [];
-
+	function calculateClusterBounds() {
 		if ($cluster?.Systems && $cluster.Systems.length > 0) {
 			let minX = Infinity,
 				maxX = -Infinity,
@@ -348,7 +304,10 @@
 			clusterCenter = { x: 0, y: 0 };
 			maxClusterRadius = 100;
 		}
+	}
 
+	function createPortals() {
+		if (!viewport) return;
 		const uniquePortals = new SvelteMap<string, { from: string; to: string }>();
 		for (const system of $cluster?.Systems || []) {
 			for (const portal of system.Portals || []) {
@@ -389,13 +348,10 @@
 				});
 			}
 		}
+	}
 
-		selectionGraphics = new PIXI.Graphics();
-		viewport.addChild(selectionGraphics);
-
-		hoverGraphics = new PIXI.Graphics();
-		viewport.addChild(hoverGraphics);
-
+	function createSystems() {
+		if (!viewport) return;
 		for (const system of $cluster?.Systems || []) {
 			const node = new PIXI.Graphics();
 			node.circle(0, 0, 10).fill(0x38bdf8);
@@ -446,6 +402,27 @@
 			systemNodes.push(node);
 			viewport.addChild(node);
 		}
+	}
+
+	function renderCluster() {
+		if (!$cluster || !viewport) return;
+
+		setClusterReady(false);
+
+		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
+		systemNodes = [];
+		portalNodes = [];
+
+		calculateClusterBounds();
+		createPortals();
+
+		selectionGraphics = new PIXI.Graphics();
+		viewport.addChild(selectionGraphics);
+
+		hoverGraphics = new PIXI.Graphics();
+		viewport.addChild(hoverGraphics);
+
+		createSystems();
 
 		updateScales();
 		updateZoomLimits();
@@ -453,12 +430,7 @@
 		viewport.setZoom(lastMinScale, true);
 		viewport.moveCenter(clusterCenter.x, clusterCenter.y - 28 / lastMinScale);
 
-		// Mark cluster view as ready for E2E consumers once initial layout is applied
-		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-			queueMicrotask(() => {
-				(window as WindowWithDebug).e2eClusterReady = true;
-			});
-		}
+		setClusterReady(true);
 	}
 
 	$effect(() => {

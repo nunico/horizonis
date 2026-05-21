@@ -1,5 +1,21 @@
 # Changelog
 
+###### [2026-05-21] - Refactor StarMap.svelte to reduce complexity
+
+- **Summary**: Modularized StarMap and SolarSystemMap by extracting spatial logic and PIXI setup.
+- **Changes**:
+  - Extracted spatial grid and culling logic to `lib/utils/spatial.ts`.
+  - Created a centralized PIXI/Viewport initialization utility in `lib/pixi/setup.ts`.
+  - Decomposed the `renderCluster` function in `StarMap.svelte` into focused helper functions.
+  - Refactored `SolarSystemMap.svelte` to use the shared PIXI setup utility.
+  - Improved type safety for Viewport and PIXI objects throughout the codebase.
+- **Files Affected**:
+  - apps/client/src/lib/components/StarMap.svelte
+  - apps/client/src/lib/components/SolarSystemMap.svelte
+  - apps/client/src/lib/utils/spatial.ts
+  - apps/client/src/lib/pixi/setup.ts
+- **Context**: Reduces technical debt by separating rendering infrastructure from business logic and improves testability of spatial operations.
+
 ### [2026-05-21] - E2E (web): readiness-first waits and cluster snapshot helper across specs
 
 - **Summary**: Converted web specs to readiness-first and cluster snapshot; strengthened zoom-ux retry restoring activeSystemId.
@@ -592,17 +608,3 @@
   - Implemented Pixi.js renderer for Cluster and Solar System views.
   - Created Rust backend with JSON persistence.
 - **Files Affected**: Entire repository scaffolding.
-
-### [2026-05-19] - Lint fixes for horizonis-web (@apps/web)
-
-- **Summary**: Ran ESLint and Prettier on @apps/web; resolved all lint errors and formatting issues so that `nx run horizonis-web:lint` passes.
-- **Changes**:
-  - Removed unused `SolarSystem` type import in `SolarSystemMap.svelte`.
-  - Replaced `any` and `Function` types in `StarMap.test.ts` and `SolarSystemMap.test.ts` with explicit, safe typings.
-  - Adjusted mocks to avoid implicit `any` on `this` and properties.
-  - Formatted affected files with Prettier.
-- **Files Affected**:
-  - apps/web/src/lib/components/SolarSystemMap.svelte
-  - apps/web/src/lib/components/StarMap.test.ts
-  - apps/web/src/lib/components/SolarSystemMap.test.ts
-- **Context**: Enforced TypeScript lint rules (`@typescript-eslint/no-explicit-any`, `no-unused-vars`, and `no-unsafe-function-type`) while preserving test behavior.
