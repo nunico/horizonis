@@ -5,8 +5,16 @@ import { get } from 'svelte/store';
 import { tick } from 'svelte';
 import Navigation from './Navigation.svelte';
 import { activeSystemId, selectedEntity, viewMode } from '$lib/stores/appState';
-import { cluster } from '$lib/stores/clusterData';
+import { cluster, generateNewCluster } from '$lib/stores/clusterData';
 import type { StarCluster } from '$lib/types/stellar';
+
+vi.mock('$lib/stores/clusterData', async (importOriginal) => {
+	const original = (await importOriginal()) as any;
+	return {
+		...original,
+		generateNewCluster: vi.fn()
+	};
+});
 
 const mockCluster: StarCluster = {
 	Name: 'Test Cluster',
@@ -30,12 +38,13 @@ describe('Navigation component', () => {
 		viewMode.set('cluster');
 		activeSystemId.set(null);
 		selectedEntity.set(null);
+		vi.clearAllMocks();
 	});
 
 	it('renders Cluster breadcrumb by default', () => {
 		render(Navigation);
 
-		expect(screen.getByRole('button', { name: /cluster/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /^cluster$/i })).toBeInTheDocument();
 		expect(screen.queryByText('Alpha Centauri')).not.toBeInTheDocument();
 		expect(screen.queryByLabelText('Go back')).not.toBeInTheDocument();
 	});
@@ -113,7 +122,7 @@ describe('Navigation component', () => {
 
 		render(Navigation);
 
-		await fireEvent.click(screen.getByRole('button', { name: /cluster/i }));
+		await fireEvent.click(screen.getByRole('button', { name: /^cluster$/i }));
 
 		expect(get(selectedEntity)).toBeNull();
 		expect(get(activeSystemId)).toBeNull();
@@ -170,6 +179,28 @@ describe('Navigation component', () => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		cluster.set({} as any);
 		render(Navigation);
-		expect(screen.getByRole('button', { name: /cluster/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /^cluster$/i })).toBeInTheDocument();
+	});
+
+	it('triggers cluster regeneration with confirmation', async () => {
+		vi.spyOn(window, 'confirm').mockReturnValue(true);
+		render(Navigation);
+
+		const regenerateButton = screen.getByLabelText('Generate New Cluster');
+		await fireEvent.click(regenerateButton);
+
+		expect(window.confirm).toHaveBeenCalled();
+		expect(generateNewCluster).toHaveBeenCalled();
+	});
+
+	it('does not trigger cluster regeneration if confirmation is cancelled', async () => {
+		vi.spyOn(window, 'confirm').mockReturnValue(false);
+		render(Navigation);
+
+		const regenerateButton = screen.getByLabelText('Generate New Cluster');
+		await fireEvent.click(regenerateButton);
+
+		expect(window.confirm).toHaveBeenCalled();
+		expect(generateNewCluster).not.toHaveBeenCalled();
 	});
 });

@@ -1,5 +1,16 @@
 # Changelog
 
+###### [2026-05-21] - Cluster Regeneration
+
+- **Summary**: Added cluster regeneration capability allowing users to generate new star clusters with a deterministic seed.
+- **Changes**:
+  - Implemented `generateNewCluster` in `clusterData` store to interface with storage providers and WASM generator.
+  - Added a "Regenerate" button with confirmation dialog to the `Navigation` component.
+  - Rebuilt `procedural-gen` WASM to enforce PascalCase property consistency across the API.
+  - Added unit tests for `clusterData` store and E2E tests for the regeneration flow.
+- **Files Affected**: apps/client/src/lib/stores/clusterData.ts, apps/client/src/lib/components/Navigation.svelte, libs/procedural-gen/pkg/procedural_gen.d.ts, libs/procedural-gen/src/wasm.rs, apps/web-e2e/tests/navigation-flow.spec.ts
+- **Context**: PascalCase consistency ensures the WASM-generated data matches the TypeScript interfaces exactly without manual mapping.
+
 ###### [2026-05-21] - Refactor StarMap.svelte to reduce complexity
 
 - **Summary**: Modularized StarMap and SolarSystemMap by extracting spatial logic and PIXI setup.

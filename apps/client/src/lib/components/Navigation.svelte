@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { viewMode, activeSystemId, selectedEntity } from '$lib/stores/appState';
-	import { cluster } from '$lib/stores/clusterData';
+	import { cluster, generateNewCluster } from '$lib/stores/clusterData';
 	import type { Star, OrbitalBody } from '$lib/types/stellar';
-	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle } from 'lucide-svelte';
+	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle, RotateCw } from 'lucide-svelte';
 
 	let { showHelp = $bindable(false) } = $props();
 
@@ -118,6 +118,13 @@
 		activeSystemId.set(null);
 		viewMode.set('cluster');
 	}
+
+	async function handleRegenerate() {
+		if (confirm('Are you sure you want to generate a new cluster? This will replace your current data.')) {
+			await generateNewCluster();
+			goToCluster();
+		}
+	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -212,6 +219,15 @@
 				<p class="text-sm text-slate-500">No results found for "{searchQuery}"</p>
 			</div>
 		{/if}
+
+		<button
+			onclick={handleRegenerate}
+			class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
+			title="Generate New Cluster"
+			aria-label="Generate New Cluster"
+		>
+			<RotateCw size={20} />
+		</button>
 
 		<button
 			onclick={() => (showHelp = true)}

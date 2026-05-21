@@ -69,6 +69,20 @@ export async function saveCluster(data: StarCluster) {
 	}
 }
 
+export async function generateNewCluster(seed?: bigint) {
+	console.log('Generating new cluster...');
+	const provider = await getStorage();
+	try {
+		const newCluster = await provider.generateCluster(seed);
+		console.log('New cluster generated successfully');
+		cluster.set(newCluster);
+		return newCluster;
+	} catch (e) {
+		console.error('Failed to generate cluster:', e);
+		throw e;
+	}
+}
+
 // If running under Playwright/WebDriver and the cluster has no systems,
 // inject a tiny deterministic fixture so E2E tests can run instead of skipping.
 function applyE2EFixtureIfNeeded(data: StarCluster): StarCluster {

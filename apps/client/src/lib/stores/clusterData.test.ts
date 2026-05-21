@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { cluster, loadCluster, saveCluster, _resetStorage } from './clusterData';
+import { cluster, loadCluster, saveCluster, generateNewCluster, _resetStorage } from './clusterData';
 
 // Mock procedural-gen
 vi.mock('procedural-gen', () => ({
@@ -89,5 +89,22 @@ describe('clusterData store', () => {
 
 		expect(consoleSpy).toHaveBeenCalledWith('Failed to save cluster:', expect.any(Error));
 		consoleSpy.mockRestore();
+	});
+
+	it('manually generates a new cluster', async () => {
+		await generateNewCluster();
+
+		expect(get(cluster)).toEqual({ Name: 'Generated', Systems: [] });
+		expect(localStorage.getItem('horizonis_cluster')).not.toBeNull();
+	});
+
+	it('manually generates a new cluster with a specific seed', async () => {
+		const { generate_cluster } = await import('procedural-gen');
+		const seed = BigInt(12345);
+
+		await generateNewCluster(seed);
+
+		expect(generate_cluster).toHaveBeenCalledWith(seed);
+		expect(get(cluster)).toEqual({ Name: 'Generated', Systems: [] });
 	});
 });

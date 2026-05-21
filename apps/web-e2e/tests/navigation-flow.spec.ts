@@ -239,4 +239,44 @@ test.describe('Navigation Flow', () => {
 		});
 		expect(systemName).toBe('Renamed System');
 	});
+
+	test('regenerates cluster when clicking regenerate button', async ({ page }) => {
+		page.on('console', (msg) => console.log('BROWSER LOG:', msg.text()));
+
+		// Mock window.confirm to return true
+		page.on('dialog', async (dialog) => {
+			await dialog.accept();
+		});
+
+		const oldSystems = await page.evaluate(() => {
+			const w = window as unknown as E2EWindow;
+			const snap = w.getClusterSnapshot();
+			return snap?.Systems.map((s: any) => s.Id);
+		});
+
+		const regenerateButton = page.getByLabel('Generate New Cluster');
+		await expect(regenerateButton).toBeVisible();
+		await regenerateButton.click();
+
+		// Wait for the cluster to change
+		await page.waitForFunction(
+			(oldIds) => {
+				const w = window as unknown as E2EWindow;
+				const snap = w.getClusterSnapshot();
+				if (!snap || !snap.Systems) return false;
+				const newIds = snap.Systems.map((s: any) => s.Id);
+				return JSON.stringify(newIds) !== JSON.stringify(oldIds);
+			},
+			oldSystems,
+			{ timeout: 15_000 }
+		);
+
+		const newCluster = await page.evaluate(() => {
+			const w = window as unknown as E2EWindow;
+			return w.getClusterSnapshot();
+		});
+
+		expect(newCluster.Systems.length).toBeGreaterThan(0);
+		expect(newCluster.Systems.map((s: any) => s.Id)).not.toEqual(oldSystems);
+	});
 });
