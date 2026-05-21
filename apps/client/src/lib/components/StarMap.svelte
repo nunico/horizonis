@@ -7,6 +7,7 @@
 	import { viewMode, activeSystemId, selectedEntity, type Entity } from '$lib/stores/appState';
 	import type { SolarSystem } from '$lib/types/stellar';
 	import { SpatialGrid } from '$lib/utils/spatial';
+	import { getUniquePortals } from '$lib/utils/stellar';
 	import { setupPixi } from '$lib/pixi/setup';
 	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
 
@@ -282,54 +283,25 @@
 	}
 
 	function calculateClusterBounds() {
-		if ($cluster?.Systems && $cluster.Systems.length > 0) {
-			let minX = Infinity,
-				maxX = -Infinity,
-				minY = Infinity,
-				maxY = -Infinity;
-			for (const system of $cluster.Systems) {
-				if (system.X < minX) minX = system.X;
-				if (system.X > maxX) maxX = system.X;
-				if (system.Y < minY) minY = system.Y;
-				if (system.Y > maxY) maxY = system.Y;
-			}
-			clusterCenter = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
-
-			maxClusterRadius = 0;
-			for (const system of $cluster.Systems) {
-				const dist = Math.hypot(system.X - clusterCenter.x, system.Y - clusterCenter.y);
-				if (dist + 40 > maxClusterRadius) maxClusterRadius = dist + 40;
-			}
-		} else {
-			clusterCenter = { x: 0, y: 0 };
-			maxClusterRadius = 100;
-		}
+		const { center, maxRadius } = SpatialGrid.calculateBounds($cluster?.Systems || []);
+		clusterCenter = center;
+		maxClusterRadius = maxRadius + 40;
 	}
 
 	function createPortals() {
-		if (!viewport) return;
-		const uniquePortals = new SvelteMap<string, { from: string; to: string }>();
-		for (const system of $cluster?.Systems || []) {
-			for (const portal of system.Portals || []) {
-				const id1 = system.Id;
-				const id2 = portal.TargetSystemId;
-				const key = [id1, id2].sort().join('-');
-				if (!uniquePortals.has(key)) {
-					uniquePortals.set(key, { from: id1, to: id2 });
-				}
-			}
-		}
+		if (!viewport || !$cluster) return;
+		const portals = getUniquePortals($cluster.Systems);
 
-		for (const [key, pair] of uniquePortals) {
-			const sys1 = systemsById.get(pair.from) as SolarSystem | undefined;
-			const sys2 = systemsById.get(pair.to) as SolarSystem | undefined;
+		for (const portal of portals) {
+			const sys1 = systemsById.get(portal.from) as SolarSystem | undefined;
+			const sys2 = systemsById.get(portal.to) as SolarSystem | undefined;
 			if (sys1 && sys2) {
 				const g = new PIXI.Graphics();
 				g.eventMode = 'static';
 				g.cursor = 'pointer';
 
 				g.on('pointerover', () => {
-					hoveredPortalKey = key;
+					hoveredPortalKey = portal.key;
 					updateScales();
 				});
 				g.on('pointerout', () => {
@@ -340,11 +312,11 @@
 				viewport.addChild(g);
 				portalNodes.push({
 					graphics: g,
-					fromId: pair.from,
-					toId: pair.to,
+					fromId: portal.from,
+					toId: portal.to,
 					fromPos: { x: sys1.X, y: sys1.Y },
 					toPos: { x: sys2.X, y: sys2.Y },
-					key
+					key: portal.key
 				});
 			}
 		}

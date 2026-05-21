@@ -6,6 +6,7 @@
 - **Changes**:
   - Extracted spatial grid and culling logic to `lib/utils/spatial.ts`.
   - Created a centralized PIXI/Viewport initialization utility in `lib/pixi/setup.ts`.
+  - Extracted shared stellar and portal logic to `lib/utils/stellar.ts`.
   - Decomposed the `renderCluster` function in `StarMap.svelte` into focused helper functions.
   - Refactored `SolarSystemMap.svelte` to use the shared PIXI setup utility.
   - Improved type safety for Viewport and PIXI objects throughout the codebase.
@@ -13,6 +14,7 @@
   - apps/client/src/lib/components/StarMap.svelte
   - apps/client/src/lib/components/SolarSystemMap.svelte
   - apps/client/src/lib/utils/spatial.ts
+  - apps/client/src/lib/utils/stellar.ts
   - apps/client/src/lib/pixi/setup.ts
 - **Context**: Reduces technical debt by separating rendering infrastructure from business logic and improves testability of spatial operations.
 

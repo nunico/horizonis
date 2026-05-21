@@ -12,6 +12,7 @@
 		type ScaleConfig
 	} from '$lib/pixi/scaling';
 	import { setupPixi } from '$lib/pixi/setup';
+	import { getEntityMaxSatRadius } from '$lib/utils/stellar';
 	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
 
 	type WindowWithDebug = Window & {
@@ -275,28 +276,8 @@
 		}
 	}
 
-	function getEntityMaxSatRadius(body: OrbitalBody | Star): number {
-		let maxR: number;
-		if ('RadiusKm' in body) {
-			maxR = getVisualRadius(body.RadiusKm);
-		} else {
-			maxR = getVisualRadius(body.RadiusSol * 695700);
-		}
-
-		if (body.Satellites) {
-			for (const sat of body.Satellites) {
-				const orbitR = auToPixels(sat.OrbitAu, scaleConfig);
-				const satBoundary = orbitR + getEntityMaxSatRadius(sat);
-				if (satBoundary > maxR) maxR = satBoundary;
-			}
-		}
-		if ('OrbitalRegions' in body && body.OrbitalRegions) {
-			for (const reg of body.OrbitalRegions) {
-				const regR = auToPixels(reg.OuterRadiusAu, scaleConfig);
-				if (regR > maxR) maxR = regR;
-			}
-		}
-		return maxR;
+	function getLocalEntityMaxSatRadius(body: OrbitalBody | Star): number {
+		return getEntityMaxSatRadius(body, scaleConfig, getVisualRadius, auToPixels);
 	}
 
 	function updateFocus(currentScale: number) {
@@ -389,6 +370,18 @@
 		});
 	}
 
+	function renderRegion(region: { InnerRadiusAu: number; OuterRadiusAu: number }) {
+		if (!viewport) return;
+		const r = new PIXI.Graphics();
+		const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
+		const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
+
+		if (outer > maxSystemRadius) maxSystemRadius = outer;
+
+		r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
+		viewport.addChild(r);
+	}
+
 	function renderSystem() {
 		const v = viewport;
 		if (!systemData || !v) return;
@@ -429,14 +422,7 @@
 			});
 
 			for (const region of sd.OrbitalRegions || []) {
-				const r = new PIXI.Graphics();
-				const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
-				const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
-
-				if (outer > maxSystemRadius) maxSystemRadius = outer;
-
-				r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
-				v2.addChild(r);
+				renderRegion(region);
 			}
 
 			updateScales();
@@ -464,7 +450,7 @@
 		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
 		const worldX = Math.cos(angle) * radius;
 		const worldY = Math.sin(angle) * radius;
-		const maxSatRadius = getEntityMaxSatRadius(star);
+		const maxSatRadius = getLocalEntityMaxSatRadius(star);
 
 		if (Math.hypot(worldX, worldY) + maxSatRadius > maxSystemRadius) {
 			maxSystemRadius = Math.hypot(worldX, worldY) + maxSatRadius;
@@ -582,7 +568,7 @@
 		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
 		const worldX = parentX + Math.cos(angle) * radius;
 		const worldY = parentY + Math.sin(angle) * radius;
-		const maxSatRadius = getEntityMaxSatRadius(body);
+		const maxSatRadius = getLocalEntityMaxSatRadius(body);
 
 		if (Math.hypot(worldX, worldY) + maxSatRadius > maxSystemRadius) {
 			maxSystemRadius = Math.hypot(worldX, worldY) + maxSatRadius;
