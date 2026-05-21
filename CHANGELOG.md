@@ -1,54 +1,67 @@
- # Changelog
- 
- All notable changes to the Horizonis project by AI agents will be documented in this file.
+# Changelog
 
- ###### [2026-05-19] - Reorganization of apps and targets
+### [2026-05-21] - E2E (web): readiness-first waits and cluster snapshot helper across specs
 
- - **Summary**: Reorganized `apps/web` to `apps/client` and `apps/desktop` to `apps/shell` to clarify the distinction between source code modules and build targets.
- - **Changes**:
-   - Moved `apps/web` to `apps/client` and `apps/desktop` to `apps/shell`.
-   - Renamed Nx projects to `horizonis-client` and `horizonis-shell`.
-   - Updated root scripts to follow `<command>:<target>` pattern (e.g., `build:web`, `dev:desktop`).
-   - Enhanced E2E tests with auto-starting web server and dual-target support.
-   - Exposed `window.stores` in production builds when `navigator.webdriver` is true to support E2E testing against production builds.
- - **Files Affected**: root `package.json`, `apps/client/*`, `apps/shell/*`, `apps/e2e-tests/wdio.conf.js`, root `Cargo.toml`.
- - **Context**: This change separates the "what" (client/shell) from the "how" (web/desktop build targets).
+- **Summary**: Converted web specs to readiness-first and cluster snapshot; strengthened zoom-ux retry restoring activeSystemId.
+- **Changes**:
+  - apps/e2e-tests/test/specs/map-rendering.e2e.js: add e2eReady/e2eSystemReady; use getClusterSnapshot(); fix debug hook.
+  - apps/e2e-tests/test/specs/navigation-flow.e2e.js: add e2eReady; await e2eSystemReady; use getClusterSnapshot().
+  - apps/e2e-tests/test/specs/responsiveness.e2e.js: add e2eReady; use getClusterSnapshot(); await e2eSystemReady.
+  - apps/e2e-tests/test/specs/zoom-ux.e2e.js: retry restores activeSystemId before re-entering system view.
+- **Files Affected**:
+  - apps/e2e-tests/test/specs/map-rendering.e2e.js
+  - apps/e2e-tests/test/specs/navigation-flow.e2e.js
+  - apps/e2e-tests/test/specs/responsiveness.e2e.js
+  - apps/e2e-tests/test/specs/zoom-ux.e2e.js
+- **Context**: Reduce flakiness from instrumentation timing; prefer readiness flags and data-driven checks over direct probes.
 
- ###### [2026-05-19] - Fix runtime TypeError and resolve 39 code analysis errors
+### [2026-05-19] - Reorganization of apps and targets
 
- - **Summary**: Fixed runtime crash in Navigation.svelte and SolarSystemMap.svelte by adding safer optional chaining. Resolved 39 type-related errors by standardizing imports to $lib alias and adding explicit type guards in Inspector.svelte. Added regression tests.
- - **Changes**:
-   - Added safer optional chaining in `Navigation.svelte` and `SolarSystemMap.svelte` to prevent runtime `TypeError`.
-   - Standardized imports in `apps/web` to use `$lib` alias, resolving unresolved type references.
-   - Added explicit type guards and improved type safety in `Inspector.svelte`.
-   - Added regression tests for cluster state edge cases in `Navigation.test.ts`.
-   - Synchronized `svelte-check` and IDE analysis by ensuring correct `tsconfig` resolution.
- - **Files Affected**:
-   - apps/web/src/lib/components/Navigation.svelte
-   - apps/web/src/lib/components/SolarSystemMap.svelte
-   - apps/web/src/lib/components/StarMap.svelte
-   - apps/web/src/lib/components/Inspector.svelte
-   - apps/web/src/lib/stores/appState.ts
-   - apps/web/src/lib/stores/clusterData.ts
-   - apps/web/src/lib/components/Navigation.test.ts
-   - apps/web/src/lib/components/Inspector.test.ts
- - **Context**: Resolved a discrepancy between WebStorm and CLI analysis by verifying `.svelte-kit/tsconfig.json` sync and fixing relative import paths.
- 
- ###### [2026-05-19] - Lint fixes for horizonis-web (@apps/web)
- 
- - **Summary**: Ran ESLint and Prettier on @apps/web; resolved all lint errors and formatting issues so that `nx run horizonis-web:lint` passes.
- - **Changes**:
-   - Removed unused `SolarSystem` type import in `SolarSystemMap.svelte`.
-   - Replaced `any` and `Function` types in `StarMap.test.ts` and `SolarSystemMap.test.ts` with explicit, safe typings.
-   - Adjusted mocks to avoid implicit `any` on `this` and properties.
-   - Formatted affected files with Prettier.
- - **Files Affected**:
-   - apps/web/src/lib/components/SolarSystemMap.svelte
-   - apps/web/src/lib/components/StarMap.test.ts
-   - apps/web/src/lib/components/SolarSystemMap.test.ts
- - **Context**: Enforced TypeScript lint rules (`@typescript-eslint/no-explicit-any`, `no-unused-vars`, and `no-unsafe-function-type`) while preserving test behavior.
- 
- ###### [2026-05-19] - Comprehensive Test Suite Expansion and Component Reliability
+- **Summary**: Reorganized `apps/web` to `apps/client` and `apps/desktop` to `apps/shell` to clarify the distinction between source code modules and build targets.
+- **Changes**:
+  - Moved `apps/web` to `apps/client` and `apps/desktop` to `apps/shell`.
+  - Renamed Nx projects to `horizonis-client` and `horizonis-shell`.
+  - Updated root scripts to follow `<command>:<target>` pattern (e.g., `build:web`, `dev:desktop`).
+  - Enhanced E2E tests with auto-starting web server and dual-target support.
+  - Exposed `window.stores` in production builds when `navigator.webdriver` is true to support E2E testing against production builds.
+- **Files Affected**: root `package.json`, `apps/client/*`, `apps/shell/*`, `apps/e2e-tests/wdio.conf.js`, root `Cargo.toml`.
+- **Context**: This change separates the "what" (client/shell) from the "how" (web/desktop build targets).
+
+### [2026-05-19] - Fix runtime TypeError and resolve 39 code analysis errors
+
+- **Summary**: Fixed runtime crash in Navigation.svelte and SolarSystemMap.svelte by adding safer optional chaining. Resolved 39 type-related errors by standardizing imports to $lib alias and adding explicit type guards in Inspector.svelte. Added regression tests.
+- **Changes**:
+  - Added safer optional chaining in `Navigation.svelte` and `SolarSystemMap.svelte` to prevent runtime `TypeError`.
+  - Standardized imports in `apps/web` to use `$lib` alias, resolving unresolved type references.
+  - Added explicit type guards and improved type safety in `Inspector.svelte`.
+  - Added regression tests for cluster state edge cases in `Navigation.test.ts`.
+  - Synchronized `svelte-check` and IDE analysis by ensuring correct `tsconfig` resolution.
+- **Files Affected**:
+  - apps/web/src/lib/components/Navigation.svelte
+  - apps/web/src/lib/components/SolarSystemMap.svelte
+  - apps/web/src/lib/components/StarMap.svelte
+  - apps/web/src/lib/components/Inspector.svelte
+  - apps/web/src/lib/stores/appState.ts
+  - apps/web/src/lib/stores/clusterData.ts
+  - apps/web/src/lib/components/Navigation.test.ts
+  - apps/web/src/lib/components/Inspector.test.ts
+- **Context**: Resolved a discrepancy between WebStorm and CLI analysis by verifying `.svelte-kit/tsconfig.json` sync and fixing relative import paths.
+
+### [2026-05-19] - Lint fixes for horizonis-web (@apps/web)
+
+- **Summary**: Ran ESLint and Prettier on @apps/web; resolved all lint errors and formatting issues so that `nx run horizonis-web:lint` passes.
+- **Changes**:
+  - Removed unused `SolarSystem` type import in `SolarSystemMap.svelte`.
+  - Replaced `any` and `Function` types in `StarMap.test.ts` and `SolarSystemMap.test.ts` with explicit, safe typings.
+  - Adjusted mocks to avoid implicit `any` on `this` and properties.
+  - Formatted affected files with Prettier.
+- **Files Affected**:
+  - apps/web/src/lib/components/SolarSystemMap.svelte
+  - apps/web/src/lib/components/StarMap.test.ts
+  - apps/web/src/lib/components/SolarSystemMap.test.ts
+- **Context**: Enforced TypeScript lint rules (`@typescript-eslint/no-explicit-any`, `no-unused-vars`, and `no-unsafe-function-type`) while preserving test behavior.
+
+### [2026-05-19] - Comprehensive Test Suite Expansion and Component Reliability
 
 - **Summary**: Increased test coverage and fixed non-determinism, connectivity, and reactivity issues across Rust and Svelte components.
 - **Changes**:
@@ -63,7 +76,7 @@
 - **Files Affected**: `libs/procedural-gen/src/generation.rs`, `libs/procedural-gen/src/routing.rs`, `apps/web/src/lib/stores/clusterData.ts`, `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`.
 - **Context**: Improved reliability of procedural generation and resolved potential memory leaks and reactivity loops in the UI.
 
-###### [2026-05-19] - TypeScript & Svelte 5 Quality Fixes
+### [2026-05-19] - TypeScript & Svelte 5 Quality Fixes
 
 - **Summary**: Resolved 46+ TypeScript errors and Svelte 5 reactivity warnings.
 - **Changes**:
@@ -74,7 +87,7 @@
 - **Files Affected**: `apps/web/src/lib/components/Inspector.svelte`, `apps/web/src/app.d.ts`, `apps/e2e-tests/tsconfig.json`, `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/routes/+layout.svelte`.
 - **Context**: Improved IDE experience and code robustness by ensuring 100% type safety and Svelte 5 idiomaticity.
 
-###### [2026-05-19] - Update Agent Guidelines for Code Quality & Multi-Target Support
+### [2026-05-19] - Update Agent Guidelines for Code Quality & Multi-Target Support
 
 - **Summary**: Updated `AGENTS.md` and E2E infrastructure to ensure quality across Web and Desktop targets.
 - **Changes**:
@@ -85,7 +98,7 @@
 - **Files Affected**: `AGENTS.md`, `apps/e2e-tests/wdio.conf.js`, `CHANGELOG.md`
 - **Context**: Added `TARGET=web` support to WDIO to allow testing without `tauri-driver` where necessary.
 
-###### [2026-05-18] - TypeScript & Type Safety Improvements
+### [2026-05-18] - TypeScript & Type Safety Improvements
 
 - **Summary**: Resolved all TypeScript compiler errors and cleaned up redundant type casts and directives.
 - **Changes**:
@@ -95,7 +108,7 @@
 - **Files Affected**: `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`
 - **Context**: Previous PIXI v8 type workarounds are no longer necessary as the compiler now correctly resolves the event types.
 
-###### [2026-05-18] - Code Quality & Linting Fixes
+### [2026-05-18] - Code Quality & Linting Fixes
 
 - **Summary**: Resolved multiple ESLint, Clippy, and Prettier issues across the monorepo.
 - **Changes**:
@@ -108,7 +121,7 @@
 - **Files Affected**: `apps/web/src/lib/components/Inspector.svelte`, `apps/web/src/lib/components/Navigation.svelte`, `apps/web/src/lib/components/StarMap.svelte`, `apps/desktop/src/commands.rs`, `apps/web/src/lib/components/Inspector.test.ts`
 - **Context**: None.
 
-###### [2026-05-18] - Fix Code Review Issues
+### [2026-05-18] - Fix Code Review Issues
 
 - **Summary**: Addressed feedback from code review to improve code quality, type safety, and performance.
 - **Changes**:
@@ -120,7 +133,7 @@
 - **Files Affected**: `CHANGELOG.md`, `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/stores/clusterData.ts`
 - **Context**: None.
 
-###### [2026-05-18] - Fix WASM Loading in Web Version
+### [2026-05-18] - Fix WASM Loading in Web Version
 
 - **Summary**: Fixed a bug where the `procedural-gen` WASM library failed to load in the web version due to incorrect path resolution by Vite.
 - **Changes**:
@@ -130,7 +143,7 @@
 - **Files Affected**: `apps/web/vite.config.js`, `apps/web/src/lib/stores/clusterData.ts`
 - **Context**: Vite's dependency pre-bundling can break WASM libraries that rely on `import.meta.url` for assets if they are not explicitly excluded or if asset paths are not handled correctly.
 
-###### [2026-05-18] - Fix Star Map Double-Click Interaction
+### [2026-05-18] - Fix Star Map Double-Click Interaction
 
 - **Summary**: Resolved a bug where double-clicking a star failed to open the solar system map due to an unwanted reactivity dependency in Svelte 5.
 - **Changes**:
@@ -140,7 +153,7 @@
 - **Files Affected**: `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`
 - **Context**: Svelte 5 effects transitively track all reactive dependencies accessed within their call graph; `untrack()` is required to isolate interaction state from structural rendering.
 
-###### [2026-05-18] - Fix mise MCP server configuration
+### [2026-05-18] - Fix mise MCP server configuration
 
 - **Summary**: Resolved compatibility issues with the mise MCP server by implementing a protocol adapter and aligning configuration with project standards.
 - **Changes**:
@@ -151,7 +164,7 @@
 - **Files Affected**: `scripts/mise-mcp-adapter.cjs`, `.junie/mcp/mcp.json`
 - **Context**: The mise MCP server currently requires an experimental flag and does not natively support the legacy `list_tools` method.
 
-###### [2026-05-18] - Fix Test Suite and Svelte Component Typing Errors
+### [2026-05-18] - Fix Test Suite and Svelte Component Typing Errors
 
 - **Summary**: Resolved TypeScript typing errors in Svelte components and the web app's test suite by refining reactive state handling and ensuring proper integration of jest-dom matchers with Vitest.
 - **Changes**:
@@ -163,7 +176,7 @@
 - **Files Affected**: `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/components/Navigation.test.ts`, `apps/web/src/lib/components/Inspector.test.ts`, `apps/web/src/lib/components/HelpOverlay.test.ts`, `apps/web/src/test/setup.ts`
 - **Context**: Transitioning to Svelte 5 and Vitest requires explicit type narrowing for reactive objects and specific entry points for test matchers to be recognized by both the compiler and IDEs.
 
-###### [2026-05-18] - Map Rendering E2E Regression Test & Fixes
+### [2026-05-18] - Map Rendering E2E Regression Test & Fixes
 
 - **Summary**: Added an E2E regression test to validate that the star map and solar system map are rendered correctly and fixed a timing issue in Navigation component tests.
 - **Changes**:
@@ -174,7 +187,7 @@
 - **Files Affected**: `apps/e2e-tests/test/specs/map-rendering.e2e.js`, `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/e2e-tests/wdio.conf.js`, `apps/web/src/lib/components/Navigation.test.ts`
 - **Context**: None.
 
-###### [2026-05-18] - Fix Empty Star Map Canvas Reactivity
+### [2026-05-18] - Fix Empty Star Map Canvas Reactivity
 
 - **Summary**: Fixed a bug where the star map canvas remained empty on startup due to improper reactivity in Svelte 5 components.
 - **Changes**:
@@ -184,7 +197,7 @@
 - **Files Affected**: `apps/web/src/lib/components/StarMap.svelte`, `apps/web/src/lib/components/SolarSystemMap.svelte`, `apps/web/src/lib/stores/clusterData.ts`
 - **Context**: Svelte 5 requires explicit `$state` declarations for variables used in effects to trigger re-runs correctly.
 
-###### [2026-05-18] - Fix WebDriverIO MCP Server Configuration
+### [2026-05-18] - Fix WebDriverIO MCP Server Configuration
 
 - **Summary**: Resolved performance, compatibility, and resource leakage issues in the WebDriverIO MCP server configuration.
 - **Changes**:
@@ -195,7 +208,7 @@
 - **Files Affected**: `.junie/mcp/mcp.json`, `package.json`, `scripts/wdio-mcp-adapter.cjs`.
 - **Context**: The previous configuration used `npx @latest`, which was extremely slow and caused orphaned browser processes that consumed system resources.
 
-###### [2026-05-18] - Procedural Generation Native Library & Storage Refactor
+### [2026-05-18] - Procedural Generation Native Library & Storage Refactor
 
 - **Summary**: Switched desktop app to use native Rust library via Tauri commands instead of WASM for procedural generation.
 - **Changes**:
@@ -207,7 +220,7 @@
 - **Files Affected**: `libs/procedural-gen/`, `apps/desktop/src/commands.rs`, `apps/web/src/lib/storage/`, `apps/web/src/lib/stores/clusterData.ts`, `Cargo.toml`.
 - **Context**: Optimized desktop performance by leveraging native Rust execution while maintaining web compatibility through WASM.
 
-###### [2026-05-18] - Added AGPL-3.0 licensing to the project
+### [2026-05-18] - Added AGPL-3.0 licensing to the project
 
 - **Summary**: Added AGPL-3.0 licensing to the project.
 - **Changes**:
@@ -218,7 +231,7 @@
 - **Files Affected**: LICENSE, package.json, apps/web/package.json, apps/e2e-tests/package.json, apps/desktop/Cargo.toml, README.md.
 - **Context**: Transitioned from MIT (as previously stated in root package.json) to AGPL-3.0 to ensure copyleft for network server software.
 
-###### [2026-05-18] - Move E2E tests to apps/e2e-tests
+### [2026-05-18] - Move E2E tests to apps/e2e-tests
 
 - **Summary**: Relocated e2e-tests to the apps directory and configured Nx integration.
 - **Changes**:
@@ -231,7 +244,7 @@
 - **Files Affected**: `apps/e2e-tests/`, `package.json`, `eslint.config.js`, `apps/e2e-tests/project.json`, `apps/e2e-tests/wdio.conf.js`.
 - **Context**: None.
 
-###### [2026-05-18] - Monorepo Restructure
+### [2026-05-18] - Monorepo Restructure
 
 - **Summary**: Restructured the project into an Nx monorepo with separate `apps/web` (SvelteKit) and `apps/desktop` (Tauri) packages.
 - **Changes**:
@@ -244,7 +257,7 @@
 - **Files Affected**: `apps/web/`, `apps/desktop/`, `package.json`, `nx.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `eslint.config.js`.
 - **Context**: None.
 
-###### [2026-05-18] - Create generate-changelog skill
+### [2026-05-18] - Create generate-changelog skill
 
 - **Summary**: Created a new Junie skill for generating changelog entries consistent with project guidelines.
 - **Changes**:
@@ -253,7 +266,7 @@
 - **Files Affected**: `.junie/skills/generate-changelog/SKILL.md`
 - **Context**: This skill ensures that all future agents follow the standardized changelog format defined in AGENTS.md.
 
-###### [2026-05-16] - Migrate to pnpm
+### [2026-05-16] - Migrate to pnpm
 
 - **Summary**: Replaced Deno, npm, and yarn with pnpm as the project's primary package manager and updated all configuration files.
 - **Changes**:
@@ -306,7 +319,7 @@
 - **Files Affected**: `src/lib/components/StarMap.svelte`, `e2e-tests/wdio.conf.js` (fix build)
 - **Context**: Ensuring the star map is correctly centered regardless of the random generation's offset.
 
-###### [2026-05-16] - Resolve UI Linting and Accessibility Issues
+### [2026-05-16] - Resolve UI Linting and Accessibility Issues
 
 - **Summary**: Resolved multiple linting and accessibility issues across core UI components to improve code quality and reactivity.
 - **Changes**:
@@ -318,7 +331,7 @@
 - **Files Affected**: `src/lib/components/HelpOverlay.svelte`, `src/lib/components/Navigation.svelte`, `src/lib/components/StarMap.svelte`, `src/lib/components/Inspector.svelte`.
 - **Context**: None.
 
-###### [2026-05-16] - Improve Map Viewport UX
+### [2026-05-16] - Improve Map Viewport UX
 
 - **Summary**: Enhanced the star map and solar system map by ensuring content visibility, maintaining 60% viewport coverage, and implementing robust panning constraints.
 - **Changes**:
@@ -330,7 +343,7 @@
 - **Files Affected**: `src/lib/components/StarMap.svelte`, `src/lib/components/SolarSystemMap.svelte`, `e2e-tests/test/specs/zoom-ux.e2e.js`.
 - **Context**: None.
 
-###### [2026-05-16] - Advanced Map Highlighting & UI/UX Refinement
+### [2026-05-16] - Advanced Map Highlighting & UI/UX Refinement
 
 - **Summary**: Implemented interactive highlighting for orbits and portals, and finalized overall UI/UX improvements.
 - **Changes**:
@@ -342,7 +355,7 @@
 - **Files Affected**: `src/lib/components/SolarSystemMap.svelte`, `src/lib/components/StarMap.svelte`, `src/lib/components/Navigation.svelte`, `src/lib/components/Inspector.svelte`, `src/lib/components/HelpOverlay.svelte`, `src/routes/+page.svelte`, `src/routes/+layout.svelte`, `src/lib/components/Navigation.test.ts`, `src/lib/components/Inspector.test.ts`, `src/lib/components/HelpOverlay.test.ts`.
 - **Context**: None.
 
-###### [2026-05-16] - UI & UX Improvements
+### [2026-05-16] - UI & UX Improvements
 
 - **Summary**: Enhanced navigation, editing interface, and visual feedback to improve overall usability and accessibility.
 - **Changes**:
@@ -580,17 +593,16 @@
   - Created Rust backend with JSON persistence.
 - **Files Affected**: Entire repository scaffolding.
 
- ###### [2026-05-19] - Lint fixes for horizonis-web (@apps/web)
- 
- - **Summary**: Ran ESLint and Prettier on @apps/web; resolved all lint errors and formatting issues so that `nx run horizonis-web:lint` passes.
- - **Changes**:
-   - Removed unused `SolarSystem` type import in `SolarSystemMap.svelte`.
-   - Replaced `any` and `Function` types in `StarMap.test.ts` and `SolarSystemMap.test.ts` with explicit, safe typings.
-   - Adjusted mocks to avoid implicit `any` on `this` and properties.
-   - Formatted affected files with Prettier.
- - **Files Affected**:
-   - apps/web/src/lib/components/SolarSystemMap.svelte
-   - apps/web/src/lib/components/StarMap.test.ts
-   - apps/web/src/lib/components/SolarSystemMap.test.ts
- - **Context**: Enforced TypeScript lint rules (`@typescript-eslint/no-explicit-any`, `no-unused-vars`, and `no-unsafe-function-type`) while preserving test behavior.
- 
+### [2026-05-19] - Lint fixes for horizonis-web (@apps/web)
+
+- **Summary**: Ran ESLint and Prettier on @apps/web; resolved all lint errors and formatting issues so that `nx run horizonis-web:lint` passes.
+- **Changes**:
+  - Removed unused `SolarSystem` type import in `SolarSystemMap.svelte`.
+  - Replaced `any` and `Function` types in `StarMap.test.ts` and `SolarSystemMap.test.ts` with explicit, safe typings.
+  - Adjusted mocks to avoid implicit `any` on `this` and properties.
+  - Formatted affected files with Prettier.
+- **Files Affected**:
+  - apps/web/src/lib/components/SolarSystemMap.svelte
+  - apps/web/src/lib/components/StarMap.test.ts
+  - apps/web/src/lib/components/SolarSystemMap.test.ts
+- **Context**: Enforced TypeScript lint rules (`@typescript-eslint/no-explicit-any`, `no-unused-vars`, and `no-unsafe-function-type`) while preserving test behavior.

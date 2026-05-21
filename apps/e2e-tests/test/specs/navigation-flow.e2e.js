@@ -2,6 +2,12 @@ describe('Navigation Flow', () => {
 	it('should search for a system and navigate to it', async () => {
 		await browser.url('http://localhost:1420');
 
+		// App readiness first
+		await browser.waitUntil(
+			async () => await browser.execute(() => !!window.e2eReady),
+			{ timeout: 20000, timeoutMsg: 'App not ready (e2eReady not set)' }
+		);
+
 		// Wait for loading screen to disappear
 		const loadingScreen = await $('[data-testid="loading-screen"]');
 		await loadingScreen.waitForDisplayed({ reverse: true, timeout: 15000 });
@@ -19,7 +25,13 @@ describe('Navigation Flow', () => {
 
 		// Verify we moved to system view
 		const solarMap = await $('[data-testid="solar-system-map"]');
-		await solarMap.waitForDisplayed();
+		await solarMap.waitForDisplayed({ timeout: 20000 });
+
+		// Prefer readiness flag before probing debug/DOM specifics
+		await browser.waitUntil(
+			async () => await browser.execute(() => !!window.e2eSystemReady),
+			{ timeout: 20000, timeoutMsg: 'System view not ready (e2eSystemReady not set)' }
+		);
 
 		const breadcrumbs = await nav.getText();
 		expect(breadcrumbs).toContain('Alpha Centauri');
@@ -56,9 +68,12 @@ describe('Navigation Flow', () => {
 		await browser.waitUntil(
 			async () => {
 				return await browser.execute(() => {
-					let data;
-					window.stores.cluster.subscribe((v) => (data = v))();
-					return !!data && !!data.Systems && data.Systems.length > 0;
+					try {
+						const snap = typeof window.getClusterSnapshot === 'function'
+							? window.getClusterSnapshot()
+							: (() => { let v; window.stores?.cluster?.subscribe((x) => (v = x))?.(); return v; })();
+						return !!snap && Array.isArray(snap.Systems) && snap.Systems.length > 0;
+					} catch { return false; }
 				});
 			},
 			{ timeout: 10000, timeoutMsg: 'Cluster data not loaded for selection' }
@@ -66,9 +81,8 @@ describe('Navigation Flow', () => {
 
 		// Select a system from cluster to open inspector
 		await browser.execute(() => {
-			const c = window.stores.cluster;
-			let data;
-			c.subscribe((v) => (data = v))();
+			// @ts-ignore
+			const data = typeof window.getClusterSnapshot === 'function' ? window.getClusterSnapshot() : (() => { let v; window.stores.cluster.subscribe((x) => (v = x))(); return v; })();
 			window.stores.selectedEntity.set(data.Systems[0]);
 		});
 

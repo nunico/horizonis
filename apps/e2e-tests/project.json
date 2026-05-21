@@ -7,14 +7,14 @@
 		"test": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "pnpm exec wdio run wdio.conf.js",
+				"command": "wdio run wdio.conf.js",
 				"cwd": "apps/e2e-tests"
 			}
 		},
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "pnpm exec eslint .",
+				"command": "eslint .",
 				"cwd": "apps/e2e-tests"
 			}
 		}

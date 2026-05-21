@@ -6,6 +6,7 @@
 	import { cluster } from '$lib/stores/clusterData';
 	import { viewMode, activeSystemId, selectedEntity, type Entity } from '$lib/stores/appState';
 	import type { SolarSystem } from '$lib/types/stellar';
+    import { PUBLIC_E2E } from '$env/static/public';
 
 	let container = $state<HTMLDivElement>();
 	let app = $state<PIXI.Application>();
@@ -104,7 +105,8 @@
 		});
 		v.on('moved', updateScales);
 
-		if (import.meta.env.DEV && typeof window !== 'undefined') {
+		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
+		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
 			window.starMapDebug = {
 				viewport: v,
 				get lastMinScale() {
@@ -116,6 +118,12 @@
 				updateZoomLimits
 			};
 		}
+
+  // In case `$cluster` is already available, trigger initial render,
+  // but defer to next microtask to avoid first-frame races while stores settle.
+  if ($cluster) {
+      queueMicrotask(() => renderCluster());
+  }
 	});
 
 	onDestroy(() => {
@@ -308,11 +316,18 @@
 	function renderCluster() {
 		if (!$cluster || !viewport) return;
 
+		// E2E instrumentation: signal not ready while (re)rendering the cluster view
+		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
+		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(window as any).e2eClusterReady = false;
+		}
+
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
 		systemNodes = [];
 		portalNodes = [];
 
-		if ($cluster.Systems.length > 0) {
+		if ($cluster?.Systems && $cluster.Systems.length > 0) {
 			let minX = Infinity,
 				maxX = -Infinity,
 				minY = Infinity,
@@ -382,9 +397,9 @@
 		hoverGraphics = new PIXI.Graphics();
 		viewport.addChild(hoverGraphics);
 
-		for (const system of $cluster.Systems) {
-			const node = new PIXI.Graphics();
-			node.circle(0, 0, 10).fill(0x38bdf8);
+  for (const system of ($cluster?.Systems || [])) {
+            const node = new PIXI.Graphics();
+            node.circle(0, 0, 10).fill(0x38bdf8);
 
 			node.x = system.X;
 			node.y = system.Y;
@@ -438,11 +453,20 @@
 
 		viewport.setZoom(lastMinScale, true);
 		viewport.moveCenter(clusterCenter.x, clusterCenter.y - 28 / lastMinScale);
+
+		// Mark cluster view as ready for E2E consumers once initial layout is applied
+		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			queueMicrotask(() => {
+				(window as any).e2eClusterReady = true;
+			});
+		}
 	}
 
 	$effect(() => {
 		if ($cluster && viewport) {
-			renderCluster();
+			// Defer heavy draw to avoid first-frame races while stores settle
+			queueMicrotask(() => renderCluster());
 		}
 	});
 
