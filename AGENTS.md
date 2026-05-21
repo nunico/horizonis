@@ -35,7 +35,7 @@ All code follows the TDD-Cycle **Red-Green-Refactor**. Untested code is consider
 ### 4.2 Coverage Requirements
 
 | Scope                                                             | Requirement                                            |
-|-------------------------------------------------------------------|--------------------------------------------------------|
+| ----------------------------------------------------------------- | ------------------------------------------------------ |
 | Business logic (calculators, state machines, parsers, validators) | 100% path coverage via unit tests                      |
 | New user-facing features                                          | E2E tests for happy path + critical error states       |
 | Bug fixes                                                         | Regression test reproducing the bug before the fix     |
@@ -47,10 +47,10 @@ All code follows the TDD-Cycle **Red-Green-Refactor**. Untested code is consider
 - **AAA Pattern**: Every test must have distinct Arrange / Act / Assert sections.
 - **Behavior, not implementation**: Assert outputs and observable side effects. Never test private methods or internal state.
 - **F.A.S.T**:
-  - *Fast*: Unit tests run in milliseconds.
-  - *Autonomous*: Tests are fully self-contained and order-independent.
-  - *Self-validating*: Unambiguous pass/fail — no manual inspection.
-  - *Timely*: Tests are written before or alongside implementation, never after.
+  - _Fast_: Unit tests run in milliseconds.
+  - _Autonomous_: Tests are fully self-contained and order-independent.
+  - _Self-validating_: Unambiguous pass/fail — no manual inspection.
+  - _Timely_: Tests are written before or alongside implementation, never after.
 - **Edge cases**: Test empty collections, `null`/`undefined`, boundary values, and invalid types.
 - **Positive + negative**: Test both success and failure paths for every behavior.
 - **Mocking**: Mock external dependencies (APIs, DBs, hardware). Never mock internal business logic — if tempted, refactor instead.
@@ -59,7 +59,7 @@ All code follows the TDD-Cycle **Red-Green-Refactor**. Untested code is consider
 ### 4.4 Tooling
 
 | Stack               | Unit / Integration                       | E2E        |
-|---------------------|------------------------------------------|------------|
+| ------------------- | ---------------------------------------- | ---------- |
 | TypeScript / Svelte | Vitest                                   | Playwright |
 | Rust                | `#[test]` + `proptest` for complex logic | —          |
 
@@ -71,7 +71,7 @@ All code follows the TDD-Cycle **Red-Green-Refactor**. Untested code is consider
 All subagents installed at `~/.junie/agents/`.
 
 | Subagent             | Model       | When to Use                                              |
-|----------------------|-------------|----------------------------------------------------------|
+| -------------------- | ----------- | -------------------------------------------------------- |
 | `planner`            | `sonnet`    | Decompose non-trivial tasks into a phased plan           |
 | `implementer`        | `gpt-codex` | Execute a plan or scoped coding task                     |
 | `librarian`          | `gpt-5`     | Look up library/API docs; returns compact summary        |
@@ -107,7 +107,7 @@ Prioritize **readability**, **safety**, and **maintainability**.
 ### General
 
 - Break complex functions into smaller, well-named pieces.
-- Use names that communicate intent; comments explain *why*, not *what*.
+- Use names that communicate intent; comments explain _why_, not _what_.
 - Define explicit interfaces and types for all data structures.
 - Document algorithm complexity (time/space) and external dependency purpose.
 - No global mutable state — use dependency injection or thread-safe containers.
@@ -147,3 +147,27 @@ Prioritize **readability**, **safety**, and **maintainability**.
 - No `.unwrap()` or `.expect()` in production code paths — only in tests or `main`.
 - Use `proptest` for property-based testing of complex or data-driven logic.
 - Unit tests in `#[cfg(test)]` modules in the same file; integration tests in `tests/`.
+
+<!-- nx configuration start-->
+<!-- Leave the start & end comments to automatically receive updates. -->
+
+## General Guidelines for working with Nx
+
+- For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
+- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
+- Prefix nx commands with the workspace's package manager (e.g., `pnpm nx build`, `npm exec nx test`) - avoids using globally installed CLI
+- You have access to the Nx MCP server and its tools, use them to help the user
+- For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
+- NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
+
+### Scaffolding & Generators
+
+- For scaffolding tasks (creating apps, libs, project structure, setup), ALWAYS invoke the `nx-generate` skill FIRST before exploring or calling MCP tools
+
+### When to use nx_docs
+
+- USE for: advanced config options, unfamiliar flags, migration guides, plugin configuration, edge cases
+- DON'T USE for: basic generator syntax (`nx g @nx/react:app`), standard commands, things you already know
+- The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
+
+<!-- nx configuration end-->

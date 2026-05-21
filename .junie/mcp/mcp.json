@@ -1,16 +1,15 @@
 {
     "mcpServers": {
-        "mise": {
-            "command": "node",
-            "args": [
-                "scripts/mise-mcp-adapter.cjs"
-            ]
-        },
-        "WebDriverIO": {
-            "command": "node",
-            "args": [
-                "scripts/wdio-mcp-adapter.cjs"
-            ]
-        }
-    }
+			"mise": {
+				"command": "node",
+				"args": ["scripts/mise-mcp-adapter.cjs"]
+			},
+			"nx-mcp": {
+				"command": ["pnpx", "nx", "mcp"]
+			},
+			"WebDriverIO": {
+				"command": "node",
+				"args": ["scripts/wdio-mcp-adapter.cjs"]
+			}
+		}
 }
