@@ -1,15 +1,17 @@
 # Changelog
 
-###### [2026-05-21] - Cluster Regeneration
+###### [2026-05-21] - Cluster Regeneration & Viewport Centering
 
-- **Summary**: Added cluster regeneration capability allowing users to generate new star clusters with a deterministic seed.
+- **Summary**: Added cluster regeneration capability and fixed viewport centering to ensure clusters are correctly positioned on load and generation.
 - **Changes**:
   - Implemented `generateNewCluster` in `clusterData` store to interface with storage providers and WASM generator.
   - Added a "Regenerate" button with confirmation dialog to the `Navigation` component.
   - Rebuilt `procedural-gen` WASM to enforce PascalCase property consistency across the API.
+  - Removed redundant `moveCenter(0,0)` calls in `StarMap` and `SolarSystemMap` that overrode correct centering logic.
+  - Optimized `StarMap` rendering sequence to ensure stores settle before centering the viewport.
   - Added unit tests for `clusterData` store and E2E tests for the regeneration flow.
-- **Files Affected**: apps/client/src/lib/stores/clusterData.ts, apps/client/src/lib/components/Navigation.svelte, libs/procedural-gen/pkg/procedural_gen.d.ts, libs/procedural-gen/src/wasm.rs, apps/web-e2e/tests/navigation-flow.spec.ts
-- **Context**: PascalCase consistency ensures the WASM-generated data matches the TypeScript interfaces exactly without manual mapping.
+- **Files Affected**: apps/client/src/lib/stores/clusterData.ts, apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/SolarSystemMap.svelte, libs/procedural-gen/pkg/procedural_gen.d.ts, libs/procedural-gen/src/wasm.rs, apps/web-e2e/tests/navigation-flow.spec.ts
+- **Context**: PascalCase consistency ensures the WASM-generated data matches the TypeScript interfaces exactly without manual mapping. Fixed centering issues where the viewport would default to (0,0) before the cluster data was fully rendered.
 
 ###### [2026-05-21] - Refactor StarMap.svelte to reduce complexity
 

@@ -88,8 +88,6 @@
 				renderSystem();
 			}
 
-			setup.viewport.moveCenter(0, 0);
-
 			setup.viewport.on('zoomed', () => {
 				const currentScale = setup.viewport.scale.x;
 				const zoomingIn = currentScale > lastScale * 1.0001;
