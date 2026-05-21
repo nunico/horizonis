@@ -2,7 +2,7 @@
 name: 'librarian'
 description: 'Research a library, API, or SDK and return a compact usage summary'
 tools: ['WebSearch', 'Read']
-model: 'gemini-flash'
+model: 'gpt-5'
 reasoningLevel: 'low'
 allowPromptArgument: true
 ---

@@ -3,7 +3,7 @@ name: 'dependency-auditor'
 description: 'Audit project dependencies for outdated packages, vulnerabilities, and licensing issues'
 tools: ['Read', 'Glob', 'Bash']
 disallowedTools: ['Write', 'Edit']
-model: 'gemini-flash'
+model: 'gpt-5'
 reasoningLevel: 'low'
 allowPromptArgument: false
 ---
