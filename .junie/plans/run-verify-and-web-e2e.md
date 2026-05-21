@@ -80,6 +80,7 @@ Execute repository verification (checks, linting, unit tests) and run the web en
 # Delivery Steps
 
 ### ✓ Step 1: run-workspace-verify
+
 `pnpm nx run-many --targets=check,lint,test --exclude=e2e-tests,web-e2e` finishes successfully, running checks, lint, and unit tests across projects (excluding desktop WDIO and web E2E).
 
 - Execute `pnpm nx run-many --targets=check,lint,test --exclude=e2e-tests,web-e2e`.
@@ -88,6 +89,7 @@ Execute repository verification (checks, linting, unit tests) and run the web en
   - Any other projects with matching targets per Nx discovery (excluding the two E2E projects).
 
 ### ! Step 2: run-web-e2e-tests
+
 `pnpm run e2e:web` completes with all Playwright tests passing.
 
 - Execute `pnpm run e2e:web` (runs `nx test web-e2e`).

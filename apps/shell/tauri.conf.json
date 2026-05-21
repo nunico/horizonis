@@ -4,9 +4,9 @@
 	"version": "0.1.0",
 	"identifier": "dev.tea-driven.horizonis.desktop",
 	"build": {
-		"beforeDevCommand": "pnpm run dev:web",
+		"beforeDevCommand": "npm run dev:web",
 		"devUrl": "http://localhost:1420",
-		"beforeBuildCommand": "pnpm run build:web",
+		"beforeBuildCommand": "npm run build:web",
 		"frontendDist": "../client/build"
 	},
 	"app": {

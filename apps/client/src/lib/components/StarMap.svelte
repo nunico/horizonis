@@ -62,11 +62,16 @@
 		if (!container) return;
 		const pixiApp = new PIXI.Application();
 		app = pixiApp;
-		await pixiApp.init({
-			resizeTo: container,
-			antialias: true,
-			backgroundColor: 0x020617 // slate-950
-		});
+		try {
+			await pixiApp.init({
+				resizeTo: container,
+				antialias: true,
+				backgroundColor: 0x020617 // slate-950
+			});
+		} catch (e) {
+			console.error('[StarMap] pixiApp.init failed:', e);
+			return;
+		}
 		if (!container) return;
 		// eslint-disable-next-line svelte/no-dom-manipulating
 		container.appendChild(pixiApp.canvas);
@@ -80,6 +85,9 @@
 		});
 
 		viewport = v;
+		if ($cluster) {
+			renderCluster();
+		}
 
 		pixiApp.stage.addChild(v);
 
@@ -125,19 +133,12 @@
 				updateZoomLimits
 			};
 		}
-
-		// In case `$cluster` is already available, trigger initial render,
-		// but defer to next microtask to avoid first-frame races while stores settle.
-		if ($cluster) {
-			queueMicrotask(() => renderCluster());
-		}
 	});
 
 	onDestroy(() => {
 		if (app) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			if (resizeHandler) app.renderer.off('resize' as any, resizeHandler);
-			app.destroy(true, { children: true });
+			if (resizeHandler) app.renderer.off('resize', resizeHandler);
+			app.destroy(true, { children: true, texture: true });
 		}
 	});
 
@@ -310,15 +311,6 @@
 			} as PIXI.IHitArea;
 		}
 	}
-
-	onDestroy(() => {
-		if (app) {
-			if (resizeHandler) {
-				app.renderer.off('resize', resizeHandler);
-			}
-			app.destroy(true, { children: true, texture: true });
-		}
-	});
 
 	function renderCluster() {
 		if (!$cluster || !viewport) return;

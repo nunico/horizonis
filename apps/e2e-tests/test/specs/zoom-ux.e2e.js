@@ -265,7 +265,7 @@ describe('Zoom UX Regression', () => {
 						return window.getClusterSnapshot();
 					}
 					let data;
-					// @ts-ignore
+					// @ts-expect-error: E2E internals
 					window.stores.cluster.subscribe((v) => (data = v))();
 					return data;
 				});
@@ -297,14 +297,14 @@ describe('Zoom UX Regression', () => {
 			// Re-enter system view and wait again (up to another 10s)
 			const targetSystemId2 = await browser.execute(() => {
 				let data;
-				// @ts-ignore
+				// @ts-expect-error: E2E internals
 				window.stores.cluster.subscribe((v) => (data = v))();
 				return data.Systems[0].Id;
 			});
 			await browser.execute((id) => {
-				// @ts-ignore
+				// @ts-expect-error: E2E internals
 				window.stores.activeSystemId.set(id);
-				// @ts-ignore
+				// @ts-expect-error: E2E internals
 				window.stores.viewMode.set('system');
 			}, targetSystemId2);
 
@@ -422,7 +422,7 @@ describe('Zoom UX Regression', () => {
 		} catch {
 			// One-time recovery: re-assert system view and wait again
 			await browser.execute(() => {
-				// @ts-ignore
+				// @ts-expect-error: E2E internals
 				window.stores.viewMode.set('system');
 			});
 			await browser.waitUntil(
@@ -482,10 +482,10 @@ describe('Zoom UX Regression', () => {
 				try {
 					// Try to keep/restore the active system id
 					let currentId;
-					// @ts-ignore
+					// @ts-expect-error: E2E internals
 					window.stores.activeSystemId.subscribe((v) => (currentId = v))?.();
 					// Fallback to first system from snapshot
-					// @ts-ignore
+					// @ts-expect-error: E2E internals
 					const snap =
 						typeof window.getClusterSnapshot === 'function'
 							? window.getClusterSnapshot()
@@ -494,13 +494,15 @@ describe('Zoom UX Regression', () => {
 									window.stores?.cluster?.subscribe((x) => (v = x))?.();
 									return v;
 								})();
-					// @ts-ignore
+					// @ts-expect-error: E2E internals
 					const fallbackId = snap?.Systems?.[0]?.Id;
-					// @ts-ignore
+					// @ts-expect-error: E2E internals
 					window.stores.activeSystemId.set(currentId ?? fallbackId);
-					// @ts-ignore
+					// @ts-expect-error: E2E internals
 					window.stores.viewMode.set('system');
-				} catch {}
+				} catch {
+					/* ignore */
+				}
 			});
 			await browser.waitUntil(async () => await browser.execute(() => !!window.e2eSystemReady), {
 				timeout: 10000,

@@ -36,7 +36,7 @@
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "pnpm exec eslint . && pnpm exec prettier --check .",
+				"command": "npm exec -- eslint . && npm exec -- prettier --check .",
 				"cwd": "apps/client"
 			}
 		},

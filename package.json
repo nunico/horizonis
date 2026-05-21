@@ -14,10 +14,10 @@
 		"lint": "nx run-many --targets=lint",
 		"test": "nx run-many --targets=test",
 		"check": "nx run-many --targets=check",
-		"verify": "pnpm nx run-many --targets=check,lint,test",
+		"verify": "NX_PACKAGE_MANAGER=npm npm exec -- nx run-many --targets=check,lint,test",
 		"e2e:web": "nx test web-e2e",
 		"e2e:desktop": "TARGET=desktop nx test e2e-tests",
-		"e2e": "pnpm run e2e:web && pnpm run e2e:desktop",
+		"e2e": "npm run e2e:web && npm run e2e:desktop",
 		"format": "prettier --write ."
 	},
 	"license": "AGPL-3.0-only",

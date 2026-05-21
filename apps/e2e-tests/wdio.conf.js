@@ -47,7 +47,7 @@ export const config = {
 			delete env.NODE_OPTIONS;
 			const result = spawnSync(
 				'mise',
-				['exec', '--', 'pnpm', 'tauri', 'build', '--debug', '--no-bundle'],
+				['exec', '--', 'npm', 'exec', '--', 'tauri', 'build', '--debug', '--no-bundle'],
 				{
 					cwd: rootDir,
 					stdio: 'inherit',
@@ -78,13 +78,13 @@ export const config = {
 				console.log('Web server not running on port 1420. Starting it...');
 				const publicE2E = process.env.PUBLIC_E2E ?? '1';
 				const webEnv = { ...process.env, PUBLIC_E2E: publicE2E };
-				spawnSync('pnpm', ['run', 'build:web'], {
+				spawnSync('npm', ['run', 'build:web'], {
 					cwd: rootDir,
 					stdio: 'inherit',
 					shell: true,
 					env: webEnv
 				});
-				webServerProcess = spawn('pnpm', ['run', 'preview:web'], {
+				webServerProcess = spawn('npm', ['run', 'preview:web'], {
 					cwd: rootDir,
 					stdio: 'inherit',
 					shell: true,

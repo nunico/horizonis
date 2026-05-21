@@ -71,7 +71,7 @@ All code follows the TDD-Cycle **Red-Green-Refactor**. Untested code is consider
 All subagents installed at `~/.junie/agents/`.
 
 | Subagent             | Model          | When to Use                                              |
-|----------------------|----------------|----------------------------------------------------------|
+| -------------------- | -------------- | -------------------------------------------------------- |
 | `planner`            | `sonnet`       | Decompose non-trivial tasks into a phased plan           |
 | `implementer`        | `gpt-codex`    | Execute a plan or scoped coding task                     |
 | `librarian`          | `gpt-5`        | Look up library/API docs; returns compact summary        |

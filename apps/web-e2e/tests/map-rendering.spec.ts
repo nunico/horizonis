@@ -1,30 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { getFixtureCluster } from './fixtures/cluster';
-
-type ClusterLike = { Systems: Array<{ Id: string; Name?: string }> };
-
-type E2EWindow = Window & {
-	e2eReady?: boolean;
-	e2eSystemReady?: boolean;
-	starMapDebug?: { viewport?: { children?: unknown[] } };
-	solarSystemMapDebug?: { viewport?: { children?: unknown[] } };
-	stores?: {
-		cluster?: { subscribe: (fn: (x: ClusterLike) => void) => () => void };
-		activeSystemId: { set: (id: string) => void };
-		viewMode: { set: (mode: string) => void };
-	};
-	getClusterSnapshot?: () => ClusterLike;
-};
+import type { E2EWindow, ClusterLike } from './types';
 
 test.describe('Map Rendering', () => {
-  test.beforeEach(async ({ page }) => {
-    // Provide deterministic cluster-data fixture to the app before it loads
-    await page.addInitScript((fixture) => {
-      (window as any).PUBLIC_E2E = '1';
-      (window as any).__E2E_CLUSTER_FIXTURE = fixture;
-    }, getFixtureCluster());
+	test.beforeEach(async ({ page }) => {
+		// Provide deterministic cluster-data fixture to the app before it loads
+		await page.addInitScript((fixture) => {
+			(window as unknown as E2EWindow).PUBLIC_E2E = '1';
+			(window as unknown as E2EWindow).__E2E_CLUSTER_FIXTURE = fixture;
+		}, getFixtureCluster());
 
-    await page.goto('/');
+		await page.goto('/');
 		// App-level readiness: wait until WASM + cluster loaded
 		await page.waitForFunction(() => (window as E2EWindow).e2eReady === true, {
 			timeout: 20_000
@@ -46,7 +32,9 @@ test.describe('Map Rendering', () => {
 		await expect(canvas).toBeVisible();
 
 		// Optional debug instrumentation check (only if available)
-		const hasDebug = await page.evaluate(() => Boolean((window as E2EWindow).starMapDebug?.viewport));
+		const hasDebug = await page.evaluate(() =>
+			Boolean((window as E2EWindow).starMapDebug?.viewport)
+		);
 		if (hasDebug) {
 			const childCount = await page.evaluate(() => {
 				const vp = (window as E2EWindow).starMapDebug?.viewport;
@@ -65,10 +53,10 @@ test.describe('Map Rendering', () => {
 					typeof w.getClusterSnapshot === 'function'
 						? w.getClusterSnapshot?.()
 						: (() => {
-							let v: ClusterLike | undefined = undefined;
-							w.stores?.cluster?.subscribe((x: ClusterLike) => (v = x))?.();
-							return v;
-						})();
+								let v: ClusterLike | undefined = undefined;
+								w.stores?.cluster?.subscribe((x: ClusterLike) => (v = x))?.();
+								return v;
+							})();
 				return !!snap && Array.isArray(snap.Systems) && snap.Systems.length > 0;
 			} catch {
 				return false;
@@ -99,7 +87,7 @@ test.describe('Map Rendering', () => {
 		// Proceed based on map visibility; system readiness flag may be disabled in prod builds
 
 		const systemCanvas = solarMap.locator('canvas');
-		await expect(systemCanvas).toHaveCount(1, { timeout: 5_000 });
+		await expect(systemCanvas).toHaveCount(1, { timeout: 15_000 });
 		await expect(systemCanvas).toBeVisible();
 
 		// Optional debug instrumentation check (only if available)

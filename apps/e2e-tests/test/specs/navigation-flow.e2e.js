@@ -88,7 +88,7 @@ describe('Navigation Flow', () => {
 
 		// Select a system from cluster to open inspector
 		await browser.execute(() => {
-			// @ts-ignore
+			// @ts-expect-error: E2E internals
 			const data =
 				typeof window.getClusterSnapshot === 'function'
 					? window.getClusterSnapshot()

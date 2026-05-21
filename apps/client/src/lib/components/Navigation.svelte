@@ -91,7 +91,11 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === '/' && document.activeElement !== searchInput) {
+		if (
+			e.key === '/' &&
+			document.activeElement?.tagName !== 'INPUT' &&
+			document.activeElement?.tagName !== 'TEXTAREA'
+		) {
 			e.preventDefault();
 			searchInput?.focus();
 		} else if (e.key === 'Escape') {

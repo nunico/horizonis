@@ -61,7 +61,7 @@ describe('Map Rendering', () => {
 		);
 
 		await browser.execute(() => {
-			// @ts-ignore
+			// @ts-expect-error: E2E internals
 			const data =
 				typeof window.getClusterSnapshot === 'function'
 					? window.getClusterSnapshot()

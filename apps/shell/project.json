@@ -7,7 +7,7 @@
 		"dev": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "pnpm exec tauri dev",
+				"command": "npm exec -- tauri dev",
 				"cwd": "apps/shell"
 			}
 		},
@@ -15,7 +15,7 @@
 			"dependsOn": ["horizonis-client:build"],
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "pnpm exec tauri build",
+				"command": "npm exec -- tauri build",
 				"cwd": "apps/shell"
 			},
 			"outputs": ["{projectRoot}/target/release/bundle"]
