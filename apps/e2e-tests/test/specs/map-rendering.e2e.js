@@ -3,10 +3,10 @@ describe('Map Rendering', () => {
 		await browser.url('http://localhost:1420');
 
 		// App-level readiness: wait until WASM + cluster loaded
-		await browser.waitUntil(
-			async () => await browser.execute(() => !!window.e2eReady),
-			{ timeout: 20000, timeoutMsg: 'App not ready (e2eReady not set)' }
-		);
+		await browser.waitUntil(async () => await browser.execute(() => !!window.e2eReady), {
+			timeout: 20000,
+			timeoutMsg: 'App not ready (e2eReady not set)'
+		});
 
 		// Wait for loading screen to disappear
 		const loadingScreen = await $('[data-testid="loading-screen"]');
@@ -35,29 +35,41 @@ describe('Map Rendering', () => {
 
 	it('should render the solar system map when a system is selected', async () => {
 		// Ensure app is ready first
-		await browser.waitUntil(
-			async () => await browser.execute(() => !!window.e2eReady),
-			{ timeout: 20000, timeoutMsg: 'App not ready (e2eReady not set)' }
-		);
+		await browser.waitUntil(async () => await browser.execute(() => !!window.e2eReady), {
+			timeout: 20000,
+			timeoutMsg: 'App not ready (e2eReady not set)'
+		});
 		// Navigate to a system
 		await browser.waitUntil(
 			async () =>
 				await browser.execute(() => {
 					try {
-						const snap = typeof window.getClusterSnapshot === 'function'
-							? window.getClusterSnapshot()
-							: (() => {
-								let v; window.stores?.cluster?.subscribe((x) => (v = x))?.(); return v;
-							})();
+						const snap =
+							typeof window.getClusterSnapshot === 'function'
+								? window.getClusterSnapshot()
+								: (() => {
+										let v;
+										window.stores?.cluster?.subscribe((x) => (v = x))?.();
+										return v;
+									})();
 						return !!snap && Array.isArray(snap.Systems) && snap.Systems.length > 0;
-					} catch { return false; }
+					} catch {
+						return false;
+					}
 				}),
 			{ timeout: 20000, timeoutMsg: 'Cluster data not loaded for system selection' }
 		);
 
 		await browser.execute(() => {
 			// @ts-ignore
-			const data = typeof window.getClusterSnapshot === 'function' ? window.getClusterSnapshot() : (() => { let v; window.stores.cluster.subscribe((x) => (v = x))(); return v; })();
+			const data =
+				typeof window.getClusterSnapshot === 'function'
+					? window.getClusterSnapshot()
+					: (() => {
+							let v;
+							window.stores.cluster.subscribe((x) => (v = x))();
+							return v;
+						})();
 			const systemId = data.Systems[0].Id;
 			window.stores.activeSystemId.set(systemId);
 			window.stores.viewMode.set('system');
@@ -67,10 +79,10 @@ describe('Map Rendering', () => {
 		await solarMap.waitForDisplayed({ timeout: 20000 });
 
 		// Wait for explicit system readiness first, then instrumentation
-		await browser.waitUntil(
-			async () => await browser.execute(() => !!window.e2eSystemReady),
-			{ timeout: 20000, timeoutMsg: 'System view not ready (e2eSystemReady not set)' }
-		);
+		await browser.waitUntil(async () => await browser.execute(() => !!window.e2eSystemReady), {
+			timeout: 20000,
+			timeoutMsg: 'System view not ready (e2eSystemReady not set)'
+		});
 
 		const canvas = await solarMap.$('canvas');
 		await canvas.waitForExist({ timeout: 5000 });

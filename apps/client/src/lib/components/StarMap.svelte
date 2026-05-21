@@ -6,7 +6,14 @@
 	import { cluster } from '$lib/stores/clusterData';
 	import { viewMode, activeSystemId, selectedEntity, type Entity } from '$lib/stores/appState';
 	import type { SolarSystem } from '$lib/types/stellar';
-    import { PUBLIC_E2E } from '$env/static/public';
+	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
+
+	type WindowWithDebug = Window & {
+		starMapDebug?: {
+			viewport: Viewport;
+		};
+		e2eClusterReady?: boolean;
+	};
 
 	let container = $state<HTMLDivElement>();
 	let app = $state<PIXI.Application>();
@@ -107,7 +114,7 @@
 
 		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
 		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-			window.starMapDebug = {
+			(window as WindowWithDebug).starMapDebug = {
 				viewport: v,
 				get lastMinScale() {
 					return lastMinScale;
@@ -119,11 +126,11 @@
 			};
 		}
 
-  // In case `$cluster` is already available, trigger initial render,
-  // but defer to next microtask to avoid first-frame races while stores settle.
-  if ($cluster) {
-      queueMicrotask(() => renderCluster());
-  }
+		// In case `$cluster` is already available, trigger initial render,
+		// but defer to next microtask to avoid first-frame races while stores settle.
+		if ($cluster) {
+			queueMicrotask(() => renderCluster());
+		}
 	});
 
 	onDestroy(() => {
@@ -397,9 +404,9 @@
 		hoverGraphics = new PIXI.Graphics();
 		viewport.addChild(hoverGraphics);
 
-  for (const system of ($cluster?.Systems || [])) {
-            const node = new PIXI.Graphics();
-            node.circle(0, 0, 10).fill(0x38bdf8);
+		for (const system of $cluster?.Systems || []) {
+			const node = new PIXI.Graphics();
+			node.circle(0, 0, 10).fill(0x38bdf8);
 
 			node.x = system.X;
 			node.y = system.Y;
@@ -456,9 +463,8 @@
 
 		// Mark cluster view as ready for E2E consumers once initial layout is applied
 		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			queueMicrotask(() => {
-				(window as any).e2eClusterReady = true;
+				(window as WindowWithDebug).e2eClusterReady = true;
 			});
 		}
 	}

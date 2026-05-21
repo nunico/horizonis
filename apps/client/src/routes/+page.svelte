@@ -1,31 +1,31 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { loadCluster, cluster, initWasm, isInitialized } from '$lib/stores/clusterData';
-    import { viewMode } from '$lib/stores/appState';
-    import StarMap from '$lib/components/StarMap.svelte';
-    import SolarSystemMap from '$lib/components/SolarSystemMap.svelte';
-    import Inspector from '$lib/components/Inspector.svelte';
-    import Navigation from '$lib/components/Navigation.svelte';
-    import HelpOverlay from '$lib/components/HelpOverlay.svelte';
+	import { onMount } from 'svelte';
+	import { loadCluster, cluster, initWasm, isInitialized } from '$lib/stores/clusterData';
+	import { viewMode } from '$lib/stores/appState';
+	import StarMap from '$lib/components/StarMap.svelte';
+	import SolarSystemMap from '$lib/components/SolarSystemMap.svelte';
+	import Inspector from '$lib/components/Inspector.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
+	import HelpOverlay from '$lib/components/HelpOverlay.svelte';
 
 	let showHelp = $state(false);
 	let error = $state<string | null>(null);
 
-    onMount(async () => {
-        try {
-            await initWasm();
-            await loadCluster();
-            if (typeof window !== 'undefined') {
-                // Signal to E2E tests that the app is ready for interactions
-                // without peeking into internals.
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (window as any).e2eReady = true;
-            }
-        } catch (e) {
-            error = e instanceof Error ? e.message : String(e);
-            console.error('Initialization failed:', e);
-        }
-    });
+	onMount(async () => {
+		try {
+			await initWasm();
+			await loadCluster();
+			if (typeof window !== 'undefined') {
+				// Signal to E2E tests that the app is ready for interactions
+				// without peeking into internals.
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				(window as any).e2eReady = true;
+			}
+		} catch (e) {
+			error = e instanceof Error ? e.message : String(e);
+			console.error('Initialization failed:', e);
+		}
+	});
 </script>
 
 <main class="w-screen h-screen relative bg-slate-950 overflow-hidden">

@@ -5,12 +5,14 @@ sessionId: session-260521-151524-16ru
 # Requirements
 
 ### Overview & Goals
+
 - Introduce Playwright-based web E2E tests to improve reliability and integrate with an MCP server for AI-assisted execution.
 - Keep existing desktop (Tauri) E2E path intact via WebdriverIO for now; scope the Playwright migration to the web target only.
 - Ensure Nx + pnpm task execution is the single source of truth; add or refine targets so `test`, `lint`, `check` (type-check) run thoroughly and consistently across apps.
 - Provide parity of existing E2E coverage by porting current WDIO web scenarios.
 
 ### Scope
+
 - In Scope
   - New Nx project for Playwright web E2E: `apps/web-e2e` with `playwright.config.ts`, tests under `apps/web-e2e/tests/`.
   - Port current WDIO web specs: `Map Rendering`, `Navigation Flow`, `App Responsiveness`.
@@ -26,6 +28,7 @@ sessionId: session-260521-151524-16ru
 # Technical Design
 
 ### Current Implementation
+
 - Web app: `apps/client` (Vite/SvelteKit). Nx targets include `dev`, `build`, `preview`, `check` (runs `svelte-kit sync && svelte-check`), `lint`, and `test` (Vitest). See `apps/client/project.json`.
 - E2E (combined web/desktop) today: `apps/e2e-tests` using WebdriverIO (`wdio.conf.js`) which:
   - For web: probes port `1420`, builds and starts `apps/client` via root scripts `build:web` and `preview:web` if needed.
@@ -35,6 +38,7 @@ sessionId: session-260521-151524-16ru
 - TypeScript: Strict mode at `tsconfig.base.json`; `apps/client` enforces `svelte-check` via Nx `check` target.
 
 ### Key Decisions
+
 1. Use Playwright Test for web E2E in a new Nx project `web-e2e` to avoid breaking desktop tests.
    - Rationale: clear separation of concerns; allows incremental migration and faster web-only iteration.
 2. Start/stop the web server via Playwright `webServer` config rather than custom scripts in test code.
@@ -47,6 +51,7 @@ sessionId: session-260521-151524-16ru
    - Rationale: improves debuggability and observability for AI-assisted runs.
 
 ### Proposed Changes
+
 - Create `apps/web-e2e/` with:
   - `playwright.config.ts`:
     - `testDir: 'apps/web-e2e/tests'`.
@@ -72,18 +77,21 @@ sessionId: session-260521-151524-16ru
   - Expose MCP server host/port via env vars for the agent.
 
 ### Data Models / Contracts
+
 - No backend API changes. Tests consume app state via `page.evaluate` and `window.stores`, mirroring WDIO’s use of `browser.execute`.
 
 ### Components Affected
+
 - New: `apps/web-e2e/*` (Playwright config + tests).
 - Existing (read-only): `apps/client/src` readiness flags and test IDs already used by WDIO are reused.
 - Existing scripts updated: root `package.json` `e2e:web`, new `check`/`verify` scripts.
 
 ### File Structure
+
 - apps/
   - client/
-  - e2e-tests/              (unchanged; remains for desktop)
-  - web-e2e/                (new)
+  - e2e-tests/ (unchanged; remains for desktop)
+  - web-e2e/ (new)
     - tests/
       - map-rendering.spec.ts
       - navigation-flow.spec.ts
@@ -93,12 +101,14 @@ sessionId: session-260521-151524-16ru
     - tsconfig.json
 
 ### Risks & Mitigations
+
 - Flakiness from timing: Use readiness flags and Playwright’s auto-waits, plus retries.
 - Port parity issues: Validate selectors and `window` access carefully; keep tests behavior-focused.
 - MCP package API drift: Implement behind a small config shim so we can update easily if APIs change.
 - CI time increase: Reuse existing server if detected; run browsers headless; run tests in a single project initially.
 
 ### Architecture Diagram
+
 ```mermaid
 graph TD
   A[apps/web-e2e/playwright.config.ts] -->|webServer| B[pnpm nx preview horizonis-client]
@@ -112,16 +122,19 @@ graph TD
 # Testing
 
 ### Validation Approach
+
 - Run `pnpm run verify` to ensure TypeScript checks, lint, and unit tests pass across the workspace.
 - Run `pnpm run e2e:web` to execute the new Playwright tests; confirm parity with WDIO results.
 - Optionally run `pnpm run e2e:desktop` to ensure desktop path remains unaffected.
 
 ### Key Scenarios Mapped
+
 - Map Rendering: page shows `[data-testid="star-map"]` with PixiJS canvas; debug hooks available; readiness observed.
 - Navigation Flow: search and navigate to a system; breadcrumbs update; help overlay toggles; inspector edit/save flow.
 - Responsiveness: cluster loads within bounds; transition to system view completes and signals `e2eSystemReady`.
 
 ### Edge Cases
+
 - Server reuse: ensure `reuseExistingServer: true` works when a developer already has `nx preview horizonis-client` running.
 - Timeouts: increase for slower CI nodes; ensure readiness waits guard against races.
 - Missing globals: harden `page.evaluate` with try/catch when probing `window.stores` or helper functions.
@@ -129,6 +142,7 @@ graph TD
 # Delivery Steps
 
 ### ✓ Step 1: create-playwright-web-e2e-project
+
 A new Nx project `apps/web-e2e` exists with Playwright configured to serve the web app automatically.
 
 - Add `apps/web-e2e/project.json` with `test` (playwright), `lint` targets and `cwd: apps/web-e2e`.
@@ -138,6 +152,7 @@ A new Nx project `apps/web-e2e` exists with Playwright configured to serve the w
 - Ensure browsers are installed via `npx playwright install --with-deps` in tooling notes (CI can handle separately).
 
 ### ✓ Step 2: port-wdio-web-specs-to-playwright
+
 All three existing WDIO web specs are ported to Playwright with equivalent behavior and stable waits.
 
 - Create `tests/map-rendering.spec.ts`, `tests/navigation-flow.spec.ts`, and `tests/responsiveness.spec.ts` under `apps/web-e2e/tests/`.
@@ -147,6 +162,7 @@ All three existing WDIO web specs are ported to Playwright with equivalent behav
 - Validate tests locally; adjust timeouts and use Playwright auto-waits to reduce flakiness.
 
 ### ✓ Step 3: wire-nx-and-scripts-for-consistent-checks
+
 Workspace scripts and Nx targets ensure TypeScript, lint, unit tests, and web E2E run consistently.
 
 - Update root `package.json`:
@@ -159,6 +175,7 @@ Workspace scripts and Nx targets ensure TypeScript, lint, unit tests, and web E2
 - Dry-run: `pnpm nx run-many --targets=check,lint,test` then `pnpm run e2e:web` to verify flow.
 
 ### ✓ Step 4: enable-mcp-and-document-usage
+
 Playwright MCP server is enabled and documented for agent-driven test sessions.
 
 - Add MCP dependency for Playwright and enable/configure it in `apps/web-e2e/playwright.config.ts`.

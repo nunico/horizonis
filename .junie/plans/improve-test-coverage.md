@@ -1,6 +1,7 @@
 # Task: Improve Test Coverage
 
 ## Objective
+
 Analyse the codebase to identify **meaningful gaps** in test coverage — logic paths, edge cases, and error states that are untested or undertested. Write high-quality tests that verify real behavior, not tests that inflate coverage metrics.
 
 ## Phase 1: Audit
@@ -14,6 +15,7 @@ Scan the codebase and identify:
 5. **UI features with no E2E coverage** — user-facing flows with no Playwright tests.
 
 For each gap found, record:
+
 - File path and function/component name.
 - What is currently tested (if anything).
 - What is missing and **why it matters** (what bug could go undetected).
@@ -36,6 +38,7 @@ Present the prioritised list and wait for approval before proceeding.
 For each approved gap, write tests following these rules:
 
 ### Quality Rules
+
 - **Behavior over implementation**: test inputs and observable outputs — not internal state or private methods.
 - **AAA pattern**: every test has clear Arrange / Act / Assert sections.
 - **One assertion per concept**: a test may have multiple `expect` calls if they verify the same behavior; split tests if verifying distinct behaviors.
@@ -44,6 +47,7 @@ For each approved gap, write tests following these rules:
 - **No redundant tests**: if two tests verify the same behavior, write one.
 
 ### Do Not
+
 - Write tests purely to hit a coverage number.
 - Test framework code, generated code, or third-party libraries.
 - Duplicate existing tests.
@@ -51,10 +55,11 @@ For each approved gap, write tests following these rules:
 - Use `.unwrap()` in Rust tests without a comment explaining why a panic is acceptable.
 
 ### Tooling
-| Stack | Unit | E2E |
-|---|---|---|
-| TypeScript / Svelte | Vitest + Testing Library | Playwright |
-| Rust | `#[cfg(test)]` + `proptest` for data-driven cases | — |
+
+| Stack               | Unit                                              | E2E        |
+| ------------------- | ------------------------------------------------- | ---------- |
+| TypeScript / Svelte | Vitest + Testing Library                          | Playwright |
+| Rust                | `#[cfg(test)]` + `proptest` for data-driven cases | —          |
 
 ## Phase 4: Verify
 

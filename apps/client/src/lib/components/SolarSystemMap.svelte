@@ -1,17 +1,29 @@
 <script lang="ts">
-    import { onMount, onDestroy, untrack, tick } from 'svelte';
-    import * as PIXI from 'pixi.js';
-    import { Viewport } from 'pixi-viewport';
-    import { cluster } from '$lib/stores/clusterData';
-    import { activeSystemId, viewMode, selectedEntity, type Entity } from '$lib/stores/appState';
-    import type { OrbitalBody, Star } from '$lib/types/stellar';
-    import {
-        auToPixels,
-        getVisualRadius,
-        getClampedScale,
-        type ScaleConfig
-    } from '$lib/pixi/scaling';
-    import { PUBLIC_E2E } from '$env/static/public';
+	import { onMount, onDestroy, untrack, tick } from 'svelte';
+	import * as PIXI from 'pixi.js';
+	import { Viewport } from 'pixi-viewport';
+	import { cluster } from '$lib/stores/clusterData';
+	import { activeSystemId, viewMode, selectedEntity, type Entity } from '$lib/stores/appState';
+	import type { OrbitalBody, Star } from '$lib/types/stellar';
+	import {
+		auToPixels,
+		getVisualRadius,
+		getClampedScale,
+		type ScaleConfig
+	} from '$lib/pixi/scaling';
+	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
+
+	type WindowWithDebug = Window & {
+		solarSystemMapDebug?: {
+			viewport: Viewport;
+			get starNodes(): typeof starNodes;
+			get bodyNodes(): typeof bodyNodes;
+			scaleConfig: ScaleConfig;
+			get lastMinScale(): number;
+			get lastMaxScale(): number;
+		};
+		e2eSystemReady?: boolean;
+	};
 
 	let container = $state<HTMLDivElement>();
 	let app = $state<PIXI.Application>();
@@ -113,8 +125,7 @@
 		// Stable E2E debug hook: expose a persistent object with live getters
 		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
 		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(window as any).solarSystemMapDebug = {
+			(window as WindowWithDebug).solarSystemMapDebug = {
 				viewport: v,
 				get starNodes() {
 					return starNodes;
@@ -398,77 +409,75 @@
 		}
 	});
 
- function renderSystem() {
-        const v = viewport;
-        if (!systemData || !v) return;
+	function renderSystem() {
+		const v = viewport;
+		if (!systemData || !v) return;
 
-        // Signal not ready while (re)rendering system view (E2E instrumentation)
-        const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
-        if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).e2eSystemReady = false;
-        }
+		// Signal not ready while (re)rendering system view (E2E instrumentation)
+		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
+		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(window as any).e2eSystemReady = false;
+		}
 
-        // Defer heavy draw until after next tick to avoid first-frame races while stores settle
-        queueMicrotask(async () => {
-            await tick();
-            const v2 = viewport;
-            const sd = systemData;
-            if (!sd || !v2) return;
+		// Defer heavy draw until after next tick to avoid first-frame races while stores settle
+		queueMicrotask(async () => {
+			await tick();
+			const v2 = viewport;
+			const sd = systemData;
+			if (!sd || !v2) return;
 
-            v2.removeChildren().forEach((child) => child.destroy({ children: true }));
-            starNodes = [];
-            bodyNodes = [];
-            satelliteContainers = [];
-            orbitNodes = [];
-            maxSystemRadius = 0;
+			v2.removeChildren().forEach((child) => child.destroy({ children: true }));
+			starNodes = [];
+			bodyNodes = [];
+			satelliteContainers = [];
+			orbitNodes = [];
+			maxSystemRadius = 0;
 
-            selectionGraphics = new PIXI.Graphics();
-            v2.addChild(selectionGraphics);
+			selectionGraphics = new PIXI.Graphics();
+			v2.addChild(selectionGraphics);
 
-            hoverGraphics = new PIXI.Graphics();
-            v2.addChild(hoverGraphics);
+			hoverGraphics = new PIXI.Graphics();
+			v2.addChild(hoverGraphics);
 
-            sd.Stars?.forEach((star, i) => {
-                renderStar(star, i, sd!.Stars.length);
-            });
+			sd.Stars?.forEach((star, i) => {
+				renderStar(star, i, sd!.Stars.length);
+			});
 
-            sd.OrbitalBodies?.forEach((body, i) => {
-                renderBody(body, v2, i, sd!.OrbitalBodies.length);
-            });
+			sd.OrbitalBodies?.forEach((body, i) => {
+				renderBody(body, v2, i, sd!.OrbitalBodies.length);
+			});
 
-            for (const region of sd.OrbitalRegions || []) {
-                const r = new PIXI.Graphics();
-                const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
-                const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
+			for (const region of sd.OrbitalRegions || []) {
+				const r = new PIXI.Graphics();
+				const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
+				const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
 
-                if (outer > maxSystemRadius) maxSystemRadius = outer;
+				if (outer > maxSystemRadius) maxSystemRadius = outer;
 
-                r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
-                v2.addChild(r);
-            }
+				r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
+				v2.addChild(r);
+			}
 
-            updateScales();
-            updateZoomLimits();
+			updateScales();
+			updateZoomLimits();
 
-            v2.setZoom(lastMinScale, true);
-            v2.moveCenter(0, 0 - 28 / lastMinScale);
+			v2.setZoom(lastMinScale, true);
+			v2.moveCenter(0, 0 - 28 / lastMinScale);
 
-            // Signal readiness as soon as initial layout is applied (microtask)
-            if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                queueMicrotask(() => {
-                    (window as any).e2eSystemReady = true;
-                });
-            }
+			// Signal readiness as soon as initial layout is applied (microtask)
+			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+				queueMicrotask(() => {
+					(window as WindowWithDebug).e2eSystemReady = true;
+				});
+			}
 
-            // Final readiness confirmation (debug hook is assigned on mount and uses live getters)
-            if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (window as any).e2eSystemReady = true;
-            }
-        });
-    }
+			// Final readiness confirmation (debug hook is assigned on mount and uses live getters)
+			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+				(window as WindowWithDebug).e2eSystemReady = true;
+			}
+		});
+	}
 
 	function renderStar(star: Star, index: number, total: number) {
 		const radius = auToPixels(star.OrbitAu, scaleConfig);

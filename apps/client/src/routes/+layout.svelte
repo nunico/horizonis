@@ -6,21 +6,21 @@
 	import * as clusterData from '$lib/stores/clusterData';
 	let { children } = $props();
 
- if (typeof window !== 'undefined' && (import.meta.env.DEV || window.navigator.webdriver)) {
-        window.stores = {
-            ...appState,
-            ...clusterData
-        };
+	if (typeof window !== 'undefined' && (import.meta.env.DEV || window.navigator.webdriver)) {
+		window.stores = {
+			...appState,
+			...clusterData
+		};
 
-        // Provide a stable snapshot helper for E2E to synchronously read the cluster store
-        // without relying on timing-sensitive effects.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).getClusterSnapshot = () => {
-            let value: unknown = null;
-            clusterData.cluster.subscribe((v) => (value = v))();
-            return value;
-        };
-    }
+		// Provide a stable snapshot helper for E2E to synchronously read the cluster store
+		// without relying on timing-sensitive effects.
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		(window as any).getClusterSnapshot = () => {
+			let value: unknown = null;
+			clusterData.cluster.subscribe((v) => (value = v))();
+			return value;
+		};
+	}
 
 	onMount(() => {
 		const handleKeydown = (e: KeyboardEvent) => {

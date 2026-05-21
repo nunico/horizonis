@@ -5,9 +5,11 @@ sessionId: session-260519-222843-16w1
 # Requirements
 
 ### Overview & Goals
+
 The goal is to clarify the project structure by separating "apps" (the source code modules) from "targets" (the distribution formats). Currently, `apps/web` and `apps/desktop` are named after their targets, which is confusing when the same code might contribute to multiple targets or when a target involves multiple apps.
 
 ### Scope
+
 - **In Scope**:
   - Renaming `apps/web` to `apps/client` (the SvelteKit frontend).
   - Renaming `apps/desktop` to `apps/shell` (the Tauri desktop wrapper).
@@ -20,6 +22,7 @@ The goal is to clarify the project structure by separating "apps" (the source co
   - Modifying `libs/procedural-gen` except for path references.
 
 ### User Stories
+
 - As a developer, I want to clearly distinguish between the client source code and the desktop shell code.
 - As a developer, I want to run E2E tests on both web and desktop targets with a single command.
 - As a developer, I want the E2E test environment to be automatically set up (e.g., starting the web server).
@@ -27,30 +30,37 @@ The goal is to clarify the project structure by separating "apps" (the source co
 # Technical Design
 
 ### Current Implementation
+
 - `apps/web`: SvelteKit app, named `horizonis-web`.
 - `apps/desktop`: Tauri app, named `horizonis-desktop`, depends on `horizonis-web` build.
 - Root scripts use `web:*` and `desktop:*` prefixes.
 - E2E tests in `apps/e2e-tests` default to desktop and require a manual `TARGET=web` to switch.
 
 ### Proposed Changes
+
 #### 1. Directory & Package Renaming
- Old Path | New Path | Old Package Name | New Package Name |
----|---|---|---|
- `apps/web` | `apps/client` | `horizonis-web` | `horizonis-client` |
- `apps/desktop` | `apps/shell` | `horizonis-desktop` | `horizonis-shell` |
+
+| Old Path       | New Path      | Old Package Name    | New Package Name   |
+| -------------- | ------------- | ------------------- | ------------------ |
+| `apps/web`     | `apps/client` | `horizonis-web`     | `horizonis-client` |
+| `apps/desktop` | `apps/shell`  | `horizonis-desktop` | `horizonis-shell`  |
 
 #### 2. Root Scripts (Refined Naming)
+
 The new scripts follow the `<command>:<target>` pattern:
+
 - `dev:web` / `dev:desktop`
 - `build:web` / `build:desktop`
 - `e2e:web` / `e2e:desktop`
 - `e2e` (runs both)
 
 #### 3. E2E Test Enhancements
+
 - **Auto-Server**: For `web` target, `wdio.conf.js` will check if a server is running on port 1420 and start one (via `pnpm build:web && pnpm preview:web`) if it's not.
 - **Binary Path**: Update `wdio.conf.js` to point to `target/debug/horizonis-shell` (matching the new crate name).
 
 ### File Structure
+
 ```text
 apps/
   client/ (was web)
@@ -66,6 +76,7 @@ apps/
 ```
 
 ### Architecture Diagram
+
 ```mermaid
 graph TD
     Client[apps/client SvelteKit]
@@ -81,9 +92,11 @@ graph TD
 # Testing
 
 ### Validation Approach
+
 Verification will be done by running the build and e2e scripts for both targets.
 
 ### Key Scenarios
+
 1. **Web Build & Dev**:
    - `pnpm build:web` should produce a build in `apps/client/build`.
    - `pnpm dev:web` should start the SvelteKit dev server.
@@ -96,13 +109,16 @@ Verification will be done by running the build and e2e scripts for both targets.
    - `pnpm e2e` should run both sequentially and pass.
 
 ### Edge Cases
+
 - **Server already running**: E2E web target should detect if port 1420 is busy and either use it or report an error.
 - **Build failures**: `build:desktop` should fail if `build:web` fails.
 
 # Delivery Steps
 
 ### ✓ Step 1: Rename apps and update metadata
+
 Rename the app directories to reflect their role rather than their build target.
+
 - Move `apps/web` to `apps/client`.
 - Move `apps/desktop` to `apps/shell`.
 - Update `package.json` names: `horizonis-web` -> `horizonis-client`, `horizonis-desktop` -> `horizonis-shell`.
@@ -112,7 +128,9 @@ Rename the app directories to reflect their role rather than their build target.
 - Update `pnpm-workspace.yaml` if needed (it uses `apps/*` so it should be fine, but I will check).
 
 ### ✓ Step 2: Clarify build targets in root configuration
+
 Update root scripts and Nx configuration to reflect the new structure and clarify build targets.
+
 - Update root `package.json` scripts:
   - `web:dev` -> `dev:web`
   - `web:build` -> `build:web`
@@ -123,7 +141,9 @@ Update root scripts and Nx configuration to reflect the new structure and clarif
 - Update Nx project names in scripts.
 
 ### ✓ Step 3: Enhance E2E tests for dual-target execution
+
 Improve the E2E test suite to support both web and desktop targets with automatic server management.
+
 - Update `apps/e2e-tests/wdio.conf.js` to handle `TARGET=web` and `TARGET=desktop`.
 - Implement auto-starting of the web server for the web target in `onPrepare`.
 - Update the desktop binary path in `wdio.conf.js` to match the new shell package name.

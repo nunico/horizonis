@@ -3,10 +3,10 @@ describe('Navigation Flow', () => {
 		await browser.url('http://localhost:1420');
 
 		// App readiness first
-		await browser.waitUntil(
-			async () => await browser.execute(() => !!window.e2eReady),
-			{ timeout: 20000, timeoutMsg: 'App not ready (e2eReady not set)' }
-		);
+		await browser.waitUntil(async () => await browser.execute(() => !!window.e2eReady), {
+			timeout: 20000,
+			timeoutMsg: 'App not ready (e2eReady not set)'
+		});
 
 		// Wait for loading screen to disappear
 		const loadingScreen = await $('[data-testid="loading-screen"]');
@@ -28,10 +28,10 @@ describe('Navigation Flow', () => {
 		await solarMap.waitForDisplayed({ timeout: 20000 });
 
 		// Prefer readiness flag before probing debug/DOM specifics
-		await browser.waitUntil(
-			async () => await browser.execute(() => !!window.e2eSystemReady),
-			{ timeout: 20000, timeoutMsg: 'System view not ready (e2eSystemReady not set)' }
-		);
+		await browser.waitUntil(async () => await browser.execute(() => !!window.e2eSystemReady), {
+			timeout: 20000,
+			timeoutMsg: 'System view not ready (e2eSystemReady not set)'
+		});
 
 		const breadcrumbs = await nav.getText();
 		expect(breadcrumbs).toContain('Alpha Centauri');
@@ -69,11 +69,18 @@ describe('Navigation Flow', () => {
 			async () => {
 				return await browser.execute(() => {
 					try {
-						const snap = typeof window.getClusterSnapshot === 'function'
-							? window.getClusterSnapshot()
-							: (() => { let v; window.stores?.cluster?.subscribe((x) => (v = x))?.(); return v; })();
+						const snap =
+							typeof window.getClusterSnapshot === 'function'
+								? window.getClusterSnapshot()
+								: (() => {
+										let v;
+										window.stores?.cluster?.subscribe((x) => (v = x))?.();
+										return v;
+									})();
 						return !!snap && Array.isArray(snap.Systems) && snap.Systems.length > 0;
-					} catch { return false; }
+					} catch {
+						return false;
+					}
 				});
 			},
 			{ timeout: 10000, timeoutMsg: 'Cluster data not loaded for selection' }
@@ -82,7 +89,14 @@ describe('Navigation Flow', () => {
 		// Select a system from cluster to open inspector
 		await browser.execute(() => {
 			// @ts-ignore
-			const data = typeof window.getClusterSnapshot === 'function' ? window.getClusterSnapshot() : (() => { let v; window.stores.cluster.subscribe((x) => (v = x))(); return v; })();
+			const data =
+				typeof window.getClusterSnapshot === 'function'
+					? window.getClusterSnapshot()
+					: (() => {
+							let v;
+							window.stores.cluster.subscribe((x) => (v = x))();
+							return v;
+						})();
 			window.stores.selectedEntity.set(data.Systems[0]);
 		});
 

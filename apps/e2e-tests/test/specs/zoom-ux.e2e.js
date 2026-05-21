@@ -15,12 +15,12 @@ describe('Zoom UX Regression', () => {
 		await starMap.waitForDisplayed({ timeout: 20000 });
 
 		// Wait for instrumentation
-  await browser.waitUntil(
-            async () => {
-                return await browser.execute(() => !!window.starMapDebug);
-            },
-            { timeout: 20000, timeoutMsg: 'StarMap debug data not found' }
-        );
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => !!window.starMapDebug);
+			},
+			{ timeout: 20000, timeoutMsg: 'StarMap debug data not found' }
+		);
 
 		// Wait for cluster render completion to avoid races
 		// First ensure cluster data is present
@@ -64,12 +64,12 @@ describe('Zoom UX Regression', () => {
 	});
 
 	it('should prevent panning away from the cluster', async () => {
-  await browser.waitUntil(
-            async () => {
-                return await browser.execute(() => !!window.starMapDebug);
-            },
-            { timeout: 20000, timeoutMsg: 'StarMap debug data not found' }
-        );
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => !!window.starMapDebug);
+			},
+			{ timeout: 20000, timeoutMsg: 'StarMap debug data not found' }
+		);
 
 		await browser.waitUntil(
 			async () => {
@@ -215,98 +215,105 @@ describe('Zoom UX Regression', () => {
 
 	it('should respect max zoom limit on focused object', async () => {
 		// Ensure app ready
-		await browser.waitUntil(
-			async () => await browser.execute(() => !!window.e2eReady),
-			{ timeout: 20000, timeoutMsg: 'App not ready before max zoom test' }
-		);
+		await browser.waitUntil(async () => await browser.execute(() => !!window.e2eReady), {
+			timeout: 20000,
+			timeoutMsg: 'App not ready before max zoom test'
+		});
 
 		// Ensure we are in system view; if not, switch like in the previous test
-		await browser.waitUntil(
-			async () => {
-				return await browser.execute(() => {
-					try {
-						let vm;
-						window.stores?.viewMode?.subscribe((v) => (vm = v))?.();
-						return vm === 'system';
-					} catch {
-						return false;
-					}
-				});
-			},
-			{ timeout: 1000, timeoutMsg: 'Not in system view yet (pre-check)' }
-		).catch(async () => {
-			// If pre-check failed, navigate to a system view now
-			// Ensure cluster data is available before accessing it
-   await browser.waitUntil(
-            async () => {
-                return await browser.execute(() => {
-                    try {
-                        const data = typeof window.getClusterSnapshot === 'function'
-                            ? window.getClusterSnapshot()
-                            : (() => { let d; window.stores?.cluster?.subscribe((v) => (d = v))?.(); return d; })();
-                        return !!data && Array.isArray(data.Systems) && data.Systems.length > 0;
-                    } catch {
-                        return false;
-                    }
-                });
-            },
-            { timeout: 20000, timeoutMsg: 'Cluster data not loaded before entering system view' }
-        );
+		await browser
+			.waitUntil(
+				async () => {
+					return await browser.execute(() => {
+						try {
+							let vm;
+							window.stores?.viewMode?.subscribe((v) => (vm = v))?.();
+							return vm === 'system';
+						} catch {
+							return false;
+						}
+					});
+				},
+				{ timeout: 1000, timeoutMsg: 'Not in system view yet (pre-check)' }
+			)
+			.catch(async () => {
+				// If pre-check failed, navigate to a system view now
+				// Ensure cluster data is available before accessing it
+				await browser.waitUntil(
+					async () => {
+						return await browser.execute(() => {
+							try {
+								const data =
+									typeof window.getClusterSnapshot === 'function'
+										? window.getClusterSnapshot()
+										: (() => {
+												let d;
+												window.stores?.cluster?.subscribe((v) => (d = v))?.();
+												return d;
+											})();
+								return !!data && Array.isArray(data.Systems) && data.Systems.length > 0;
+							} catch {
+								return false;
+							}
+						});
+					},
+					{ timeout: 20000, timeoutMsg: 'Cluster data not loaded before entering system view' }
+				);
 
-   const clusterData = await browser.execute(() => {
-                if (typeof window.getClusterSnapshot === 'function') {
-                    return window.getClusterSnapshot();
-                }
-                let data;
-                // @ts-ignore
-                window.stores.cluster.subscribe((v) => (data = v))();
-                return data;
-            });
-			const targetSystemId = clusterData.Systems[0].Id;
-			await browser.execute((id) => {
-				window.stores.activeSystemId.set(id);
-				window.stores.viewMode.set('system');
-			}, targetSystemId);
-		});
+				const clusterData = await browser.execute(() => {
+					if (typeof window.getClusterSnapshot === 'function') {
+						return window.getClusterSnapshot();
+					}
+					let data;
+					// @ts-ignore
+					window.stores.cluster.subscribe((v) => (data = v))();
+					return data;
+				});
+				const targetSystemId = clusterData.Systems[0].Id;
+				await browser.execute((id) => {
+					window.stores.activeSystemId.set(id);
+					window.stores.viewMode.set('system');
+				}, targetSystemId);
+			});
 
 		const solarSystemMap2 = await $('[data-testid="solar-system-map"]');
 		await solarSystemMap2.waitForDisplayed({ timeout: 20000 });
 
 		// Wait for explicit system readiness and instrumentation
-		await browser.waitUntil(
-			async () => await browser.execute(() => !!window.e2eSystemReady),
-			{ timeout: 20000, timeoutMsg: 'System view not ready before max zoom test' }
-		);
+		await browser.waitUntil(async () => await browser.execute(() => !!window.e2eSystemReady), {
+			timeout: 20000,
+			timeoutMsg: 'System view not ready before max zoom test'
+		});
 
-  // One-time retry: if debug hook isn't ready after 10s, re-trigger system navigation once
-  try {
-      await browser.waitUntil(
-          async () => {
-              return await browser.execute(() => !!window.solarSystemMapDebug);
-          },
-          { timeout: 10000, timeoutMsg: 'SolarSystemMap debug data not found (first attempt)' }
-      );
-  } catch {
-      // Re-enter system view and wait again (up to another 10s)
-      const targetSystemId2 = await browser.execute(() => {
-          let data;
-          // @ts-ignore
-          window.stores.cluster.subscribe((v) => (data = v))();
-          return data.Systems[0].Id;
-      });
-      await browser.execute((id) => {
-          // @ts-ignore
-          window.stores.activeSystemId.set(id);
-          // @ts-ignore
-          window.stores.viewMode.set('system');
-      }, targetSystemId2);
+		// One-time retry: if debug hook isn't ready after 10s, re-trigger system navigation once
+		try {
+			await browser.waitUntil(
+				async () => {
+					return await browser.execute(() => !!window.solarSystemMapDebug);
+				},
+				{ timeout: 10000, timeoutMsg: 'SolarSystemMap debug data not found (first attempt)' }
+			);
+		} catch {
+			// Re-enter system view and wait again (up to another 10s)
+			const targetSystemId2 = await browser.execute(() => {
+				let data;
+				// @ts-ignore
+				window.stores.cluster.subscribe((v) => (data = v))();
+				return data.Systems[0].Id;
+			});
+			await browser.execute((id) => {
+				// @ts-ignore
+				window.stores.activeSystemId.set(id);
+				// @ts-ignore
+				window.stores.viewMode.set('system');
+			}, targetSystemId2);
 
-      await browser.waitUntil(
-          async () => {
-              return await browser.execute(() => !!window.solarSystemMapDebug);
-          },
-          { timeout: 10000, timeoutMsg: 'SolarSystemMap debug data not found for max zoom test' }
-      );
+			await browser.waitUntil(
+				async () => {
+					return await browser.execute(() => !!window.solarSystemMapDebug);
+				},
+				{ timeout: 10000, timeoutMsg: 'SolarSystemMap debug data not found for max zoom test' }
+			);
 		}
 
 		// Ensure initial system view layout is applied
@@ -320,60 +327,60 @@ describe('Zoom UX Regression', () => {
 			{ timeout: 20000, timeoutMsg: 'System not at min scale before selecting target' }
 		);
 
-  // Ensure there is at least one entity to focus (body or star)
-  await browser.waitUntil(
-      async () => {
-          return await browser.execute(() => {
-              const dbg = window.solarSystemMapDebug;
-              const bodies = dbg?.bodyNodes?.length || 0;
-              const stars = dbg?.starNodes?.length || 0;
-              return bodies > 0 || stars > 0;
-          });
-      },
-      { timeout: 20000, timeoutMsg: 'No focusable bodies or stars found in system view' }
-  );
+		// Ensure there is at least one entity to focus (body or star)
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute(() => {
+					const dbg = window.solarSystemMapDebug;
+					const bodies = dbg?.bodyNodes?.length || 0;
+					const stars = dbg?.starNodes?.length || 0;
+					return bodies > 0 || stars > 0;
+				});
+			},
+			{ timeout: 20000, timeoutMsg: 'No focusable bodies or stars found in system view' }
+		);
 
-  // Pick a focus target from bodies, or fall back to a star if no bodies exist
-  const target = await browser.execute(() => {
-      const dbg = window.solarSystemMapDebug;
-      if (dbg.bodyNodes && dbg.bodyNodes.length > 0) {
-          return { id: dbg.bodyNodes[0].body.Id, type: 'body' };
-      }
-      if (dbg.starNodes && dbg.starNodes.length > 0) {
-          return { id: dbg.starNodes[0].star.Id, type: 'star' };
-      }
-      return null;
-  });
+		// Pick a focus target from bodies, or fall back to a star if no bodies exist
+		const target = await browser.execute(() => {
+			const dbg = window.solarSystemMapDebug;
+			if (dbg.bodyNodes && dbg.bodyNodes.length > 0) {
+				return { id: dbg.bodyNodes[0].body.Id, type: 'body' };
+			}
+			if (dbg.starNodes && dbg.starNodes.length > 0) {
+				return { id: dbg.starNodes[0].star.Id, type: 'star' };
+			}
+			return null;
+		});
 
-  if (!target) {
-      throw new Error('No focusable entities available after wait');
-  }
+		if (!target) {
+			throw new Error('No focusable entities available after wait');
+		}
 
-  // Wait until the selected target node is present, then read its screen position
-  await browser.waitUntil(
-      async () => {
-          return await browser.execute((t) => {
-              const dbg = window.solarSystemMapDebug;
-              if (!dbg) return false;
-              const node =
-                  t.type === 'body'
-                      ? dbg.bodyNodes.find((n) => n.body.Id === t.id)
-                      : dbg.starNodes.find((n) => n.star.Id === t.id);
-              return !!node;
-          }, target);
-      },
-      { timeout: 20000, timeoutMsg: 'Target node not available in system view' }
-  );
+		// Wait until the selected target node is present, then read its screen position
+		await browser.waitUntil(
+			async () => {
+				return await browser.execute((t) => {
+					const dbg = window.solarSystemMapDebug;
+					if (!dbg) return false;
+					const node =
+						t.type === 'body'
+							? dbg.bodyNodes.find((n) => n.body.Id === t.id)
+							: dbg.starNodes.find((n) => n.star.Id === t.id);
+					return !!node;
+				}, target);
+			},
+			{ timeout: 20000, timeoutMsg: 'Target node not available in system view' }
+		);
 
-  const planetPos = await browser.execute((t) => {
-      const dbg = window.solarSystemMapDebug;
-      const node =
-          t.type === 'body'
-              ? dbg.bodyNodes.find((n) => n.body.Id === t.id)
-              : dbg.starNodes.find((n) => n.star.Id === t.id);
-      const pos = dbg.viewport.toScreen(node.worldX, node.worldY);
-      return { x: Math.round(pos.x), y: Math.round(pos.y) };
-  }, target);
+		const planetPos = await browser.execute((t) => {
+			const dbg = window.solarSystemMapDebug;
+			const node =
+				t.type === 'body'
+					? dbg.bodyNodes.find((n) => n.body.Id === t.id)
+					: dbg.starNodes.find((n) => n.star.Id === t.id);
+			const pos = dbg.viewport.toScreen(node.worldX, node.worldY);
+			return { x: Math.round(pos.x), y: Math.round(pos.y) };
+		}, target);
 
 		// Move mouse to planet to trigger focus
 		await browser.performActions([
@@ -406,23 +413,23 @@ describe('Zoom UX Regression', () => {
 			}
 		]);
 
-  // Ensure instrumentation still present after zoom-induced rerenders
-  try {
-      await browser.waitUntil(
-          async () => await browser.execute(() => !!window.solarSystemMapDebug),
-          { timeout: 20000, timeoutMsg: 'SolarSystemMap debug lost after zoom-in (first attempt)' }
-      );
-  } catch {
-      // One-time recovery: re-assert system view and wait again
-      await browser.execute(() => {
-          // @ts-ignore
-          window.stores.viewMode.set('system');
-      });
-      await browser.waitUntil(
-          async () => await browser.execute(() => !!window.solarSystemMapDebug),
-          { timeout: 10000, timeoutMsg: 'SolarSystemMap debug lost after zoom-in (retry)' }
-      );
-  }
+		// Ensure instrumentation still present after zoom-induced rerenders
+		try {
+			await browser.waitUntil(
+				async () => await browser.execute(() => !!window.solarSystemMapDebug),
+				{ timeout: 20000, timeoutMsg: 'SolarSystemMap debug lost after zoom-in (first attempt)' }
+			);
+		} catch {
+			// One-time recovery: re-assert system view and wait again
+			await browser.execute(() => {
+				// @ts-ignore
+				window.stores.viewMode.set('system');
+			});
+			await browser.waitUntil(
+				async () => await browser.execute(() => !!window.solarSystemMapDebug),
+				{ timeout: 10000, timeoutMsg: 'SolarSystemMap debug lost after zoom-in (retry)' }
+			);
+		}
 
 		// Wait briefly for scale to stabilize after zoom
 		await browser.waitUntil(
@@ -463,55 +470,60 @@ describe('Zoom UX Regression', () => {
 
 		await browser.pause(500);
 
-  // Ensure system view is ready after zoom-out (more stable than probing debug immediately)
-  try {
-      await browser.waitUntil(
-          async () => await browser.execute(() => !!window.e2eSystemReady),
-          { timeout: 20000, timeoutMsg: 'System view not ready after zoom-out (first attempt)' }
-      );
-  } catch {
-      // Re-assert system view and re-wait once
-      await browser.execute(() => {
-          try {
-              // Try to keep/restore the active system id
-              let currentId;
-              // @ts-ignore
-              window.stores.activeSystemId.subscribe((v) => (currentId = v))?.();
-              // Fallback to first system from snapshot
-              // @ts-ignore
-              const snap = typeof window.getClusterSnapshot === 'function'
-                  ? window.getClusterSnapshot()
-                  : (() => { let v; window.stores?.cluster?.subscribe((x) => (v = x))?.(); return v; })();
-              // @ts-ignore
-              const fallbackId = snap?.Systems?.[0]?.Id;
-              // @ts-ignore
-              window.stores.activeSystemId.set(currentId ?? fallbackId);
-              // @ts-ignore
-              window.stores.viewMode.set('system');
-          } catch {}
-      });
-      await browser.waitUntil(
-          async () => await browser.execute(() => !!window.e2eSystemReady),
-          { timeout: 10000, timeoutMsg: 'System view not ready after zoom-out (retry)' }
-      );
-  }
+		// Ensure system view is ready after zoom-out (more stable than probing debug immediately)
+		try {
+			await browser.waitUntil(async () => await browser.execute(() => !!window.e2eSystemReady), {
+				timeout: 20000,
+				timeoutMsg: 'System view not ready after zoom-out (first attempt)'
+			});
+		} catch {
+			// Re-assert system view and re-wait once
+			await browser.execute(() => {
+				try {
+					// Try to keep/restore the active system id
+					let currentId;
+					// @ts-ignore
+					window.stores.activeSystemId.subscribe((v) => (currentId = v))?.();
+					// Fallback to first system from snapshot
+					// @ts-ignore
+					const snap =
+						typeof window.getClusterSnapshot === 'function'
+							? window.getClusterSnapshot()
+							: (() => {
+									let v;
+									window.stores?.cluster?.subscribe((x) => (v = x))?.();
+									return v;
+								})();
+					// @ts-ignore
+					const fallbackId = snap?.Systems?.[0]?.Id;
+					// @ts-ignore
+					window.stores.activeSystemId.set(currentId ?? fallbackId);
+					// @ts-ignore
+					window.stores.viewMode.set('system');
+				} catch {}
+			});
+			await browser.waitUntil(async () => await browser.execute(() => !!window.e2eSystemReady), {
+				timeout: 10000,
+				timeoutMsg: 'System view not ready after zoom-out (retry)'
+			});
+		}
 
-  // Then ensure instrumentation becomes available shortly after readiness
-  await browser.waitUntil(
-      async () => await browser.execute(() => !!window.solarSystemMapDebug),
-      { timeout: 20000, timeoutMsg: 'SolarSystemMap debug not available after zoom-out readiness' }
-  );
+		// Then ensure instrumentation becomes available shortly after readiness
+		await browser.waitUntil(async () => await browser.execute(() => !!window.solarSystemMapDebug), {
+			timeout: 20000,
+			timeoutMsg: 'SolarSystemMap debug not available after zoom-out readiness'
+		});
 
-  // Ensure scale stabilized after zoom-out to avoid transient size checks
-  await browser.waitUntil(
-      async () => {
-          const s1 = await browser.execute(() => window.solarSystemMapDebug.viewport.scale.x);
-          await browser.pause(120);
-          const s2 = await browser.execute(() => window.solarSystemMapDebug.viewport.scale.x);
-          return Math.abs(s2 - s1) < 1e-4;
-      },
-      { timeout: 5000, timeoutMsg: 'Viewport scale did not stabilize after zoom-out' }
-  );
+		// Ensure scale stabilized after zoom-out to avoid transient size checks
+		await browser.waitUntil(
+			async () => {
+				const s1 = await browser.execute(() => window.solarSystemMapDebug.viewport.scale.x);
+				await browser.pause(120);
+				const s2 = await browser.execute(() => window.solarSystemMapDebug.viewport.scale.x);
+				return Math.abs(s2 - s1) < 1e-4;
+			},
+			{ timeout: 5000, timeoutMsg: 'Viewport scale did not stabilize after zoom-out' }
+		);
 
 		// Verify for all parent-child pairs in the current view
 		const violations = await browser.execute(() => {
