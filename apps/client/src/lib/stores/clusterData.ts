@@ -80,80 +80,18 @@ function applyE2EFixtureIfNeeded(data: StarCluster): StarCluster {
 
   if (Array.isArray(data?.Systems) && data.Systems.length > 0) return data;
 
-  const fixture: StarCluster = createFixtureCluster();
-  // Try to persist so page reloads keep the same data
-  try {
-    void saveCluster(fixture);
-  } catch {
-    // non-fatal in E2E
+  // Prefer a fixture provided by the E2E harness to avoid shipping test data in the app bundle
+  const fixture = (win?.__E2E_CLUSTER_FIXTURE as StarCluster | undefined) ?? undefined;
+  if (fixture && Array.isArray(fixture.Systems) && fixture.Systems.length > 0) {
+    // Try to persist so page reloads keep the same data
+    try {
+      void saveCluster(fixture);
+    } catch {
+      // non-fatal in E2E
+    }
+    return fixture;
   }
-  return fixture;
-}
 
-function createFixtureCluster(): StarCluster {
-  const star: Star = {
-    Id: 'star-alpha',
-    Name: 'Alpha',
-    SpectralClass: 'G2V',
-    RadiusSol: 1,
-    MassSol: 1,
-    OrbitAu: 0,
-    Satellites: [],
-    OrbitalRegions: []
-  };
-
-  const planet: OrbitalBody = {
-    Id: 'planet-1',
-    Name: 'Horizon',
-    BodyType: 'Planet',
-    OrbitAu: 1,
-    RadiusKm: 6371,
-    MassEarth: 1,
-    Satellites: [],
-    Tags: ['habitable']
-  };
-
-  const regions: OrbitalRegion[] = [
-    { Name: 'Inner System', InnerRadiusAu: 0.2, OuterRadiusAu: 2.0, RegionType: 'Inner' }
-  ];
-
-  const system: SolarSystem = {
-    Id: 'sys-0001',
-    Name: 'Fixture System',
-    X: 0,
-    Y: 0,
-    Stars: [star],
-    OrbitalBodies: [planet],
-    OrbitalRegions: regions,
-    Portals: [] as Portal[]
-  };
-
-  const neighbor: SolarSystem = {
-    Id: 'sys-0002',
-    Name: 'Neighbor System',
-    X: 300,
-    Y: 180,
-    Stars: [
-      { ...star, Id: 'star-beta', Name: 'Beta', SpectralClass: 'K5V' }
-    ],
-    OrbitalBodies: [],
-    OrbitalRegions: [],
-    Portals: []
-  };
-
-  // Connect the two systems with a portal in each direction so portal rendering has content
-  const portals: Portal[] = [
-    { Id: 'p-1', Name: 'Alpha-Beta', TargetSystemId: neighbor.Id }
-  ];
-  const portals2: Portal[] = [
-    { Id: 'p-2', Name: 'Beta-Alpha', TargetSystemId: system.Id }
-  ];
-
-  const s1: SolarSystem = { ...system, Portals: portals };
-  const s2: SolarSystem = { ...neighbor, Portals: portals2 };
-
-  return {
-    Name: 'Fixture Cluster',
-    Systems: [s1, s2]
-  };
+  // No external fixture provided — return the original data (tests may skip if empty)
+  return data;
 }

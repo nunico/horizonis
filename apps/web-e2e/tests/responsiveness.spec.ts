@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { getFixtureCluster } from './fixtures/cluster';
 
 type ClusterLike = { Systems: Array<{ Id: string; Name?: string }> };
 
@@ -14,6 +15,11 @@ type E2EWindow = Window & {
 
 test.describe('App Responsiveness', () => {
     test('loads the cluster within a reasonable time', async ({ page }) => {
+		// Provide deterministic cluster-data fixture to the app before it loads
+		await page.addInitScript((fixture) => {
+			(window as any).PUBLIC_E2E = '1';
+			(window as any).__E2E_CLUSTER_FIXTURE = fixture;
+		}, getFixtureCluster());
 		const startTime = Date.now();
 		await page.goto('/');
 
@@ -32,6 +38,11 @@ test.describe('App Responsiveness', () => {
 	});
 
  test('transitions to solar system view quickly', async ({ page }) => {
+        // Provide deterministic cluster-data fixture to the app before it loads
+        await page.addInitScript((fixture) => {
+          (window as any).PUBLIC_E2E = '1';
+          (window as any).__E2E_CLUSTER_FIXTURE = fixture;
+        }, getFixtureCluster());
         // Fresh page per test: navigate and wait for readiness
         await page.goto('/');
         await page.waitForFunction(() => (window as unknown as E2EWindow).e2eReady === true, {

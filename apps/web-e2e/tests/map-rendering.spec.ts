@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { getFixtureCluster } from './fixtures/cluster';
 
 type ClusterLike = { Systems: Array<{ Id: string; Name?: string }> };
 
@@ -16,8 +17,14 @@ type E2EWindow = Window & {
 };
 
 test.describe('Map Rendering', () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto('/');
+  test.beforeEach(async ({ page }) => {
+    // Provide deterministic cluster-data fixture to the app before it loads
+    await page.addInitScript((fixture) => {
+      (window as any).PUBLIC_E2E = '1';
+      (window as any).__E2E_CLUSTER_FIXTURE = fixture;
+    }, getFixtureCluster());
+
+    await page.goto('/');
 		// App-level readiness: wait until WASM + cluster loaded
 		await page.waitForFunction(() => (window as E2EWindow).e2eReady === true, {
 			timeout: 20_000
