@@ -1,19 +1,35 @@
 {
-	"mcpServers": {
-		"mise": {
-			"command": "node",
-			"args": ["scripts/mise-mcp-adapter.cjs"]
-		},
-		"nx-mcp": {
-			"command": ["pnpx", "nx", "mcp"]
-		},
-		"playwright": {
-			"command": "pnpx",
-			"args": ["@playwright/mcp@latest"]
-		},
-		"WebDriverIO": {
-			"command": "node",
-			"args": ["scripts/wdio-mcp-adapter.cjs"]
-		}
-	}
+    "mcpServers": {
+        "mise": {
+            "command": "node",
+            "args": [
+                "scripts/mise-mcp-adapter.cjs"
+            ]
+        },
+        "nx-mcp": {
+            "command": "pnpx",
+            "args": [
+                "nx",
+                "mcp"
+            ]
+        },
+        "playwright": {
+            "command": "pnpx",
+            "args": [
+                "@playwright/mcp@latest"
+            ]
+        },
+        "svelte": {
+            "command": "pnpx",
+            "args": [
+                "@sveltejs/mcp"
+            ]
+        },
+        "WebDriverIO": {
+            "command": "node",
+            "args": [
+                "scripts/wdio-mcp-adapter.cjs"
+            ]
+        }
+    }
 }
