@@ -176,8 +176,7 @@ describe('Navigation component', () => {
 
 	it('handles invalid cluster state without crashing', () => {
 		// Simulate cluster being an empty object (e.g. during partial load or error)
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		cluster.set({} as any);
+		cluster.set({} as unknown as StarCluster);
 		render(Navigation);
 		expect(screen.getByRole('button', { name: /^cluster$/i })).toBeInTheDocument();
 	});
