@@ -1,5 +1,17 @@
 # Changelog
 
+###### [2026-05-22] - Fix UI overlap and resolve pre-existing type errors
+
+- **Summary**: Adjusted layout positioning to prevent navigation bar overlap and fixed pre-existing type and linting issues.
+- **Changes**:
+  - Moved `Inspector.svelte` and `SolarSystemMap.svelte` controls from `top-4` to `top-18` to avoid overlap with the navigation bar.
+  - Resolved type errors in `stellar.ts` and `SolarSystemMap.svelte`.
+  - Fixed ESLint violation in `Navigation.test.ts`.
+  - Added Playwright regression test `layout-obscurity.spec.ts` to verify layout integrity.
+  - Applied Prettier formatting to `Navigation.svelte` and `clusterData.test.ts`.
+- **Files Affected**: apps/client/src/lib/components/Inspector.svelte, apps/client/src/lib/components/SolarSystemMap.svelte, apps/client/src/lib/utils/stellar.ts, apps/client/src/lib/components/Navigation.test.ts, apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/stores/clusterData.test.ts, apps/web-e2e/tests/layout-obscurity.spec.ts
+- **Context**: The `top-18` offset accounts for the height of the fixed navigation bar, ensuring controls remain accessible.
+
 ###### [2026-05-21] - Cluster Regeneration & Viewport Centering
 
 - **Summary**: Added cluster regeneration capability and fixed viewport centering to ensure clusters are correctly positioned on load and generation.

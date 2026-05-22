@@ -9,7 +9,7 @@ import { cluster, generateNewCluster } from '$lib/stores/clusterData';
 import type { StarCluster } from '$lib/types/stellar';
 
 vi.mock('$lib/stores/clusterData', async (importOriginal) => {
-	const original = (await importOriginal()) as any;
+	const original = (await importOriginal()) as typeof import('$lib/stores/clusterData');
 	return {
 		...original,
 		generateNewCluster: vi.fn()

@@ -1,4 +1,5 @@
 import type { SolarSystem, Star, OrbitalBody } from '$lib/types/stellar';
+import type { ScaleConfig } from '$lib/pixi/scaling';
 
 export function getUniquePortals(systems: SolarSystem[]) {
 	const uniquePortals = new Map<string, { from: string; to: string }>();
@@ -20,9 +21,9 @@ export function getUniquePortals(systems: SolarSystem[]) {
 
 export function getEntityMaxSatRadius(
 	body: Partial<Star> & Partial<OrbitalBody>,
-	scaleConfig: { auToPixels: number; mode: string },
+	scaleConfig: ScaleConfig,
 	getVisualRadius: (r: number) => number,
-	auToPixels: (au: number, config: { auToPixels: number; mode: string }) => number
+	auToPixels: (au: number, config: ScaleConfig) => number
 ): number {
 	let maxR: number;
 	if (body.RadiusKm !== undefined) {

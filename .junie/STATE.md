@@ -12,6 +12,7 @@
 - Centralized PIXI.js and Viewport initialization in `$lib/pixi/setup.ts` to reduce boilerplate and ensure consistent rendering behavior across maps (2026-05-21).
 - Extracted reusable spatial grid logic to `$lib/utils/spatial.ts` for consistent system clustering and culling (2026-05-21).
 - Enforce PascalCase property consistency for all procedural-gen WASM outputs to match frontend types (2026-05-21).
+- Use `top-18` offset for absolute-positioned UI components (Inspector, Map Controls) to avoid overlap with the fixed navigation bar (2026-05-22).
 
 ## Known Constraints
 

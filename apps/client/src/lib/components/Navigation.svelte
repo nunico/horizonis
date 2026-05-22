@@ -120,7 +120,11 @@
 	}
 
 	async function handleRegenerate() {
-		if (confirm('Are you sure you want to generate a new cluster? This will replace your current data.')) {
+		if (
+			confirm(
+				'Are you sure you want to generate a new cluster? This will replace your current data.'
+			)
+		) {
 			await generateNewCluster();
 			goToCluster();
 		}

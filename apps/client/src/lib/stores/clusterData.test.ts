@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { cluster, loadCluster, saveCluster, generateNewCluster, _resetStorage } from './clusterData';
+import {
+	cluster,
+	loadCluster,
+	saveCluster,
+	generateNewCluster,
+	_resetStorage
+} from './clusterData';
 
 // Mock procedural-gen
 vi.mock('procedural-gen', () => ({
