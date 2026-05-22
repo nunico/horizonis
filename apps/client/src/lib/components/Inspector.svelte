@@ -97,7 +97,7 @@
 		role="dialog"
 		tabindex="-1"
 		aria-labelledby="inspector-title"
-		class="absolute top-18 right-4 w-80 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-5rem)]"
+		class="fixed top-20 right-4 w-80 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-5rem)] z-40"
 	>
 		<div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
 			<h2 id="inspector-title" class="font-bold text-slate-100 uppercase text-xs tracking-widest">

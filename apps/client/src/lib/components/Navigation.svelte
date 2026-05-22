@@ -134,7 +134,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <nav
-	class="absolute top-0 left-0 right-0 h-14 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 flex items-center px-4 justify-between z-50"
+	class="fixed top-0 left-0 right-0 h-14 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 flex items-center px-4 justify-between z-50"
 >
 	<div class="flex items-center gap-4">
 		{#if $viewMode === 'system' || $selectedEntity}

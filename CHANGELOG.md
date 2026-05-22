@@ -1,5 +1,17 @@
 # Changelog
 
+###### [2026-05-22] - Viewport Offset Fix and Layout Standardization
+
+- **Summary**: Standardized UI layout to fixed positioning with consistent clearance to prevent viewport offsets.
+- **Changes**:
+  - Switched `Navigation.svelte` and `Inspector.svelte` to `fixed` positioning.
+  - Set `StarMap.svelte` and `SolarSystemMap.svelte` to `absolute inset-0`.
+  - Standardized top offset to `top-20` (80px) for consistent clearance of the navigation bar.
+  - Updated `.junie/STATE.md` with new layout decisions.
+  - Added `viewport-offset.spec.ts` regression test in Playwright.
+- **Files Affected**: apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/components/Inspector.svelte, apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/SolarSystemMap.svelte, .junie/STATE.md, apps/web-e2e/tests/viewport-offset.spec.ts
+- **Context**: Previous `top-18` offset was insufficient for some viewport sizes; `top-20` provides consistent 80px clearance. Fixed positioning prevents the entire viewport from shifting when interactive panels are opened.
+
 ###### [2026-05-22] - Fix UI overlap and resolve pre-existing type errors
 
 - **Summary**: Adjusted layout positioning to prevent navigation bar overlap and fixed pre-existing type and linting issues.

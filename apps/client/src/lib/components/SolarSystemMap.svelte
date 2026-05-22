@@ -685,9 +685,9 @@
 	});
 </script>
 
-<div class="w-full h-full relative" data-testid="solar-system-view">
+<div class="absolute inset-0" data-testid="solar-system-view">
 	<div bind:this={container} data-testid="solar-system-map" class="w-full h-full"></div>
-	<div class="absolute top-18 left-4 flex gap-2">
+	<div class="absolute top-20 left-4 flex gap-2">
 		<button
 			class="px-4 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 border border-slate-700 transition-colors"
 			onclick={() => viewMode.set('cluster')}
