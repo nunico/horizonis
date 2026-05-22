@@ -13,6 +13,7 @@
 - Extracted reusable spatial grid logic to `$lib/utils/spatial.ts` for consistent system clustering and culling (2026-05-21).
 - Enforce PascalCase property consistency for all procedural-gen WASM outputs to match frontend types (2026-05-21).
 - Use `fixed` positioning and `top-20` offset for UI components (Navigation, Inspector, Map Controls) to prevent viewport offsets and ensure clear visibility over the fixed navigation bar (2026-05-22).
+- Strict type safety enforced across the application and E2E tests by eliminating `any` usage and removing ESLint silencers (2026-05-22).
 - Set `StarMap` and `SolarSystemMap` to `absolute inset-0` to fill the viewport without affecting layout flow (2026-05-22).
 
 ## Known Constraints

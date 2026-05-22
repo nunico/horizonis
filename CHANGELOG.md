@@ -1,5 +1,15 @@
 # Changelog
 
+###### [2026-05-22] - Fix ESLint 'any' type violations in E2E tests and main app
+
+- **Summary**: Replaced `any` with specific types in E2E tests and main application to improve type safety and remove ESLint silencers.
+- **Changes**:
+  - Replaced `any` with specific types in `apps/web-e2e/tests` and `apps/client/src`.
+  - Updated `Window` and `E2EWindow` interfaces for better type safety.
+  - Removed all `@typescript-eslint/no-explicit-any` ESLint silencers.
+- **Files Affected**: `apps/web-e2e/tests/types.ts`, `apps/web-e2e/tests/*.spec.ts`, `apps/client/src/app.d.ts`
+- **Context**: Standardizing on strict typing to prevent runtime errors and improve developer experience.
+
 ###### [2026-05-22] - Viewport Offset Fix and Layout Standardization
 
 - **Summary**: Standardized UI layout to fixed positioning with consistent clearance to prevent viewport offsets.

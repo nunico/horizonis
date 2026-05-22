@@ -1,29 +1,32 @@
 import { test, expect } from '@playwright/test';
+import type { E2EWindow } from './types';
 
 test.describe('Layout Obscurity', () => {
 	test.beforeEach(async ({ page }) => {
 		await page.goto('/');
-		await page.waitForFunction(() => (window as any).e2eReady === true);
+		await page.waitForFunction(() => (window as unknown as E2EWindow).e2eReady === true);
 	});
 
 	test('Inspector should not be obscured by navigation bar', async ({ page }) => {
 		// 1. Select a system to show the Inspector
 		// Wait for the map to be ready
-		await page.waitForFunction(() => (window as any).e2eClusterReady === true);
+		await page.waitForFunction(() => (window as unknown as E2EWindow).e2eClusterReady === true);
 
 		// Click on a system node in the StarMap
 		// We'll use a known system from the cluster or just click somewhere likely to have a system
 		// The cluster data is available in window.stores.cluster
 		const system = await page.evaluate(() => {
-			const cluster = (window as any).stores.cluster;
-			let value: any = null;
-			cluster.subscribe((v: any) => (value = v))();
-			return value.Systems[0];
+			const win = window as unknown as E2EWindow;
+			const cluster = win.stores.cluster;
+			if (!cluster) throw new Error('Cluster store not found');
+			let value: unknown = null;
+			cluster.subscribe((v) => (value = v))();
+			return (value as { Systems: Array<unknown> }).Systems[0];
 		});
 
 		// We can select it directly via store to show inspector
 		await page.evaluate((sys) => {
-			(window as any).stores.selectedEntity.set(sys);
+			(window as unknown as E2EWindow).stores.selectedEntity.set(sys);
 		}, system);
 
 		// Wait for Inspector to appear
@@ -45,22 +48,24 @@ test.describe('Layout Obscurity', () => {
 
 	test('Solar System controls should not be obscured by navigation bar', async ({ page }) => {
 		// 1. Navigate to a system
-		await page.waitForFunction(() => (window as any).e2eClusterReady === true);
+		await page.waitForFunction(() => (window as unknown as E2EWindow).e2eClusterReady === true);
 
 		const system = await page.evaluate(() => {
-			const cluster = (window as any).stores.cluster;
-			let value: any = null;
-			cluster.subscribe((v: any) => (value = v))();
-			return value.Systems[0];
+			const win = window as unknown as E2EWindow;
+			const cluster = win.stores.cluster;
+			if (!cluster) throw new Error('Cluster store not found');
+			let value: unknown = null;
+			cluster.subscribe((v) => (value = v))();
+			return (value as { Systems: Array<{ Id: string }> }).Systems[0];
 		});
 
 		await page.evaluate((sysId) => {
-			(window as any).stores.activeSystemId.set(sysId);
-			(window as any).stores.viewMode.set('system');
+			(window as unknown as E2EWindow).stores.activeSystemId.set(sysId);
+			(window as unknown as E2EWindow).stores.viewMode.set('system');
 		}, system.Id);
 
 		// Wait for Solar System view to be ready
-		await page.waitForFunction(() => (window as any).e2eSystemReady === true);
+		await page.waitForFunction(() => (window as unknown as E2EWindow).e2eSystemReady === true);
 
 		// 2. Locate the controls
 		// In SolarSystemMap.svelte: <div class="absolute top-4 left-4 flex gap-2">

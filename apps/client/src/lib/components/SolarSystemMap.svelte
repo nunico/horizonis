@@ -387,8 +387,7 @@
 		// Signal not ready while (re)rendering system view (E2E instrumentation)
 		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
 		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(window as any).e2eSystemReady = false;
+			window.e2eSystemReady = false;
 		}
 
 		// Defer heavy draw until after next tick to avoid first-frame races while stores settle
@@ -432,13 +431,13 @@
 			// Signal readiness as soon as initial layout is applied (microtask)
 			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
 				queueMicrotask(() => {
-					(window as WindowWithDebug).e2eSystemReady = true;
+					window.e2eSystemReady = true;
 				});
 			}
 
 			// Final readiness confirmation (debug hook is assigned on mount and uses live getters)
 			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
-				(window as WindowWithDebug).e2eSystemReady = true;
+				window.e2eSystemReady = true;
 			}
 		});
 	}

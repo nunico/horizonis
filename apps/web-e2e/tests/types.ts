@@ -2,6 +2,7 @@ export type ClusterLike = { Systems: Array<{ Id: string; Name?: string }> };
 
 export type E2EWindow = Window & {
 	e2eReady?: boolean;
+	e2eClusterReady?: boolean;
 	e2eSystemReady?: boolean;
 	starMapDebug?: { viewport?: { children?: unknown[] } };
 	solarSystemMapDebug?: { viewport?: { children?: unknown[] } };

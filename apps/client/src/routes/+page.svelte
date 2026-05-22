@@ -18,8 +18,7 @@
 			if (typeof window !== 'undefined') {
 				// Signal to E2E tests that the app is ready for interactions
 				// without peeking into internals.
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(window as any).e2eReady = true;
+				window.e2eReady = true;
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);

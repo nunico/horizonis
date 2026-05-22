@@ -87,8 +87,7 @@ export async function generateNewCluster(seed?: bigint) {
 // inject a tiny deterministic fixture so E2E tests can run instead of skipping.
 function applyE2EFixtureIfNeeded(data: StarCluster): StarCluster {
 	// Detect E2E: navigator.webdriver is true under Playwright; also honor a manual flag on window
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const win = typeof window !== 'undefined' ? (window as unknown as any) : null;
+	const win = typeof window !== 'undefined' ? (window as Window) : null;
 	const isE2E = !!(
 		win?.navigator?.webdriver ||
 		win?.PUBLIC_E2E === '1' ||

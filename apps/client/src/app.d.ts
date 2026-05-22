@@ -24,11 +24,12 @@ declare global {
 		e2eReady?: boolean;
 		e2eClusterReady?: boolean;
 		e2eSystemReady?: boolean;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		stores?: any;
+
+		stores?: Record<string, unknown>;
 		// Helper exposed only in dev/E2E to read the current cluster value synchronously
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		getClusterSnapshot?: () => any;
+		getClusterSnapshot?: () => unknown;
+		PUBLIC_E2E?: string | boolean;
+		__E2E_CLUSTER_FIXTURE?: unknown;
 	}
 }
 

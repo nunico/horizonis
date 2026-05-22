@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import type { E2EWindow } from './types';
 
 test.describe('Viewport Offset Regression', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     // Wait for the app to be ready
-    await page.waitForFunction(() => (window as any).e2eReady === true);
+    await page.waitForFunction(() => (window as unknown as E2EWindow).e2eReady === true);
   });
 
   test('navigation bar remains at top-0 when inspector is open', async ({ page }) => {
@@ -28,9 +29,10 @@ test.describe('Viewport Offset Regression', () => {
     // But StarMap renders on canvas. 
     // We can use the exposed stores to select an entity directly if canvas clicking is flaky.
     await page.evaluate(() => {
-      const cluster = (window as any).getClusterSnapshot();
+      const win = window as unknown as E2EWindow;
+      const cluster = win.getClusterSnapshot?.();
       if (cluster && cluster.Systems && cluster.Systems.length > 0) {
-        (window as any).stores.selectedEntity.set(cluster.Systems[0]);
+        win.stores.selectedEntity.set(cluster.Systems[0]);
       }
     });
 

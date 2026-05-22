@@ -14,8 +14,7 @@
 
 		// Provide a stable snapshot helper for E2E to synchronously read the cluster store
 		// without relying on timing-sensitive effects.
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(window as any).getClusterSnapshot = () => {
+		window.getClusterSnapshot = () => {
 			let value: unknown = null;
 			clusterData.cluster.subscribe((v) => (value = v))();
 			return value;

@@ -250,8 +250,8 @@ test.describe('Navigation Flow', () => {
 
 		const oldSystems = await page.evaluate(() => {
 			const w = window as unknown as E2EWindow;
-			const snap = w.getClusterSnapshot();
-			return snap?.Systems.map((s: any) => s.Id);
+			const snap = w.getClusterSnapshot?.();
+			return snap?.Systems.map((s: { Id: string }) => s.Id);
 		});
 
 		const regenerateButton = page.getByLabel('Generate New Cluster');
@@ -262,9 +262,9 @@ test.describe('Navigation Flow', () => {
 		await page.waitForFunction(
 			(oldIds) => {
 				const w = window as unknown as E2EWindow;
-				const snap = w.getClusterSnapshot();
+				const snap = w.getClusterSnapshot?.();
 				if (!snap || !snap.Systems) return false;
-				const newIds = snap.Systems.map((s: any) => s.Id);
+				const newIds = snap.Systems.map((s: { Id: string }) => s.Id);
 				return JSON.stringify(newIds) !== JSON.stringify(oldIds);
 			},
 			oldSystems,
@@ -273,10 +273,12 @@ test.describe('Navigation Flow', () => {
 
 		const newCluster = await page.evaluate(() => {
 			const w = window as unknown as E2EWindow;
-			return w.getClusterSnapshot();
+			return w.getClusterSnapshot?.();
 		});
 
+		if (!newCluster) throw new Error('New cluster not found');
+
 		expect(newCluster.Systems.length).toBeGreaterThan(0);
-		expect(newCluster.Systems.map((s: any) => s.Id)).not.toEqual(oldSystems);
+		expect(newCluster.Systems.map((s: { Id: string }) => s.Id)).not.toEqual(oldSystems);
 	});
 });
