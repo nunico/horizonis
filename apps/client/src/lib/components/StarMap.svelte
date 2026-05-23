@@ -21,8 +21,10 @@
 	let container = $state<HTMLDivElement>();
 	let app = $state<PIXI.Application>();
 	let viewport = $state<Viewport>();
+	let isDragging = $state(false);
+	let draggedSystemId = $state<string | null>(null);
 	let resizeHandler: () => void;
-	let systemNodes: PIXI.Graphics[] = [];
+	let systemNodes: (PIXI.Graphics & { systemId?: string })[] = [];
 	let portalNodes: {
 		graphics: PIXI.Graphics;
 		fromId: string;
@@ -81,8 +83,65 @@
 			});
 			setup.viewport.on('moved', updateScales);
 
-			const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
-			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+			setup.viewport.on('pointermove', (e: PIXI.FederatedPointerEvent) => {
+				if (!isDragging || !draggedSystemId || !viewport) return;
+
+				const worldPos = viewport.toWorld(e.global);
+
+				const node = systemNodes.find((n) => n.systemId === draggedSystemId);
+				if (node) {
+					node.x = worldPos.x;
+					node.y = worldPos.y;
+				}
+
+				for (const portal of portalNodes) {
+					if (portal.fromId === draggedSystemId) {
+						portal.fromPos = { x: worldPos.x, y: worldPos.y };
+					} else if (portal.toId === draggedSystemId) {
+						portal.toPos = { x: worldPos.x, y: worldPos.y };
+					}
+				}
+
+				drawPortals();
+				drawSystemHighlights();
+				drawSelection();
+			});
+
+			const endDrag = async () => {
+				if (!isDragging || !draggedSystemId || !viewport || !$cluster) {
+					isDragging = false;
+					draggedSystemId = null;
+					if (viewport) viewport.plugins.resume('drag');
+					return;
+				}
+
+				const node = systemNodes.find((n) => n.systemId === draggedSystemId);
+				if (node) {
+					const newCluster = structuredClone($cluster);
+					const system = newCluster.Systems.find((s) => s.Id === draggedSystemId);
+					if (system) {
+						system.X = node.x;
+						system.Y = node.y;
+						// Use saveCluster to persist the new coordinates
+						const { saveCluster } = await import('$lib/stores/clusterData');
+						await saveCluster(newCluster);
+					}
+					node.cursor = 'pointer';
+				}
+
+				isDragging = false;
+				draggedSystemId = null;
+				viewport.plugins.resume('drag');
+
+				drawPortals();
+				drawSystemHighlights();
+				drawSelection();
+			};
+
+			setup.viewport.on('pointerup', endDrag);
+			setup.viewport.on('pointerupoutside', endDrag);
+
+			if (getEnableE2EDebug()) {
 				(window as WindowWithDebug).starMapDebug = {
 					viewport: setup.viewport,
 					get lastMinScale() {
@@ -137,9 +196,16 @@
 		if (hoveredSystemId) {
 			const system = systemsById.get(hoveredSystemId);
 			if (system) {
-				hoverGraphics
-					.circle((system as SolarSystem).X, (system as SolarSystem).Y, 14 * s)
-					.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+				let x = (system as SolarSystem).X;
+				let y = (system as SolarSystem).Y;
+				if (isDragging && draggedSystemId === hoveredSystemId) {
+					const node = systemNodes.find((n) => n.systemId === hoveredSystemId);
+					if (node) {
+						x = node.x;
+						y = node.y;
+					}
+				}
+				hoverGraphics.circle(x, y, 14 * s).stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
 			}
 		}
 	}
@@ -152,10 +218,18 @@
 		if (!entity || !('X' in entity) || !('Y' in entity)) return;
 
 		const system = entity as SolarSystem;
+		let x = system.X;
+		let y = system.Y;
+		if (isDragging && draggedSystemId === system.Id) {
+			const node = systemNodes.find((n) => n.systemId === system.Id);
+			if (node) {
+				x = node.x;
+				y = node.y;
+			}
+		}
+
 		const s = 1 / viewport.scale.x;
-		selectionGraphics
-			.circle(system.X, system.Y, 18 * s)
-			.stroke({ width: 2 * s, color: 0x38bdf8, alpha: 0.8 });
+		selectionGraphics.circle(x, y, 18 * s).stroke({ width: 2 * s, color: 0x38bdf8, alpha: 0.8 });
 	}
 
 	function updateFocus(currentScale: number) {
@@ -267,9 +341,20 @@
 		}
 	}
 
+	function getEnableE2EDebug() {
+		if (typeof window === 'undefined') return false;
+		const win = window as any;
+		return (
+			import.meta.env.DEV ||
+			import.meta.env.PUBLIC_E2E === '1' ||
+			win.PUBLIC_E2E === '1' ||
+			win.PUBLIC_E2E === true ||
+			win.navigator.webdriver
+		);
+	}
+
 	function setClusterReady(ready: boolean) {
-		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
-		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+		if (getEnableE2EDebug()) {
 			if (ready) {
 				queueMicrotask(() => {
 					(window as WindowWithDebug).e2eClusterReady = true;
@@ -323,7 +408,8 @@
 	function createSystems() {
 		if (!viewport) return;
 		for (const system of $cluster?.Systems || []) {
-			const node = new PIXI.Graphics();
+			const node = new PIXI.Graphics() as PIXI.Graphics & { systemId: string };
+			node.systemId = system.Id;
 			node.circle(0, 0, 10).fill(0x38bdf8);
 
 			node.x = system.X;
@@ -334,6 +420,13 @@
 			node.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 				e.stopPropagation();
 				selectedEntity.set(system);
+
+				isDragging = true;
+				draggedSystemId = system.Id;
+				if (viewport) {
+					viewport.plugins.pause('drag');
+				}
+				node.cursor = 'grabbing';
 			});
 
 			node.on('pointerover', () => {

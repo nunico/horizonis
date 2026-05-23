@@ -1,5 +1,19 @@
 # Changelog
 
+###### [2026-05-22] - System Rearrangement in Star Map
+
+- **Summary**: Allow users to rearrange solar systems within a cluster by dragging them on the Star Map.
+- **Changes**:
+  - Added drag-and-drop functionality to solar system nodes in `StarMap.svelte`.
+  - Implemented real-time updates for connecting portals during dragging.
+  - Persisted new coordinates to localStorage via `saveCluster`.
+  - Updated `HelpOverlay.svelte` with the new drag system interaction.
+  - Added unit tests in `StarMap.test.ts`.
+  - Added E2E tests in `apps/web-e2e/tests/system-rearrangement.spec.ts`.
+  - Fixed a bug in `clusterData.ts` where E2E fixtures were not correctly prioritized over random cluster generation.
+- **Files Affected**: `apps/client/src/lib/components/StarMap.svelte`, `apps/client/src/lib/components/HelpOverlay.svelte`, `apps/client/src/lib/components/StarMap.test.ts`, `apps/client/src/lib/stores/clusterData.ts`, `apps/web-e2e/tests/system-rearrangement.spec.ts`
+- **Context**: Real-time portal updates provide immediate visual feedback while dragging, ensuring a smooth UX. Fixed E2E fixture prioritization to prevent non-deterministic test failures during cluster loading.
+
 ###### [2026-05-22] - Fix ESLint 'any' type violations in E2E tests and main app
 
 - **Summary**: Replaced `any` with specific types in E2E tests and main application to improve type safety and remove ESLint silencers.

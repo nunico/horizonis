@@ -67,6 +67,10 @@ vi.mock('pixi-viewport', () => ({
 		this.setZoom = vi.fn();
 		this.clampZoom = vi.fn();
 		this.clamp = vi.fn();
+		this.plugins = {
+			pause: vi.fn(),
+			resume: vi.fn()
+		};
 		this.scale = { x: 1, y: 1 };
 		this.center = { x: 0, y: 0 };
 		return this;
@@ -143,5 +147,47 @@ describe('StarMap component', () => {
 		resizeHandler();
 
 		expect((viewportInstance as { resize: () => void }).resize).toHaveBeenCalled();
+	});
+
+	it('makes system nodes interactive', async () => {
+		render(StarMap);
+
+		await vi.waitFor(() => {
+			// Find the graphics instance that has systemId (the solar system node)
+			const graphicsInstances = vi.mocked(PIXI.Graphics).mock.results.map((r) => r.value);
+			const systemNode = graphicsInstances.find((g) => g.systemId === 'sys1');
+			expect(systemNode).toBeDefined();
+		});
+
+		const graphicsInstances = vi.mocked(PIXI.Graphics).mock.results.map((r) => r.value);
+		const systemNode = graphicsInstances.find((g) => g.systemId === 'sys1');
+
+		expect(systemNode.eventMode).toBe('static');
+		expect(systemNode.cursor).toBe('pointer');
+		expect(systemNode.on).toHaveBeenCalledWith('pointerdown', expect.any(Function));
+	});
+
+	it('starts dragging on pointerdown', async () => {
+		render(StarMap);
+
+		let systemNode: any;
+		await vi.waitFor(() => {
+			const graphicsInstances = vi.mocked(PIXI.Graphics).mock.results.map((r) => r.value);
+			systemNode = graphicsInstances.find((g) => g.systemId === 'sys1');
+			expect(systemNode).toBeDefined();
+		});
+
+		const viewportInstance = vi.mocked(Viewport).mock.results[0].value;
+
+		// Get the pointerdown handler
+		const pointerdownHandler = systemNode.on.mock.calls.find(
+			(call: any) => call[0] === 'pointerdown'
+		)[1];
+
+		// Simulate pointerdown
+		pointerdownHandler({ stopPropagation: vi.fn() });
+
+		expect(viewportInstance.plugins.pause).toHaveBeenCalledWith('drag');
+		expect(systemNode.cursor).toBe('grabbing');
 	});
 });

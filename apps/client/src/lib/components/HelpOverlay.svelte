@@ -10,7 +10,8 @@
 		{ key: 'Escape', description: 'Clear selection / Close menus' },
 		{ key: 'Enter', description: 'Save changes (in Inspector)' },
 		{ key: 'Scroll', description: 'Zoom in/out' },
-		{ key: 'Drag', description: 'Pan view' }
+		{ key: 'Drag', description: 'Pan view' },
+		{ key: 'Drag System', description: 'Rearrange systems' }
 	];
 
 	function handleKeydown(e: KeyboardEvent) {

@@ -95,20 +95,24 @@ function applyE2EFixtureIfNeeded(data: StarCluster): StarCluster {
 	);
 	if (!isE2E) return data;
 
-	if (Array.isArray(data?.Systems) && data.Systems.length > 0) return data;
-
 	// Prefer a fixture provided by the E2E harness to avoid shipping test data in the app bundle
 	const fixture = (win?.__E2E_CLUSTER_FIXTURE as StarCluster | undefined) ?? undefined;
+
 	if (fixture && Array.isArray(fixture.Systems) && fixture.Systems.length > 0) {
-		// Try to persist so page reloads keep the same data
-		try {
-			void saveCluster(fixture);
-		} catch {
-			// non-fatal in E2E
+		// If the current data is empty or not the fixture, override it.
+		// This ensures that even if a random cluster was generated, the fixture takes precedence.
+		if (!data || !data.Systems || data.Systems.length === 0 || data.Name !== fixture.Name) {
+			// Try to persist so page reloads keep the same data
+			try {
+				void saveCluster(fixture);
+			} catch {
+				// non-fatal in E2E
+			}
+			return fixture;
 		}
-		return fixture;
 	}
 
-	// No external fixture provided — return the original data (tests may skip if empty)
+	if (Array.isArray(data?.Systems) && data.Systems.length > 0) return data;
+
 	return data;
 }

@@ -15,6 +15,7 @@
 - Use `fixed` positioning and `top-20` offset for UI components (Navigation, Inspector, Map Controls) to prevent viewport offsets and ensure clear visibility over the fixed navigation bar (2026-05-22).
 - Strict type safety enforced across the application and E2E tests by eliminating `any` usage and removing ESLint silencers (2026-05-22).
 - Set `StarMap` and `SolarSystemMap` to `absolute inset-0` to fill the viewport without affecting layout flow (2026-05-22).
+- Allow users to manually rearrange solar systems in the Star Map via drag-and-drop; coordinates are persisted to the cluster store (2026-05-22).
 
 ## Known Constraints
 
