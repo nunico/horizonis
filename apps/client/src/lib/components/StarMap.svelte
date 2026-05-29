@@ -3,7 +3,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import * as PIXI from 'pixi.js';
 	import { Viewport } from 'pixi-viewport';
-	import { cluster } from '$lib/stores/clusterData';
+	import { cluster, saveCluster } from '$lib/stores/clusterData';
 	import { viewMode, activeSystemId, selectedEntity, type Entity } from '$lib/stores/appState';
 	import type { SolarSystem } from '$lib/types/stellar';
 	import { SpatialGrid } from '$lib/utils/spatial';
@@ -24,7 +24,8 @@
 	let isDragging = $state(false);
 	let draggedSystemId = $state<string | null>(null);
 	let resizeHandler: () => void;
-	let systemNodes: (PIXI.Graphics & { systemId?: string })[] = [];
+	let systemNodesById = new Map<string, PIXI.Graphics & { systemId: string }>();
+	let portalsBySystemId = new Map<string, typeof portalNodes>();
 	let portalNodes: {
 		graphics: PIXI.Graphics;
 		fromId: string;
@@ -61,10 +62,6 @@
 			viewport = setup.viewport;
 			resizeHandler = setup.resizeHandler;
 
-			if ($cluster) {
-				renderCluster();
-			}
-
 			setup.viewport.on('zoomed', () => {
 				const currentScale = setup.viewport.scale.x;
 				const zoomingIn = currentScale > lastScale * 1.0001;
@@ -88,13 +85,14 @@
 
 				const worldPos = viewport.toWorld(e.global);
 
-				const node = systemNodes.find((n) => n.systemId === draggedSystemId);
+				const node = systemNodesById.get(draggedSystemId);
 				if (node) {
 					node.x = worldPos.x;
 					node.y = worldPos.y;
 				}
 
-				for (const portal of portalNodes) {
+				const relatedPortals = portalsBySystemId.get(draggedSystemId) || [];
+				for (const portal of relatedPortals) {
 					if (portal.fromId === draggedSystemId) {
 						portal.fromPos = { x: worldPos.x, y: worldPos.y };
 					} else if (portal.toId === draggedSystemId) {
@@ -115,15 +113,13 @@
 					return;
 				}
 
-				const node = systemNodes.find((n) => n.systemId === draggedSystemId);
+				const node = systemNodesById.get(draggedSystemId);
 				if (node) {
 					const newCluster = structuredClone($cluster);
 					const system = newCluster.Systems.find((s) => s.Id === draggedSystemId);
 					if (system) {
 						system.X = node.x;
 						system.Y = node.y;
-						// Use saveCluster to persist the new coordinates
-						const { saveCluster } = await import('$lib/stores/clusterData');
 						await saveCluster(newCluster);
 					}
 					node.cursor = 'pointer';
@@ -169,7 +165,7 @@
 	function updateScales() {
 		if (!viewport) return;
 		const s = 1 / viewport.scale.x;
-		for (const node of systemNodes) {
+		for (const node of systemNodesById.values()) {
 			node.scale.set(s);
 		}
 		drawPortals();
@@ -199,7 +195,7 @@
 				let x = (system as SolarSystem).X;
 				let y = (system as SolarSystem).Y;
 				if (isDragging && draggedSystemId === hoveredSystemId) {
-					const node = systemNodes.find((n) => n.systemId === hoveredSystemId);
+					const node = systemNodesById.get(hoveredSystemId);
 					if (node) {
 						x = node.x;
 						y = node.y;
@@ -221,7 +217,7 @@
 		let x = system.X;
 		let y = system.Y;
 		if (isDragging && draggedSystemId === system.Id) {
-			const node = systemNodes.find((n) => n.systemId === system.Id);
+			const node = systemNodesById.get(system.Id);
 			if (node) {
 				x = node.x;
 				y = node.y;
@@ -393,14 +389,20 @@
 				});
 
 				viewport.addChild(g);
-				portalNodes.push({
+				const pNode = {
 					graphics: g,
 					fromId: portal.from,
 					toId: portal.to,
 					fromPos: { x: sys1.X, y: sys1.Y },
 					toPos: { x: sys2.X, y: sys2.Y },
 					key: portal.key
-				});
+				};
+				portalNodes.push(pNode);
+
+				if (!portalsBySystemId.has(portal.from)) portalsBySystemId.set(portal.from, []);
+				if (!portalsBySystemId.has(portal.to)) portalsBySystemId.set(portal.to, []);
+				portalsBySystemId.get(portal.from)!.push(pNode);
+				portalsBySystemId.get(portal.to)!.push(pNode);
 			}
 		}
 	}
@@ -462,18 +464,22 @@
 			label.y = 15;
 			node.addChild(label);
 
-			systemNodes.push(node);
+			systemNodesById.set(system.Id, node);
 			viewport.addChild(node);
 		}
 	}
 
-	function renderCluster() {
+	function renderCluster(resetCamera = true) {
 		if (!$cluster || !viewport) return;
+
+		const prevCenter = resetCamera ? null : { x: viewport.center.x, y: viewport.center.y };
+		const prevZoom = resetCamera ? null : viewport.scale.x;
 
 		setClusterReady(false);
 
 		viewport.removeChildren().forEach((child) => child.destroy({ children: true }));
-		systemNodes = [];
+		systemNodesById.clear();
+		portalsBySystemId.clear();
 		portalNodes = [];
 
 		calculateClusterBounds();
@@ -490,16 +496,26 @@
 		updateScales();
 		updateZoomLimits();
 
-		viewport.setZoom(lastMinScale, true);
-		viewport.moveCenter(clusterCenter.x, clusterCenter.y - 28 / lastMinScale);
+		if (resetCamera) {
+			viewport.setZoom(lastMinScale, true);
+			viewport.moveCenter(clusterCenter.x, clusterCenter.y - 28 / lastMinScale);
+		} else if (prevCenter && prevZoom !== null) {
+			viewport.setZoom(prevZoom);
+			viewport.moveCenter(prevCenter.x, prevCenter.y);
+		}
 
 		setClusterReady(true);
 	}
 
+	let lastClusterName: string | null = null;
+
 	$effect(() => {
 		if ($cluster && viewport) {
+			const name = $cluster.Name;
+			const shouldReset = name !== lastClusterName;
+			lastClusterName = name;
 			// Defer heavy draw to avoid first-frame races while stores settle
-			queueMicrotask(() => renderCluster());
+			queueMicrotask(() => renderCluster(shouldReset));
 		}
 	});
 
