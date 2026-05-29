@@ -125,3 +125,10 @@ Add automated E2E tests to verify the feature in a real browser.
 - Implement a test case that drags a system and verifies persistence.
 - Ensure the test handles coordinate translation from world space to screen space using `starMapDebug`.
 - Run `npm run e2e:web` to verify the tests pass.
+
+### ✓ Step 6: Optimize performance and fix viewport reset bug
+Refine the implementation to ensure smooth UX and efficient rendering.
+
+- Capture and restore viewport center/zoom during re-renders to prevent camera jumps.
+- Replace O(n) array searches with O(1) Map lookups for systems and portals during drag.
+- Verify stability with a regression E2E test for viewport position.
