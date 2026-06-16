@@ -191,25 +191,23 @@ describe('Navigation component', () => {
 		expect(screen.getByRole('button', { name: /^cluster$/i })).toBeInTheDocument();
 	});
 
-	it('triggers cluster regeneration with confirmation', async () => {
-		vi.spyOn(window, 'confirm').mockReturnValue(true);
+	it('regenerates after confirming in the in-app dialog', async () => {
 		render(Navigation);
 
-		const regenerateButton = screen.getByLabelText('Generate New Cluster');
-		await fireEvent.click(regenerateButton);
+		await fireEvent.click(screen.getByLabelText('Generate New Cluster'));
+		// Dialog appears; confirm it.
+		await fireEvent.click(screen.getByRole('button', { name: 'Generate' }));
 
-		expect(window.confirm).toHaveBeenCalled();
 		expect(generateNewCluster).toHaveBeenCalled();
 	});
 
-	it('does not trigger cluster regeneration if confirmation is cancelled', async () => {
-		vi.spyOn(window, 'confirm').mockReturnValue(false);
+	it('does not regenerate when the dialog is cancelled', async () => {
 		render(Navigation);
 
-		const regenerateButton = screen.getByLabelText('Generate New Cluster');
-		await fireEvent.click(regenerateButton);
+		await fireEvent.click(screen.getByLabelText('Generate New Cluster'));
+		await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
-		expect(window.confirm).toHaveBeenCalled();
 		expect(generateNewCluster).not.toHaveBeenCalled();
+		expect(screen.queryByText('Generate a new cluster?')).not.toBeInTheDocument();
 	});
 });
