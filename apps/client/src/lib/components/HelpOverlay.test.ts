@@ -29,6 +29,14 @@ describe('HelpOverlay component', () => {
 		expect(screen.getByText('Open a system (Star Map)')).toBeInTheDocument();
 	});
 
+	it('documents undo and the search/drag interactions', () => {
+		helpOpen.set(true);
+		render(HelpOverlay);
+		expect(screen.getByText('Undo last change')).toBeInTheDocument();
+		expect(screen.getByText('Navigate / pick a search result')).toBeInTheDocument();
+		expect(screen.getByText('Rearrange it (Star Map only)')).toBeInTheDocument();
+	});
+
 	it('closes (clears the store) on close button click', async () => {
 		helpOpen.set(true);
 		render(HelpOverlay);
