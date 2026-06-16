@@ -8,6 +8,8 @@ export interface ShortcutContext {
 	key: string;
 	/** Focus is in an <input>/<textarea> — typing keys must be ignored. */
 	inEditable: boolean;
+	/** Ctrl (or Cmd on macOS) is held. */
+	ctrlOrMeta: boolean;
 	helpOpen: boolean;
 	searchResultsOpen: boolean;
 	hasSelection: boolean;
@@ -21,6 +23,7 @@ export type ShortcutAction =
 	| 'close-search'
 	| 'clear-selection'
 	| 'back-to-cluster'
+	| 'undo'
 	| 'none';
 
 /**
@@ -36,6 +39,10 @@ export function resolveShortcut(ctx: ShortcutContext): ShortcutAction {
 		if (ctx.searchResultsOpen) return 'close-search';
 		if (ctx.hasSelection) return 'clear-selection';
 		return 'none';
+	}
+
+	if (ctx.ctrlOrMeta && (ctx.key === 'z' || ctx.key === 'Z')) {
+		return ctx.inEditable ? 'none' : 'undo';
 	}
 
 	if (ctx.inEditable) return 'none';

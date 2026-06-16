@@ -5,6 +5,8 @@
 	import { viewMode, activeSystemId, selectedEntity } from '$lib/stores/appState';
 	import { helpOpen, searchResultsOpen, requestSearchFocus } from '$lib/stores/ui';
 	import { resolveShortcut } from '$lib/actions/shortcuts';
+	import { undo } from '$lib/stores/history';
+	import { toast } from '$lib/stores/toast';
 	import * as appState from '$lib/stores/appState';
 	import * as clusterData from '$lib/stores/clusterData';
 	let { children } = $props();
@@ -32,6 +34,7 @@
 			const action = resolveShortcut({
 				key: e.key,
 				inEditable,
+				ctrlOrMeta: e.ctrlKey || e.metaKey,
 				helpOpen: get(helpOpen),
 				searchResultsOpen: get(searchResultsOpen),
 				hasSelection: get(selectedEntity) !== null,
@@ -60,6 +63,12 @@
 				case 'back-to-cluster':
 					viewMode.set('cluster');
 					activeSystemId.set(null);
+					break;
+				case 'undo':
+					e.preventDefault();
+					void undo().then((restored) => {
+						toast.info(restored ? 'Undone' : 'Nothing to undo');
+					});
 					break;
 				case 'none':
 					break;
