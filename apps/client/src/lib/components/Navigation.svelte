@@ -3,21 +3,30 @@
 	import { cluster, generateNewCluster } from '$lib/stores/clusterData';
 	import type { Star, OrbitalBody } from '$lib/types/stellar';
 	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle, RotateCw } from 'lucide-svelte';
-
-	let { showHelp = $bindable(false) } = $props();
+	import { INTERACTION } from '$lib/theme';
+	import { helpOpen, searchResultsOpen, searchFocusSignal } from '$lib/stores/ui';
 
 	let system = $derived($cluster?.Systems?.find((s) => s.Id === $activeSystemId));
 	let entity = $derived($selectedEntity);
 
 	let searchQuery = $state('');
 	let debouncedQuery = $state('');
-	let showResults = $state(false);
 	let searchInput = $state<HTMLInputElement>();
+
+	// Focus the input whenever something (e.g. the "/" shortcut) requests it.
+	let lastFocusSignal = 0;
+	$effect(() => {
+		if ($searchFocusSignal !== lastFocusSignal) {
+			lastFocusSignal = $searchFocusSignal;
+			searchInput?.focus();
+			searchResultsOpen.set(true);
+		}
+	});
 
 	$effect(() => {
 		const timeout = setTimeout(() => {
 			debouncedQuery = searchQuery;
-		}, 200);
+		}, INTERACTION.searchDebounceMs);
 		return () => clearTimeout(timeout);
 	});
 
@@ -63,7 +72,7 @@
 			flattenBodies(sys.OrbitalBodies || [], sys.Id, q, results);
 		});
 
-		return results.slice(0, 10);
+		return results.slice(0, INTERACTION.searchResultsLimit);
 	}
 
 	function flattenBodies(
@@ -87,21 +96,7 @@
 		viewMode.set('system');
 		selectedEntity.set(result.entity);
 		searchQuery = '';
-		showResults = false;
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (
-			e.key === '/' &&
-			document.activeElement?.tagName !== 'INPUT' &&
-			document.activeElement?.tagName !== 'TEXTAREA'
-		) {
-			e.preventDefault();
-			searchInput?.focus();
-		} else if (e.key === 'Escape') {
-			showResults = false;
-			searchInput?.blur();
-		}
+		searchResultsOpen.set(false);
 	}
 
 	function goBack() {
@@ -130,8 +125,6 @@
 		}
 	}
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 <nav
 	class="fixed top-0 left-0 right-0 h-14 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 flex items-center px-4 justify-between z-50"
@@ -183,7 +176,7 @@
 			<input
 				bind:this={searchInput}
 				bind:value={searchQuery}
-				onfocus={() => (showResults = true)}
+				onfocus={() => searchResultsOpen.set(true)}
 				type="text"
 				placeholder="Search systems..."
 				class="w-64 bg-slate-950/50 border border-slate-800 rounded-md py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all placeholder:text-slate-600"
@@ -195,7 +188,7 @@
 			</div>
 		</div>
 
-		{#if showResults && searchResults.length > 0}
+		{#if $searchResultsOpen && searchResults.length > 0}
 			<div
 				class="absolute top-full mt-2 left-0 w-80 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl overflow-hidden z-[60]"
 			>
@@ -216,7 +209,7 @@
 			</div>
 		{/if}
 
-		{#if showResults && searchQuery.length > 1 && searchResults.length === 0}
+		{#if $searchResultsOpen && searchQuery.length > 1 && searchResults.length === 0}
 			<div
 				class="absolute top-full mt-2 left-0 w-80 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl p-4 text-center z-[60]"
 			>
@@ -234,9 +227,9 @@
 		</button>
 
 		<button
-			onclick={() => (showHelp = true)}
+			onclick={() => helpOpen.set(true)}
 			class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
-			class:text-sky-400={showHelp}
+			class:text-sky-400={$helpOpen}
 			title="Help (?)"
 			aria-label="Help"
 		>
