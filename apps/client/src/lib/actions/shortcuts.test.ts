@@ -4,6 +4,7 @@ import { resolveShortcut, type ShortcutContext } from './shortcuts';
 const base: ShortcutContext = {
 	key: '',
 	inEditable: false,
+	ctrlOrMeta: false,
 	helpOpen: false,
 	searchResultsOpen: false,
 	hasSelection: false,
@@ -81,6 +82,26 @@ describe('resolveShortcut', () => {
 
 		it('does nothing when there is nothing to dismiss', () => {
 			expect(resolveShortcut({ ...base, key: 'Escape' })).toBe('none');
+		});
+	});
+
+	describe('undo (Ctrl/Cmd+Z)', () => {
+		it('resolves to undo when ctrl/meta+z is pressed outside an input', () => {
+			expect(resolveShortcut({ ...base, key: 'z', ctrlOrMeta: true })).toBe('undo');
+		});
+
+		it('handles a capitalized Z (e.g. with Shift held)', () => {
+			expect(resolveShortcut({ ...base, key: 'Z', ctrlOrMeta: true })).toBe('undo');
+		});
+
+		it('ignores undo while typing in an editable field', () => {
+			expect(resolveShortcut({ ...base, key: 'z', ctrlOrMeta: true, inEditable: true })).toBe(
+				'none'
+			);
+		});
+
+		it('does not treat a bare "z" as undo', () => {
+			expect(resolveShortcut({ ...base, key: 'z' })).toBe('none');
 		});
 	});
 
