@@ -23,8 +23,8 @@
 	class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 pointer-events-none"
 >
 	<div class="pointer-events-auto flex flex-col items-center max-w-sm">
-		<div class="text-slate-600 mb-4">
-			<Sparkles size={48} />
+		<div class="text-slate-500 mb-4">
+			<Sparkles size={48} aria-hidden="true" />
 		</div>
 		<h2 class="text-slate-200 font-bold text-xl mb-2">No systems yet</h2>
 		<p class="text-slate-500 text-sm mb-6">
@@ -36,10 +36,10 @@
 			class="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-lg transition-colors disabled:opacity-60"
 		>
 			{#if generating}
-				<Loader2 size={16} class="animate-spin" />
+				<Loader2 size={16} class="animate-spin" aria-hidden="true" />
 				Generating…
 			{:else}
-				<Sparkles size={16} />
+				<Sparkles size={16} aria-hidden="true" />
 				Generate a cluster
 			{/if}
 		</button>

@@ -163,7 +163,7 @@
 				class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
 				aria-label="Go back"
 			>
-				<ArrowLeft size={20} />
+				<ArrowLeft size={20} aria-hidden="true" />
 			</button>
 		{/if}
 
@@ -172,12 +172,12 @@
 				onclick={goToCluster}
 				class="flex items-center gap-1.5 text-slate-400 hover:text-slate-100 transition-colors"
 			>
-				<Home size={16} />
+				<Home size={16} aria-hidden="true" />
 				<span>Cluster</span>
 			</button>
 
 			{#if system}
-				<ChevronRight size={14} class="text-slate-600" />
+				<ChevronRight size={14} class="text-slate-600" aria-hidden="true" />
 				<button
 					onclick={() => selectedEntity.set(null)}
 					class="text-slate-400 hover:text-slate-100 transition-colors"
@@ -188,7 +188,7 @@
 			{/if}
 
 			{#if entity}
-				<ChevronRight size={14} class="text-slate-600" />
+				<ChevronRight size={14} class="text-slate-600" aria-hidden="true" />
 				<span class="text-slate-100">{entity.Name}</span>
 			{/if}
 		</div>
@@ -198,6 +198,7 @@
 		<div class="relative group">
 			<Search
 				size={16}
+				aria-hidden="true"
 				class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-sky-400 transition-colors"
 			/>
 			<input
@@ -213,7 +214,7 @@
 				class="w-64 bg-slate-950/50 border border-slate-800 rounded-md py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all placeholder:text-slate-600"
 			/>
 			<div
-				class="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-500 border border-slate-700 pointer-events-none group-focus-within:hidden"
+				class="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-800 text-xs text-slate-400 border border-slate-700 pointer-events-none group-focus-within:hidden"
 			>
 				/
 			</div>
@@ -238,11 +239,11 @@
 					>
 						<div>
 							<div class="text-sm font-medium text-slate-200">{result.name}</div>
-							<div class="text-[10px] uppercase tracking-wider text-slate-500">
+							<div class="text-xs uppercase tracking-wider text-slate-400">
 								{result.type}
 							</div>
 						</div>
-						<ChevronRight size={14} class="text-slate-600" />
+						<ChevronRight size={14} class="text-slate-600" aria-hidden="true" />
 					</button>
 				{/each}
 			</div>
@@ -262,7 +263,7 @@
 			title="Generate New Cluster"
 			aria-label="Generate New Cluster"
 		>
-			<RotateCw size={20} />
+			<RotateCw size={20} aria-hidden="true" />
 		</button>
 
 		<button
@@ -272,7 +273,7 @@
 			title="Help (?)"
 			aria-label="Help"
 		>
-			<HelpCircle size={20} />
+			<HelpCircle size={20} aria-hidden="true" />
 		</button>
 	</div>
 </nav>

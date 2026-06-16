@@ -44,7 +44,7 @@
 					class="text-slate-500 hover:text-slate-300 transition-colors"
 					aria-label="Close"
 				>
-					<X size={20} />
+					<X size={20} aria-hidden="true" />
 				</button>
 			</div>
 
