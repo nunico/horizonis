@@ -395,6 +395,7 @@
 				const g = new PIXI.Graphics();
 				g.eventMode = 'static';
 				g.cursor = 'pointer';
+				g.zIndex = 0;
 
 				g.on('pointerover', () => {
 					hoveredPortalKey = portal.key;
@@ -429,6 +430,7 @@
 		for (const system of $cluster?.Systems || []) {
 			const node = new PIXI.Graphics() as PIXI.Graphics & { systemId: string };
 			node.systemId = system.Id;
+			node.zIndex = 10;
 			node.circle(0, 0, 10).fill(MAP_COLORS.systemFill);
 
 			node.x = system.X;
@@ -498,13 +500,19 @@
 		portalsBySystemId.clear();
 		portalNodes = [];
 
+		// Explicit layering so system nodes and their labels always sit above
+		// portal/selection/hover graphics regardless of add order.
+		viewport.sortableChildren = true;
+
 		calculateClusterBounds();
 		createPortals();
 
 		selectionGraphics = new PIXI.Graphics();
+		selectionGraphics.zIndex = 1;
 		viewport.addChild(selectionGraphics);
 
 		hoverGraphics = new PIXI.Graphics();
+		hoverGraphics.zIndex = 2;
 		viewport.addChild(hoverGraphics);
 
 		createSystems();
