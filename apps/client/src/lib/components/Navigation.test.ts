@@ -6,6 +6,7 @@ import { tick } from 'svelte';
 import Navigation from './Navigation.svelte';
 import { activeSystemId, selectedEntity, viewMode } from '$lib/stores/appState';
 import { cluster, generateNewCluster } from '$lib/stores/clusterData';
+import { helpOpen, requestSearchFocus } from '$lib/stores/ui';
 import type { StarCluster } from '$lib/types/stellar';
 
 vi.mock('$lib/stores/clusterData', async (importOriginal) => {
@@ -166,12 +167,21 @@ describe('Navigation component', () => {
 		vi.useRealTimers();
 	});
 
-	it('focuses search input on "/" keydown', async () => {
+	it('focuses search input when search focus is requested', async () => {
 		render(Navigation);
 		const input = screen.getByPlaceholderText(/search systems/i);
 
-		await fireEvent.keyDown(window, { key: '/' });
+		requestSearchFocus();
+		await tick();
 		expect(document.activeElement).toBe(input);
+	});
+
+	it('opens the help overlay store when the help button is clicked', async () => {
+		helpOpen.set(false);
+		render(Navigation);
+
+		await fireEvent.click(screen.getByLabelText('Help'));
+		expect(get(helpOpen)).toBe(true);
 	});
 
 	it('handles invalid cluster state without crashing', () => {
