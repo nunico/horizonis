@@ -213,7 +213,7 @@
 				role="combobox"
 				aria-expanded={$searchResultsOpen && searchResults.length > 0}
 				aria-controls="search-results"
-				class="w-64 bg-slate-950/50 border border-slate-800 rounded-md py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all placeholder:text-slate-600"
+				class="w-40 sm:w-64 bg-slate-950/50 border border-slate-800 rounded-md py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all placeholder:text-slate-600"
 			/>
 			<div
 				class="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-800 text-xs text-slate-400 border border-slate-700 pointer-events-none group-focus-within:hidden"
