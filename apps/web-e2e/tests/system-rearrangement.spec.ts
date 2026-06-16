@@ -2,6 +2,15 @@ import { expect, test } from '@playwright/test';
 import { getFixtureCluster } from './fixtures/cluster';
 import type { E2EWindow } from './types';
 
+type StarMapViewportDebug = {
+	starMapDebug: {
+		viewport: {
+			toScreen: (x: number, y: number) => { x: number; y: number };
+			center: { x: number; y: number };
+		};
+	};
+};
+
 test.describe('System Rearrangement', () => {
 	test.beforeEach(async ({ page }) => {
 		// Provide deterministic cluster-data fixture
@@ -35,7 +44,7 @@ test.describe('System Rearrangement', () => {
 
 		// 1. Get initial world position from store
 		const initialWorldPos = await page.evaluate((id) => {
-			const w = window as any as E2EWindow;
+			const w = window as unknown as E2EWindow;
 			const cluster = w.getClusterSnapshot!();
 			if (!cluster || !cluster.Systems) {
 				throw new Error(`Cluster or Systems not found. Cluster: ${JSON.stringify(cluster)}`);
@@ -51,8 +60,8 @@ test.describe('System Rearrangement', () => {
 
 		// 2. Calculate screen position of the system node
 		const screenPos = await page.evaluate((id) => {
-			const w = window as any as E2EWindow;
-			const debug = (w as any).starMapDebug;
+			const w = window as unknown as E2EWindow;
+			const debug = (w as unknown as StarMapViewportDebug).starMapDebug;
 			if (!debug || !debug.viewport) throw new Error('starMapDebug.viewport not found');
 			
 			const viewport = debug.viewport;
@@ -85,7 +94,7 @@ test.describe('System Rearrangement', () => {
 
 		// 4. Verify world position in store has updated
 		const newWorldPos = await page.evaluate((id) => {
-			const w = window as any as E2EWindow;
+			const w = window as unknown as E2EWindow;
 			const cluster = w.getClusterSnapshot!();
 			const sys = cluster.Systems.find((s) => s.Id === id);
 			return { x: sys!.X, y: sys!.Y };
@@ -104,7 +113,7 @@ test.describe('System Rearrangement', () => {
 		});
 
 		const persistedWorldPos = await page.evaluate((id) => {
-			const w = window as any as E2EWindow;
+			const w = window as unknown as E2EWindow;
 			const cluster = w.getClusterSnapshot!();
 			const sys = cluster.Systems.find((s) => s.Id === id);
 			return { x: sys!.X, y: sys!.Y };
@@ -120,8 +129,8 @@ test.describe('System Rearrangement', () => {
 
 		// 1. Get initial screen position of the system
 		const screenPos = await page.evaluate((id) => {
-			const w = window as any as E2EWindow;
-			const debug = (w as any).starMapDebug;
+			const w = window as unknown as E2EWindow;
+			const debug = (w as unknown as StarMapViewportDebug).starMapDebug;
 			const viewport = debug.viewport;
 			const cluster = w.getClusterSnapshot!();
 			const sys = cluster.Systems.find((s) => s.Id === id);
@@ -138,8 +147,8 @@ test.describe('System Rearrangement', () => {
 		await page.mouse.up({ button: 'middle' });
 
 		const centerBeforeDrag = await page.evaluate(() => {
-			const w = window as any as E2EWindow;
-			const debug = (w as any).starMapDebug;
+			const w = window as unknown as E2EWindow;
+			const debug = (w as unknown as StarMapViewportDebug).starMapDebug;
 			return { x: debug.viewport.center.x, y: debug.viewport.center.y };
 		});
 
@@ -153,8 +162,8 @@ test.describe('System Rearrangement', () => {
 		await page.waitForTimeout(1000);
 
 		const centerAfterDrag = await page.evaluate(() => {
-			const w = window as any as E2EWindow;
-			const debug = (w as any).starMapDebug;
+			const w = window as unknown as E2EWindow;
+			const debug = (w as unknown as StarMapViewportDebug).starMapDebug;
 			return { x: debug.viewport.center.x, y: debug.viewport.center.y };
 		});
 

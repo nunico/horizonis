@@ -243,11 +243,6 @@ test.describe('Navigation Flow', () => {
 	test('regenerates cluster when clicking regenerate button', async ({ page }) => {
 		page.on('console', (msg) => console.log('BROWSER LOG:', msg.text()));
 
-		// Mock window.confirm to return true
-		page.on('dialog', async (dialog) => {
-			await dialog.accept();
-		});
-
 		const oldSystems = await page.evaluate(() => {
 			const w = window as unknown as E2EWindow;
 			const snap = w.getClusterSnapshot?.();
@@ -257,6 +252,11 @@ test.describe('Navigation Flow', () => {
 		const regenerateButton = page.getByLabel('Generate New Cluster');
 		await expect(regenerateButton).toBeVisible();
 		await regenerateButton.click();
+
+		// Confirm in the in-app dialog (replaces the old window.confirm).
+		const confirmButton = page.getByRole('button', { name: 'Generate', exact: true });
+		await expect(confirmButton).toBeVisible();
+		await confirmButton.click();
 
 		// Wait for the cluster to change
 		await page.waitForFunction(
