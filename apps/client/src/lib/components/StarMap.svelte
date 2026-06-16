@@ -11,6 +11,7 @@
 	import { setupPixi } from '$lib/pixi/setup';
 	import { MAP_COLORS, LAYOUT, INTERACTION } from '$lib/theme';
 	import { recordSnapshot } from '$lib/stores/history';
+	import { exceedsDragThreshold } from '$lib/utils/drag';
 
 	type WindowWithDebug = Window & {
 		starMapDebug?: {
@@ -24,6 +25,7 @@
 	let viewport = $state<Viewport>();
 	let isDragging = $state(false);
 	let draggedSystemId = $state<string | null>(null);
+	let dragStartGlobal = { x: 0, y: 0 };
 	let resizeHandler: () => void;
 	// Imperative PIXI node lookups (not used in reactive contexts); SvelteMap
 	// satisfies the prefer-svelte-reactivity rule without changing semantics.
@@ -79,7 +81,22 @@
 			setup.viewport.on('moved', updateScales);
 
 			setup.viewport.on('pointermove', (e: PIXI.FederatedPointerEvent) => {
-				if (!isDragging || !draggedSystemId || !viewport) return;
+				if (!draggedSystemId || !viewport) return;
+
+				// Promote the press into a drag only once the pointer travels past
+				// the threshold, so a plain click selects without nudging the node.
+				if (!isDragging) {
+					if (!exceedsDragThreshold(dragStartGlobal, e.global, INTERACTION.dragThresholdPx)) {
+						return;
+					}
+					isDragging = true;
+					viewport.plugins.pause('drag');
+					const draggedNode = systemNodesById.get(draggedSystemId);
+					if (draggedNode) {
+						draggedNode.cursor = 'grabbing';
+						draggedNode.alpha = 0.7;
+					}
+				}
 
 				const worldPos = viewport.toWorld(e.global);
 
@@ -104,7 +121,15 @@
 			});
 
 			const endDrag = async () => {
+				// A press that never crossed the drag threshold is just a click/select.
 				if (!isDragging || !draggedSystemId || !viewport || !$cluster) {
+					const pressedNode = draggedSystemId
+						? systemNodesById.get(draggedSystemId)
+						: undefined;
+					if (pressedNode) {
+						pressedNode.cursor = 'pointer';
+						pressedNode.alpha = 1;
+					}
 					isDragging = false;
 					draggedSystemId = null;
 					if (viewport) viewport.plugins.resume('drag');
@@ -122,6 +147,7 @@
 						await saveCluster(newCluster);
 					}
 					node.cursor = 'pointer';
+					node.alpha = 1;
 				}
 
 				isDragging = false;
@@ -425,12 +451,11 @@
 				e.stopPropagation();
 				selectedEntity.set(system);
 
-				isDragging = true;
+				// Arm a potential drag; it only begins once the pointer moves past
+				// the threshold (see the viewport pointermove handler).
 				draggedSystemId = system.Id;
-				if (viewport) {
-					viewport.plugins.pause('drag');
-				}
-				node.cursor = 'grabbing';
+				dragStartGlobal = { x: e.global.x, y: e.global.y };
+				isDragging = false;
 			});
 
 			node.on('pointerover', () => {

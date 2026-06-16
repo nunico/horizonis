@@ -67,6 +67,7 @@ vi.mock('pixi-viewport', () => ({
 		this.setZoom = vi.fn();
 		this.clampZoom = vi.fn();
 		this.clamp = vi.fn();
+		this.toWorld = vi.fn((p: { x: number; y: number }) => ({ x: p.x, y: p.y }));
 		this.plugins = {
 			pause: vi.fn(),
 			resume: vi.fn()
@@ -167,7 +168,7 @@ describe('StarMap component', () => {
 		expect(systemNode.on).toHaveBeenCalledWith('pointerdown', expect.any(Function));
 	});
 
-	it('starts dragging on pointerdown', async () => {
+	it('arms a drag on pointerdown but only starts dragging past the threshold', async () => {
 		render(StarMap);
 
 		type MockNode = Record<string, unknown> & { on: ReturnType<typeof vi.fn> };
@@ -178,16 +179,30 @@ describe('StarMap component', () => {
 			expect(systemNode).toBeDefined();
 		});
 
-		const viewportInstance = vi.mocked(Viewport).mock.results[0].value;
+		const viewportInstance = vi.mocked(Viewport).mock.results[0].value as Record<string, unknown> & {
+			on: ReturnType<typeof vi.fn>;
+			plugins: { pause: ReturnType<typeof vi.fn> };
+		};
 
-		// Get the pointerdown handler
 		const pointerdownHandler = systemNode!.on.mock.calls.find(
 			(call: unknown[]) => call[0] === 'pointerdown'
-		)![1] as (e: { stopPropagation: () => void }) => void;
+		)![1] as (e: { stopPropagation: () => void; global: { x: number; y: number } }) => void;
 
-		// Simulate pointerdown
-		pointerdownHandler({ stopPropagation: vi.fn() });
+		const pointermoveHandler = viewportInstance.on.mock.calls.find(
+			(call: unknown[]) => call[0] === 'pointermove'
+		)![1] as (e: { global: { x: number; y: number } }) => void;
 
+		// Press: selects and arms, but does not start dragging.
+		pointerdownHandler({ stopPropagation: vi.fn(), global: { x: 100, y: 100 } });
+		expect(viewportInstance.plugins.pause).not.toHaveBeenCalled();
+		expect(systemNode!.cursor).toBe('pointer');
+
+		// Tiny movement within the threshold: still not dragging.
+		pointermoveHandler({ global: { x: 101, y: 101 } });
+		expect(viewportInstance.plugins.pause).not.toHaveBeenCalled();
+
+		// Movement past the threshold: dragging begins.
+		pointermoveHandler({ global: { x: 130, y: 130 } });
 		expect(viewportInstance.plugins.pause).toHaveBeenCalledWith('drag');
 		expect(systemNode!.cursor).toBe('grabbing');
 	});
