@@ -115,14 +115,14 @@
 				title="Close (Esc)"
 				aria-label="Close"
 			>
-				<X size={18} />
+				<X size={18} aria-hidden="true" />
 			</button>
 		</div>
 
 		<div class="p-4 space-y-4 overflow-y-auto">
 			<div>
 				<label
-					class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 					for="name">Name</label
 				>
 				<input
@@ -134,7 +134,7 @@
 
 			{#if isStar(entity)}
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Spectral Class</span
 					>
 					<p
@@ -144,13 +144,13 @@
 					</p>
 				</div>
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Mass</span
 					>
 					<p class="text-slate-300 font-mono">{entity.MassSol?.toFixed(2)} M☉</p>
 				</div>
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Radius</span
 					>
 					<p class="text-slate-300 font-mono">{entity.RadiusSol?.toFixed(2)} R☉</p>
@@ -159,25 +159,25 @@
 
 			{#if isOrbitalBody(entity)}
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Type</span
 					>
 					<p class="text-slate-300">{entity.BodyType}</p>
 				</div>
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Mass</span
 					>
 					<p class="text-slate-300 font-mono">{entity.MassEarth?.toFixed(2)} M⊕</p>
 				</div>
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Radius</span
 					>
 					<p class="text-slate-300 font-mono">{entity.RadiusKm?.toFixed(0)} km</p>
 				</div>
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Gravity</span
 					>
 					{#if entity.MassEarth && entity.RadiusKm}
@@ -190,7 +190,7 @@
 
 			{#if !isSolarSystem(entity)}
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Orbit Radius</span
 					>
 					<p class="text-slate-300 font-mono">{entity.OrbitAu} AU</p>
@@ -199,15 +199,15 @@
 
 			{#if isOrbitalBody(entity) && entity.Tags && entity.Tags.length > 0}
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Tags</span
 					>
 					<div class="flex flex-wrap gap-1 mt-1">
 						{#each entity.Tags as tag (tag)}
 							<span
-								class="flex items-center gap-1 bg-sky-900/30 text-sky-400 border border-sky-800/50 px-2 py-0.5 rounded text-[10px] font-medium"
+								class="flex items-center gap-1 bg-sky-900/30 text-sky-300 border border-sky-800/50 px-2 py-0.5 rounded text-xs font-medium"
 							>
-								<Tag size={10} />
+								<Tag size={10} aria-hidden="true" />
 								{tag}
 							</span>
 						{/each}
@@ -217,7 +217,7 @@
 
 			{#if 'OrbitalRegions' in entity && entity.OrbitalRegions && entity.OrbitalRegions.length > 0}
 				<div>
-					<span class="block text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1"
+					<span class="block text-xs font-bold text-slate-400 uppercase tracking-tight mb-1"
 						>Orbital Regions</span
 					>
 					<ul class="text-slate-300 text-xs space-y-1">
@@ -238,7 +238,7 @@
 					class="w-full flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-100 font-bold py-2 rounded-lg transition-colors"
 					title="Open this system"
 				>
-					<ArrowRight size={16} /> Open System
+					<ArrowRight size={16} aria-hidden="true" /> Open System
 				</button>
 			{/if}
 			<button
@@ -246,7 +246,7 @@
 				class="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 rounded-lg transition-colors shadow-lg shadow-sky-900/20"
 				title="Save changes (Enter)"
 			>
-				<Save size={16} /> Save Changes
+				<Save size={16} aria-hidden="true" /> Save Changes
 			</button>
 		</div>
 	</div>

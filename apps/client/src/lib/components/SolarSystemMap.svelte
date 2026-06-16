@@ -733,7 +733,7 @@
 	{#if systemData}
 		<div class="absolute bottom-4 left-4 pointer-events-none">
 			<h1 class="text-3xl font-bold text-slate-100 tracking-tight">{systemData.Name} System</h1>
-			<p class="text-slate-500 uppercase text-xs tracking-widest font-semibold mt-1">
+			<p class="text-slate-400 uppercase text-xs tracking-widest font-semibold mt-1">
 				Solar Scale: {scaleConfig.mode}
 			</p>
 		</div>

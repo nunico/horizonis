@@ -62,7 +62,7 @@
 					class="px-4 py-2 rounded-lg text-sm font-bold bg-sky-600 hover:bg-sky-500 text-white transition-colors disabled:opacity-60 flex items-center gap-2"
 				>
 					{#if busy}
-						<Loader2 size={16} class="animate-spin" />
+						<Loader2 size={16} class="animate-spin" aria-hidden="true" />
 					{/if}
 					{confirmLabel}
 				</button>
