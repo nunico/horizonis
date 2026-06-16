@@ -9,6 +9,8 @@
 	import HelpOverlay from '$lib/components/HelpOverlay.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
+	import SystemList from '$lib/components/SystemList.svelte';
+	import Announcer from '$lib/components/Announcer.svelte';
 
 	let error = $state<string | null>(null);
 
@@ -35,12 +37,15 @@
 			<StarMap />
 			{#if ($cluster.Systems?.length ?? 0) === 0}
 				<EmptyState />
+			{:else}
+				<SystemList />
 			{/if}
 		{:else}
 			<SolarSystemMap />
 		{/if}
 		<Inspector />
 		<HelpOverlay />
+		<Announcer />
 	{:else if error}
 		<div
 			class="flex flex-col items-center justify-center w-full h-full bg-slate-950 p-8 text-center"
