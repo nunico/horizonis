@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Loader2 } from 'lucide-svelte';
+	import { focusTrap } from '$lib/actions/focusTrap';
 
 	interface Props {
 		open: boolean;
@@ -33,6 +34,7 @@
 
 {#if open}
 	<div
+		use:focusTrap
 		class="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
 		role="dialog"
 		aria-modal="true"

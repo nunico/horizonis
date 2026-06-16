@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { X } from 'lucide-svelte';
 	import { helpOpen } from '$lib/stores/ui';
+	import { focusTrap } from '$lib/actions/focusTrap';
 
 	const shortcuts = [
 		{ key: '?', description: 'Toggle this help overlay' },
@@ -29,7 +30,10 @@
 		}}
 	>
 		<div
+			use:focusTrap
 			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
 			aria-labelledby="help-title"
 			class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden"
 		>

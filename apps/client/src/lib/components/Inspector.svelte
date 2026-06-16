@@ -2,6 +2,7 @@
 	import { selectedEntity, activeSystemId, viewMode } from '$lib/stores/appState';
 	import { cluster, saveCluster } from '$lib/stores/clusterData';
 	import { toast } from '$lib/stores/toast';
+	import { focusTrap } from '$lib/actions/focusTrap';
 	import { X, Save, Tag, ArrowRight } from 'lucide-svelte';
 	import type { SolarSystem, Star, OrbitalBody, StarCluster } from '$lib/types/stellar';
 
@@ -12,15 +13,6 @@
 
 	$effect(() => {
 		entity = $selectedEntity ? { ...$selectedEntity } : null;
-	});
-	let dialogEl = $state<HTMLDivElement>();
-
-	// Move focus to the panel (not the Name field) so keyboard shortcuts work
-	// and selecting an entity to read it doesn't drop a text cursor in an input.
-	$effect(() => {
-		if (entity && dialogEl) {
-			dialogEl.focus();
-		}
 	});
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -106,7 +98,7 @@
 
 {#if entity}
 	<div
-		bind:this={dialogEl}
+		use:focusTrap
 		onkeydown={handleKeydown}
 		role="dialog"
 		tabindex="-1"
