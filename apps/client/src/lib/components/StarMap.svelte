@@ -10,6 +10,7 @@
 	import { getUniquePortals } from '$lib/utils/stellar';
 	import { setupPixi } from '$lib/pixi/setup';
 	import { MAP_COLORS, LAYOUT, INTERACTION } from '$lib/theme';
+	import { recordSnapshot } from '$lib/stores/history';
 	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
 
 	type WindowWithDebug = Window & {
@@ -117,7 +118,8 @@
 				if (node) {
 					const newCluster = structuredClone($cluster);
 					const system = newCluster.Systems.find((s) => s.Id === draggedSystemId);
-					if (system) {
+					if (system && (system.X !== node.x || system.Y !== node.y)) {
+						recordSnapshot($cluster);
 						system.X = node.x;
 						system.Y = node.y;
 						await saveCluster(newCluster);
