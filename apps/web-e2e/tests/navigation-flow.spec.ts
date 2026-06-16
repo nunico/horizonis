@@ -19,7 +19,7 @@ test.describe('Navigation Flow', () => {
 	});
 
 	test('searches for a system and navigates to it', async ({ page }) => {
-		const nav = page.locator('nav');
+		const nav = page.locator('nav[aria-label="Primary"]');
 		await expect(nav).toBeVisible();
 
 		// Skip if there are no systems available

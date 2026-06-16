@@ -9,7 +9,7 @@ test.describe('Viewport Offset Regression', () => {
   });
 
   test('navigation bar remains at top-0 when inspector is open', async ({ page }) => {
-    const nav = page.locator('nav');
+    const nav = page.locator('nav[aria-label="Primary"]');
     const inspector = page.locator('[role="dialog"]');
 
     // 1. Initial state: Nav is at top
