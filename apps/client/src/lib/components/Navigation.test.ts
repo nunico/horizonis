@@ -167,6 +167,50 @@ describe('Navigation component', () => {
 		vi.useRealTimers();
 	});
 
+	it('navigates results with arrow keys and selects with Enter', async () => {
+		cluster.set({
+			Name: 'Multi',
+			Systems: [
+				{
+					Id: 'a',
+					Name: 'Sol One',
+					X: 0,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				},
+				{
+					Id: 'b',
+					Name: 'Sol Two',
+					X: 0,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+		vi.useFakeTimers();
+		render(Navigation);
+
+		const input = screen.getByPlaceholderText(/search systems/i);
+		await fireEvent.focus(input);
+		await fireEvent.input(input, { target: { value: 'Sol' } });
+		vi.advanceTimersByTime(200);
+		await tick();
+
+		// Default highlight is the first result; ArrowDown moves to the second.
+		await fireEvent.keyDown(input, { key: 'ArrowDown' });
+		await fireEvent.keyDown(input, { key: 'Enter' });
+
+		expect(get(activeSystemId)).toBe('b');
+		expect(get(viewMode)).toBe('system');
+		vi.useRealTimers();
+	});
+
 	it('focuses search input when search focus is requested', async () => {
 		render(Navigation);
 		const input = screen.getByPlaceholderText(/search systems/i);

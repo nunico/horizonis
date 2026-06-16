@@ -7,6 +7,7 @@
 	import { helpOpen, searchResultsOpen, searchFocusSignal } from '$lib/stores/ui';
 	import { toast } from '$lib/stores/toast';
 	import { recordSnapshot } from '$lib/stores/history';
+	import { nextIndex } from '$lib/utils/listNav';
 	import { get } from 'svelte/store';
 	import ConfirmDialog from './ConfirmDialog.svelte';
 
@@ -19,6 +20,7 @@
 	let searchQuery = $state('');
 	let debouncedQuery = $state('');
 	let searchInput = $state<HTMLInputElement>();
+	let activeIndex = $state(0);
 
 	// Focus the input whenever something (e.g. the "/" shortcut) requests it.
 	let lastFocusSignal = 0;
@@ -33,6 +35,7 @@
 	$effect(() => {
 		const timeout = setTimeout(() => {
 			debouncedQuery = searchQuery;
+			activeIndex = 0;
 		}, INTERACTION.searchDebounceMs);
 		return () => clearTimeout(timeout);
 	});
@@ -104,6 +107,18 @@
 		selectedEntity.set(result.entity);
 		searchQuery = '';
 		searchResultsOpen.set(false);
+	}
+
+	function handleSearchKeydown(e: KeyboardEvent) {
+		if (!searchResults.length) return;
+		if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+			e.preventDefault();
+			activeIndex = nextIndex(activeIndex, searchResults.length, e.key);
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			const result = searchResults[Math.min(activeIndex, searchResults.length - 1)];
+			if (result) selectResult(result);
+		}
 	}
 
 	function goBack() {
@@ -189,8 +204,12 @@
 				bind:this={searchInput}
 				bind:value={searchQuery}
 				onfocus={() => searchResultsOpen.set(true)}
+				onkeydown={handleSearchKeydown}
 				type="text"
 				placeholder="Search systems..."
+				role="combobox"
+				aria-expanded={$searchResultsOpen && searchResults.length > 0}
+				aria-controls="search-results"
 				class="w-64 bg-slate-950/50 border border-slate-800 rounded-md py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all placeholder:text-slate-600"
 			/>
 			<div
@@ -202,12 +221,20 @@
 
 		{#if $searchResultsOpen && searchResults.length > 0}
 			<div
+				id="search-results"
+				role="listbox"
 				class="absolute top-full mt-2 left-0 w-80 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl overflow-hidden z-[60]"
 			>
-				{#each searchResults as result (result.id)}
+				{#each searchResults as result, i (result.id)}
 					<button
 						onclick={() => selectResult(result)}
-						class="w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-800 transition-colors text-left border-b border-slate-800/50 last:border-0"
+						onmousemove={() => (activeIndex = i)}
+						role="option"
+						aria-selected={i === activeIndex}
+						class="w-full px-4 py-2.5 flex items-center justify-between transition-colors text-left border-b border-slate-800/50 last:border-0 {i ===
+						activeIndex
+							? 'bg-slate-800'
+							: 'hover:bg-slate-800'}"
 					>
 						<div>
 							<div class="text-sm font-medium text-slate-200">{result.name}</div>
