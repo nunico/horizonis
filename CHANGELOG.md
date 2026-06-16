@@ -1,5 +1,19 @@
 # Changelog
 
+###### [2026-06-16] - UX Phase 1 — feedback, forgiveness, and empty states
+
+- **Summary**: Add user feedback (toasts), in-app regenerate confirmation, undo, and an empty-state for clusters with no systems.
+- **Changes**:
+  - saveCluster returns a success boolean and shows an error toast on failure; generateNewCluster shows an error toast on failure.
+  - Inspector shows a 'Changes saved' toast only when a save persists.
+  - Added reusable ConfirmDialog component; Navigation replaces window.confirm with an in-app dialog (spinner, disabled actions during generation, success toast).
+  - Added snapshot-based undo (Ctrl/Cmd+Z): history store, resolveShortcut 'undo' action, global dispatch with 'Undone'/'Nothing to undo' toast.
+  - Record undo snapshots before regenerate and before a Star Map system move; skip save when a node is clicked without moving.
+  - Added EmptyState overlay over the Star Map when the cluster has no systems, with a one-click generate action.
+  - Added Vitest tests for ConfirmDialog, history store, EmptyState, and the new toast/undo paths.
+- **Files Affected**: apps/client/src/lib/stores/clusterData.ts, apps/client/src/lib/components/Inspector.svelte, apps/client/src/lib/components/ConfirmDialog.svelte, apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/stores/history.ts, apps/client/src/lib/actions/shortcuts.ts, apps/client/src/routes/+layout.svelte, apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/EmptyState.svelte, apps/client/src/routes/+page.svelte
+- **Context**: Undo is single-stack and snapshot-based (deep-cloned, capped at 20). The empty-state generate skips confirmation since there is no data to replace.
+
 ###### [2026-06-16] - UX Foundations: design tokens, toasts, unified shortcuts, and tooling fix
 
 - **Summary**: Establish shared UX foundations (Phase 0) and fix pnpm so dev scripts run non-interactively.
