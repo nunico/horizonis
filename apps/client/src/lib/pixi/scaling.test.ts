@@ -1,5 +1,31 @@
 import { describe, it, expect } from 'vitest';
-import { auToPixels, getVisualRadius, getClampedScale, type ScaleConfig } from './scaling';
+import {
+	auToPixels,
+	pixelsToAu,
+	getVisualRadius,
+	getClampedScale,
+	type ScaleConfig
+} from './scaling';
+
+describe('pixelsToAu', () => {
+	it('round-trips with auToPixels in linear mode', () => {
+		const config: ScaleConfig = { auToPixels: 200, mode: 'linear' };
+		for (const au of [0.1, 1, 5, 30, 100]) {
+			expect(pixelsToAu(auToPixels(au, config), config)).toBeCloseTo(au, 6);
+		}
+	});
+
+	it('round-trips with auToPixels in log mode', () => {
+		const config: ScaleConfig = { auToPixels: 200, mode: 'log' };
+		for (const au of [0.1, 1, 5, 30, 100]) {
+			expect(pixelsToAu(auToPixels(au, config), config)).toBeCloseTo(au, 6);
+		}
+	});
+
+	it('returns 0 for a non-positive scale factor', () => {
+		expect(pixelsToAu(500, { auToPixels: 0, mode: 'linear' })).toBe(0);
+	});
+});
 
 describe('auToPixels', () => {
 	it('calculates linear scale correctly', () => {

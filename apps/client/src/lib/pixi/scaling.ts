@@ -16,6 +16,20 @@ export function auToPixels(au: number, config: ScaleConfig): number {
 	}
 }
 
+/**
+ * Inverse of {@link auToPixels}: convert a world-pixel distance back to AU for
+ * the given scale config. Used to preserve the camera framing (in AU) when the
+ * scale mode changes and the pixel mapping shifts underneath it.
+ */
+export function pixelsToAu(px: number, config: ScaleConfig): number {
+	if (config.auToPixels <= 0) return 0;
+	if (config.mode === 'linear') {
+		return px / config.auToPixels;
+	}
+	// Invert px = log10(au * 100 + 1) * k / 2
+	return (Math.pow(10, (2 * px) / config.auToPixels) - 1) / 100;
+}
+
 export function getVisualRadius(radiusKm: number): number {
 	// Logarithmic scaling ensures small moons are visible and large stars
 	// don't dominate the screen too much.

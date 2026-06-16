@@ -7,6 +7,7 @@
 	import type { OrbitalBody, Star } from '$lib/types/stellar';
 	import {
 		auToPixels,
+		pixelsToAu,
 		getVisualRadius,
 		getClampedScale,
 		type ScaleConfig
@@ -381,7 +382,13 @@
 		viewport.addChild(r);
 	}
 
-	function renderSystem() {
+	interface PreserveCamera {
+		centerAu: number;
+		angle: number;
+		zoomRatio: number;
+	}
+
+	function renderSystem(preserve: PreserveCamera | null = null) {
 		const v = viewport;
 		if (!systemData || !v) return;
 
@@ -426,8 +433,19 @@
 			updateScales();
 			updateZoomLimits();
 
-			v2.setZoom(lastMinScale, true);
-			v2.moveCenter(0, 0 - 28 / lastMinScale);
+			if (preserve) {
+				// Re-frame the same AU position/zoom after the pixel mapping changed.
+				const newScale = Math.min(
+					Math.max(lastMinScale * preserve.zoomRatio, lastMinScale),
+					lastMaxScale
+				);
+				const r = auToPixels(preserve.centerAu, scaleConfig);
+				v2.setZoom(newScale, true);
+				v2.moveCenter(Math.cos(preserve.angle) * r, Math.sin(preserve.angle) * r);
+			} else {
+				v2.setZoom(lastMinScale, true);
+				v2.moveCenter(0, 0 - 28 / lastMinScale);
+			}
 
 			// Signal readiness as soon as initial layout is applied (microtask)
 			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
@@ -657,8 +675,23 @@
 	}
 
 	function setMode(mode: 'linear' | 'log') {
+		if (scaleConfig.mode === mode) return;
+
+		// Capture the current framing in AU so the view stays put when the
+		// linear/log pixel mapping changes underneath it.
+		let preserve: PreserveCamera | null = null;
+		if (viewport && lastMinScale > 0) {
+			const cx = viewport.center.x;
+			const cy = viewport.center.y;
+			preserve = {
+				centerAu: pixelsToAu(Math.hypot(cx, cy), scaleConfig),
+				angle: Math.atan2(cy, cx),
+				zoomRatio: viewport.scale.x / lastMinScale
+			};
+		}
+
 		scaleConfig.mode = mode;
-		renderSystem();
+		renderSystem(preserve);
 	}
 
 	$effect(() => {
