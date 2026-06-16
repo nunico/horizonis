@@ -13,11 +13,13 @@
 	$effect(() => {
 		entity = $selectedEntity ? { ...$selectedEntity } : null;
 	});
-	let nameInput = $state<HTMLInputElement>();
+	let dialogEl = $state<HTMLDivElement>();
 
+	// Move focus to the panel (not the Name field) so keyboard shortcuts work
+	// and selecting an entity to read it doesn't drop a text cursor in an input.
 	$effect(() => {
-		if (entity && nameInput) {
-			nameInput.focus();
+		if (entity && dialogEl) {
+			dialogEl.focus();
 		}
 	});
 
@@ -97,6 +99,7 @@
 
 {#if entity}
 	<div
+		bind:this={dialogEl}
 		onkeydown={handleKeydown}
 		role="dialog"
 		tabindex="-1"
@@ -125,7 +128,6 @@
 				>
 				<input
 					id="name"
-					bind:this={nameInput}
 					bind:value={entity.Name}
 					class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100 focus:outline-none focus:border-sky-500 transition-colors"
 				/>

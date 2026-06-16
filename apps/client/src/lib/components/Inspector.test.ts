@@ -92,11 +92,13 @@ describe('Inspector component', () => {
 		expect(get(selectedEntity)).toBeNull();
 	});
 
-	it('focuses the name input on mount', async () => {
+	it('moves focus to the panel (not the name input) on open', async () => {
 		selectedEntity.set(get(cluster)!.Systems[0]);
 		render(Inspector);
 
 		const input = screen.getByDisplayValue('Old Name');
-		expect(document.activeElement).toBe(input);
+		const dialog = screen.getByRole('dialog');
+		expect(document.activeElement).toBe(dialog);
+		expect(document.activeElement).not.toBe(input);
 	});
 });
