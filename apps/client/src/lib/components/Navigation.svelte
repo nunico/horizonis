@@ -5,6 +5,11 @@
 	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle, RotateCw } from 'lucide-svelte';
 	import { INTERACTION } from '$lib/theme';
 	import { helpOpen, searchResultsOpen, searchFocusSignal } from '$lib/stores/ui';
+	import { toast } from '$lib/stores/toast';
+	import ConfirmDialog from './ConfirmDialog.svelte';
+
+	let showRegenerateConfirm = $state(false);
+	let regenerating = $state(false);
 
 	let system = $derived($cluster?.Systems?.find((s) => s.Id === $activeSystemId));
 	let entity = $derived($selectedEntity);
@@ -114,14 +119,17 @@
 		viewMode.set('cluster');
 	}
 
-	async function handleRegenerate() {
-		if (
-			confirm(
-				'Are you sure you want to generate a new cluster? This will replace your current data.'
-			)
-		) {
+	async function confirmRegenerate() {
+		regenerating = true;
+		try {
 			await generateNewCluster();
 			goToCluster();
+			toast.success('New cluster generated');
+		} catch {
+			// generateNewCluster already surfaces an error toast.
+		} finally {
+			regenerating = false;
+			showRegenerateConfirm = false;
 		}
 	}
 </script>
@@ -218,7 +226,7 @@
 		{/if}
 
 		<button
-			onclick={handleRegenerate}
+			onclick={() => (showRegenerateConfirm = true)}
 			class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
 			title="Generate New Cluster"
 			aria-label="Generate New Cluster"
@@ -237,3 +245,13 @@
 		</button>
 	</div>
 </nav>
+
+<ConfirmDialog
+	open={showRegenerateConfirm}
+	title="Generate a new cluster?"
+	message="This replaces your current cluster. You can undo it right after."
+	confirmLabel="Generate"
+	busy={regenerating}
+	onconfirm={confirmRegenerate}
+	oncancel={() => (showRegenerateConfirm = false)}
+/>
