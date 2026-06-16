@@ -6,6 +6,8 @@
 	import { INTERACTION } from '$lib/theme';
 	import { helpOpen, searchResultsOpen, searchFocusSignal } from '$lib/stores/ui';
 	import { toast } from '$lib/stores/toast';
+	import { recordSnapshot } from '$lib/stores/history';
+	import { get } from 'svelte/store';
 	import ConfirmDialog from './ConfirmDialog.svelte';
 
 	let showRegenerateConfirm = $state(false);
@@ -121,10 +123,12 @@
 
 	async function confirmRegenerate() {
 		regenerating = true;
+		const previous = get(cluster);
 		try {
 			await generateNewCluster();
+			if (previous) recordSnapshot(previous);
 			goToCluster();
-			toast.success('New cluster generated');
+			toast.success('New cluster generated — press Ctrl/Cmd+Z to undo');
 		} catch {
 			// generateNewCluster already surfaces an error toast.
 		} finally {
