@@ -1,5 +1,18 @@
 # Changelog
 
+###### [2026-06-16] - UX Foundations: design tokens, toasts, unified shortcuts, and tooling fix
+
+- **Summary**: Establish shared UX foundations (Phase 0) and fix pnpm so dev scripts run non-interactively.
+- **Changes**:
+  - Added $lib/theme.ts design tokens (MAP_COLORS, LAYOUT, INTERACTION, getSpectralColor/getBodyTypeColor); replaced color literals and magic numbers in canvas components.
+  - Added $lib/stores/toast.ts and Toast.svelte (aria-live), mounted in +page.svelte.
+  - Added pure resolveShortcut() reducer and $lib/stores/ui.ts; consolidated keyboard handlers into one dispatcher in +layout.svelte; documented double-click-to-open in HelpOverlay.
+  - Set verifyDepsBeforeRun:false and confirmModulesPurge:false in pnpm-workspace.yaml; replaced build-approval placeholders with explicit booleans.
+  - Added .claude/agents/changelog-writer.md (Claude Code-native).
+  - Added Vitest tests for theme, toast, Toast, and shortcut reducer; updated Navigation and HelpOverlay tests.
+- **Files Affected**: apps/client/src/lib/theme.ts, apps/client/src/lib/stores/toast.ts, apps/client/src/lib/components/Toast.svelte, apps/client/src/lib/actions/shortcuts.ts, apps/client/src/lib/stores/ui.ts, apps/client/src/routes/+layout.svelte, apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/components/HelpOverlay.svelte, pnpm-workspace.yaml, .claude/agents/changelog-writer.md
+- **Context**: Phase 0 foundations that later UX phases build on; the pnpm change is required for non-interactive script runs.
+
 ###### [2026-05-22] - System Rearrangement in Star Map
 
 - **Summary**: Allow users to rearrange solar systems within a cluster by dragging them on the Star Map.
