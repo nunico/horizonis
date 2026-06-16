@@ -7,6 +7,7 @@ import {
 	generateNewCluster,
 	_resetStorage
 } from './clusterData';
+import { toasts, clearToasts } from './toast';
 
 // Mock procedural-gen
 vi.mock('procedural-gen', () => ({
@@ -23,6 +24,7 @@ describe('clusterData store', () => {
 	beforeEach(() => {
 		cluster.set(null);
 		_resetStorage();
+		clearToasts();
 		vi.clearAllMocks();
 		// @ts-expect-error - Mocking storage
 		delete window.__TAURI_INTERNALS__;
@@ -95,6 +97,33 @@ describe('clusterData store', () => {
 
 		expect(consoleSpy).toHaveBeenCalledWith('Failed to save cluster:', expect.any(Error));
 		consoleSpy.mockRestore();
+	});
+
+	it('shows an error toast when saveCluster fails', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+			throw new Error('Disk full');
+		});
+
+		await saveCluster({ Name: 'Fail Cluster', Systems: [] });
+
+		const list = get(toasts);
+		expect(list).toHaveLength(1);
+		expect(list[0]).toMatchObject({ type: 'error' });
+	});
+
+	it('shows an error toast when generateNewCluster fails', async () => {
+		const { generate_cluster } = await import('procedural-gen');
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.mocked(generate_cluster).mockImplementationOnce(() => {
+			throw new Error('WASM boom');
+		});
+
+		await expect(generateNewCluster()).rejects.toThrow('WASM boom');
+
+		const list = get(toasts);
+		expect(list).toHaveLength(1);
+		expect(list[0]).toMatchObject({ type: 'error' });
 	});
 
 	it('manually generates a new cluster', async () => {
