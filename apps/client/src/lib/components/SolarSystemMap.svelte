@@ -13,6 +13,7 @@
 	} from '$lib/pixi/scaling';
 	import { setupPixi } from '$lib/pixi/setup';
 	import { getEntityMaxSatRadius } from '$lib/utils/stellar';
+	import { MAP_COLORS, getSpectralColor, getBodyTypeColor, LAYOUT } from '$lib/theme';
 	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
 
 	type WindowWithDebug = Window & {
@@ -224,7 +225,11 @@
 		for (const orbit of orbitNodes) {
 			const isHovered = hoveredEntityId === orbit.entityId;
 			const isSelected = selectedId === orbit.entityId;
-			const color = isSelected ? 0x38bdf8 : isHovered ? 0xf1f5f9 : 0x334155;
+			const color = isSelected
+				? MAP_COLORS.accent
+				: isHovered
+					? MAP_COLORS.orbitHover
+					: MAP_COLORS.linkIdle;
 			const alpha = isSelected || isHovered ? 0.8 : 0.4;
 			const width = (isSelected || isHovered ? 2 : 1) * s;
 
@@ -270,7 +275,7 @@
 			const s = 1 / viewport.scale.x;
 			selectionGraphics
 				.circle(worldX, worldY, radius + 8 * s)
-				.stroke({ width: 2 * s, color: 0x38bdf8, alpha: 0.8 });
+				.stroke({ width: 2 * s, color: MAP_COLORS.accent, alpha: 0.8 });
 		}
 	}
 
@@ -342,7 +347,7 @@
 		const sh = viewport.screenHeight;
 		const scale = viewport.scale.x;
 
-		const visibleHeight = sh - 56;
+		const visibleHeight = sh - LAYOUT.navbarHeightPx;
 		const minScale = (0.8 * (Math.min(sw, visibleHeight) / 2)) / Math.max(maxSystemRadius, 100);
 
 		let maxScale = 50;
@@ -363,7 +368,7 @@
 		viewport.clamp({
 			left: Math.min(0 - hwx, -maxSystemRadius),
 			right: Math.max(0 + hwx, maxSystemRadius),
-			top: Math.min(0 - offY - hwy, -maxSystemRadius - 56 / scale),
+			top: Math.min(0 - offY - hwy, -maxSystemRadius - LAYOUT.navbarHeightPx / scale),
 			bottom: Math.max(0 - offY + hwy, maxSystemRadius)
 		});
 	}
@@ -376,7 +381,7 @@
 
 		if (outer > maxSystemRadius) maxSystemRadius = outer;
 
-		r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
+		r.circle(0, 0, outer).stroke({ width: outer - inner, color: MAP_COLORS.region, alpha: 0.2 });
 		viewport.addChild(r);
 	}
 
@@ -488,11 +493,7 @@
 		starCenter.addChild(starVisual);
 
 		const g = new PIXI.Graphics();
-		const color = star.SpectralClass.startsWith('G')
-			? 0xfde047
-			: star.SpectralClass.startsWith('M')
-				? 0xf97316
-				: 0x38bdf8;
+		const color = getSpectralColor(star.SpectralClass);
 		const baseRadius = getVisualRadius(star.RadiusSol * 695700);
 		g.circle(0, 0, baseRadius).fill(color);
 		starVisual.addChild(g);
@@ -512,7 +513,7 @@
 			hoverGraphics
 				.clear()
 				.circle(worldX, worldY, baseRadius * starVisual.scale.x + 4 * s)
-				.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+				.stroke({ width: 2 * s, color: MAP_COLORS.hover, alpha: 0.4 });
 		});
 
 		starVisual.on('pointerout', () => {
@@ -523,7 +524,7 @@
 
 		const label = new PIXI.Text({
 			text: star.Name,
-			style: { fontFamily: 'sans-serif', fontSize: 14, fill: 0xf1f5f9 }
+			style: { fontFamily: 'sans-serif', fontSize: 14, fill: MAP_COLORS.labelPrimary }
 		});
 		label.anchor.set(0.5, 0);
 		label.y = baseRadius + 5;
@@ -547,7 +548,7 @@
 			const r = new PIXI.Graphics();
 			const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
 			const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
-			r.circle(0, 0, outer).stroke({ width: outer - inner, color: 0x475569, alpha: 0.2 });
+			r.circle(0, 0, outer).stroke({ width: outer - inner, color: MAP_COLORS.region, alpha: 0.2 });
 			starCenter.addChild(r);
 		}
 	}
@@ -606,15 +607,8 @@
 		bodyCenter.addChild(bodyVisual);
 
 		const g = new PIXI.Graphics();
-		const colors: Record<string, number> = {
-			Planet: 0x60a5fa,
-			Moon: 0x94a3b8,
-			SpaceStation: 0xec4899,
-			DwarfPlanet: 0xa78bfa,
-			Comet: 0x2dd4bf
-		};
 		const baseRadius = getVisualRadius(body.RadiusKm);
-		g.circle(0, 0, baseRadius).fill(colors[body.BodyType] || 0xffffff);
+		g.circle(0, 0, baseRadius).fill(getBodyTypeColor(body.BodyType));
 		bodyVisual.addChild(g);
 
 		bodyVisual.eventMode = 'static';
@@ -632,7 +626,7 @@
 			hoverGraphics
 				.clear()
 				.circle(worldX, worldY, baseRadius * bodyVisual.scale.x + 4 * s)
-				.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+				.stroke({ width: 2 * s, color: MAP_COLORS.hover, alpha: 0.4 });
 		});
 
 		bodyVisual.on('pointerout', () => {
@@ -643,7 +637,7 @@
 
 		const label = new PIXI.Text({
 			text: body.Name,
-			style: { fontFamily: 'sans-serif', fontSize: 12, fill: 0x94a3b8 }
+			style: { fontFamily: 'sans-serif', fontSize: 12, fill: MAP_COLORS.labelSecondary }
 		});
 		label.anchor.set(0.5, 0);
 		label.y = baseRadius + 4;

@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { Viewport } from 'pixi-viewport';
+import { MAP_COLORS } from '$lib/theme';
 
 export interface PixiSetupOptions {
 	container: HTMLElement;
@@ -15,7 +16,7 @@ export async function setupPixi(options: PixiSetupOptions, onResize?: () => void
 		await app.init({
 			resizeTo: options.container,
 			antialias: true,
-			backgroundColor: options.backgroundColor ?? 0x020617
+			backgroundColor: options.backgroundColor ?? MAP_COLORS.background
 		});
 	} catch (e) {
 		console.error('[PixiSetup] app.init failed:', e);

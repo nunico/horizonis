@@ -9,6 +9,7 @@
 	import { SpatialGrid } from '$lib/utils/spatial';
 	import { getUniquePortals } from '$lib/utils/stellar';
 	import { setupPixi } from '$lib/pixi/setup';
+	import { MAP_COLORS, LAYOUT, INTERACTION } from '$lib/theme';
 	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
 
 	type WindowWithDebug = Window & {
@@ -50,8 +51,7 @@
 	let systemsById = $derived(new SvelteMap($cluster?.Systems?.map((s) => [s.Id, s]) || []));
 
 	// Optimization: Spatial Grid for O(log n) lookups
-	const GRID_SIZE = 200;
-	let spatialGrid = $derived(new SpatialGrid($cluster?.Systems || [], GRID_SIZE));
+	let spatialGrid = $derived(new SpatialGrid($cluster?.Systems || [], LAYOUT.spatialGridSize));
 
 	onMount(async () => {
 		if (!container) return;
@@ -184,7 +184,7 @@
 				[portal.fromPos, portal.toPos].forEach((pos) => {
 					hoverGraphics
 						.circle(pos.x, pos.y, 14 * s)
-						.stroke({ width: 2 * s, color: 0xffffff, alpha: 0.6 });
+						.stroke({ width: 2 * s, color: MAP_COLORS.hover, alpha: 0.6 });
 				});
 			}
 		}
@@ -201,7 +201,7 @@
 						y = node.y;
 					}
 				}
-				hoverGraphics.circle(x, y, 14 * s).stroke({ width: 2 * s, color: 0xffffff, alpha: 0.4 });
+				hoverGraphics.circle(x, y, 14 * s).stroke({ width: 2 * s, color: MAP_COLORS.hover, alpha: 0.4 });
 			}
 		}
 	}
@@ -225,7 +225,7 @@
 		}
 
 		const s = 1 / viewport.scale.x;
-		selectionGraphics.circle(x, y, 18 * s).stroke({ width: 2 * s, color: 0x38bdf8, alpha: 0.8 });
+		selectionGraphics.circle(x, y, 18 * s).stroke({ width: 2 * s, color: MAP_COLORS.accent, alpha: 0.8 });
 	}
 
 	function updateFocus(currentScale: number) {
@@ -268,7 +268,7 @@
 		const sh = viewport.screenHeight;
 		const scale = viewport.scale.x;
 
-		const visibleHeight = sh - 56;
+		const visibleHeight = sh - LAYOUT.navbarHeightPx;
 		const minScale = (0.8 * (Math.min(sw, visibleHeight) / 2)) / Math.max(maxClusterRadius, 100);
 
 		let maxScale = 10;
@@ -289,7 +289,10 @@
 		viewport.clamp({
 			left: Math.min(clusterCenter.x - hwx, clusterCenter.x - maxClusterRadius),
 			right: Math.max(clusterCenter.x + hwx, clusterCenter.x + maxClusterRadius),
-			top: Math.min(clusterCenter.y - offY - hwy, clusterCenter.y - maxClusterRadius - 56 / scale),
+			top: Math.min(
+				clusterCenter.y - offY - hwy,
+				clusterCenter.y - maxClusterRadius - LAYOUT.navbarHeightPx / scale
+			),
 			bottom: Math.max(clusterCenter.y - offY + hwy, clusterCenter.y + maxClusterRadius)
 		});
 	}
@@ -310,7 +313,7 @@
 
 			const isHighlighted = isHovered || isConnectedToHoveredSystem || isConnectedToSelectedSystem;
 
-			const color = isHighlighted ? 0x38bdf8 : 0x334155;
+			const color = isHighlighted ? MAP_COLORS.accent : MAP_COLORS.linkIdle;
 			const alpha = isHighlighted ? 0.8 : 0.5;
 			const width = (isHighlighted ? 3 : 2) * s;
 
@@ -412,7 +415,7 @@
 		for (const system of $cluster?.Systems || []) {
 			const node = new PIXI.Graphics() as PIXI.Graphics & { systemId: string };
 			node.systemId = system.Id;
-			node.circle(0, 0, 10).fill(0x38bdf8);
+			node.circle(0, 0, 10).fill(MAP_COLORS.systemFill);
 
 			node.x = system.X;
 			node.y = system.Y;
@@ -445,7 +448,7 @@
 			node.on('pointertap', (e: PIXI.FederatedPointerEvent) => {
 				e.stopPropagation();
 				const now = Date.now();
-				if (now - lastClickTime < 350) {
+				if (now - lastClickTime < INTERACTION.doubleClickMs) {
 					activeSystemId.set(system.Id);
 					viewMode.set('system');
 				}
@@ -457,7 +460,7 @@
 				style: {
 					fontFamily: 'sans-serif',
 					fontSize: 14,
-					fill: 0xf1f5f9
+					fill: MAP_COLORS.labelPrimary
 				}
 			});
 			label.anchor.set(0.5, 0);
