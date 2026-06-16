@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { selectedEntity } from '$lib/stores/appState';
+	import { selectedEntity, activeSystemId, viewMode } from '$lib/stores/appState';
 	import { cluster, saveCluster } from '$lib/stores/clusterData';
 	import { toast } from '$lib/stores/toast';
-	import { X, Save, Tag } from 'lucide-svelte';
+	import { X, Save, Tag, ArrowRight } from 'lucide-svelte';
 	import type { SolarSystem, Star, OrbitalBody, StarCluster } from '$lib/types/stellar';
 
 	type Entity = SolarSystem | Star | OrbitalBody;
@@ -41,6 +41,13 @@
 
 	function isSolarSystem(e: Entity): e is SolarSystem {
 		return !isStar(e) && !isOrbitalBody(e);
+	}
+
+	function openSystem() {
+		if (!entity || !isSolarSystem(entity)) return;
+		activeSystemId.set(entity.Id);
+		viewMode.set('system');
+		selectedEntity.set(null);
 	}
 
 	async function handleSave() {
@@ -232,7 +239,16 @@
 			{/if}
 		</div>
 
-		<div class="p-4 border-t border-slate-700 bg-slate-800/30">
+		<div class="p-4 border-t border-slate-700 bg-slate-800/30 space-y-2">
+			{#if isSolarSystem(entity)}
+				<button
+					onclick={openSystem}
+					class="w-full flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-100 font-bold py-2 rounded-lg transition-colors"
+					title="Open this system"
+				>
+					<ArrowRight size={16} /> Open System
+				</button>
+			{/if}
 			<button
 				onclick={handleSave}
 				class="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 rounded-lg transition-colors shadow-lg shadow-sky-900/20"
