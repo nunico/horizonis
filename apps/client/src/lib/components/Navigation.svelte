@@ -3,7 +3,7 @@
 	import { cluster, generateNewCluster } from '$lib/stores/clusterData';
 	import type { Star, OrbitalBody } from '$lib/types/stellar';
 	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle, RotateCw } from 'lucide-svelte';
-	import { INTERACTION } from '$lib/theme';
+	import { INTERACTION, LAYOUT } from '$lib/theme';
 	import { helpOpen, searchResultsOpen, searchFocusSignal } from '$lib/stores/ui';
 	import { toast } from '$lib/stores/toast';
 	import { recordSnapshot } from '$lib/stores/history';
@@ -155,7 +155,8 @@
 
 <nav
 	aria-label="Primary"
-	class="fixed top-0 left-0 right-0 h-14 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 flex items-center px-4 justify-between z-50"
+	style="height: {LAYOUT.navbarHeightPx}px"
+	class="fixed top-0 left-0 right-0 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 flex items-center px-4 justify-between z-50"
 >
 	<div class="flex items-center gap-4">
 		{#if $viewMode === 'system' || $selectedEntity}
