@@ -1,5 +1,19 @@
 # Changelog
 
+###### [2026-06-16] - UX Phase 2 — interaction model fixes
+
+- **Summary**: Make canvas interactions predictable: drag threshold, no auto-pan, preserved scale-toggle camera, calmer Inspector focus, explicit open-system.
+- **Changes**:
+  - Fixed pre-existing ESLint errors in StarMap (unused const, Map→SvelteMap, removed 'as any', typed test mocks).
+  - Inspector no longer auto-focuses the Name input; focus moves to the panel container instead.
+  - Removed the auto-pan-on-zoom nudge in StarMap and SolarSystemMap; rely on pixi-viewport wheel zoom-to-cursor.
+  - Preserve camera framing across the Linear/Log toggle via a new tested pixelsToAu inverse (capture AU center + zoom ratio, re-frame after re-render).
+  - Added a drag threshold for Star Map system nodes (exceedsDragThreshold helper): a press selects and only becomes a drag past the threshold; node elevated while dragging.
+  - Added an explicit 'Open System' action to the Inspector for systems; double-click on the map remains the fast path.
+  - Added Vitest tests for pixelsToAu round-trips, exceedsDragThreshold, the new drag-threshold flow, and the Inspector open/focus changes.
+- **Files Affected**: apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/SolarSystemMap.svelte, apps/client/src/lib/components/Inspector.svelte, apps/client/src/lib/pixi/scaling.ts, apps/client/src/lib/utils/drag.ts
+- **Context**: Linear/Log camera preservation maps the center through AU because the pixel mapping changes between modes. The double-click open path is kept but now has a non-timer alternative.
+
 ###### [2026-06-16] - UX Phase 1 — feedback, forgiveness, and empty states
 
 - **Summary**: Add user feedback (toasts), in-app regenerate confirmation, undo, and an empty-state for clusters with no systems.
