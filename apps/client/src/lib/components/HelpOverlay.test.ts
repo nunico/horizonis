@@ -1,43 +1,41 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
+import { get } from 'svelte/store';
 import HelpOverlay from './HelpOverlay.svelte';
+import { helpOpen } from '$lib/stores/ui';
 
 describe('HelpOverlay component', () => {
-	it('does not render when show is false', () => {
-		render(HelpOverlay, { show: false });
+	beforeEach(() => {
+		helpOpen.set(false);
+	});
+
+	it('does not render when helpOpen is false', () => {
+		render(HelpOverlay);
 		expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument();
 	});
 
-	it('renders when show is true', () => {
-		render(HelpOverlay, { show: true });
+	it('renders when helpOpen is true', () => {
+		helpOpen.set(true);
+		render(HelpOverlay);
 		expect(screen.getByText('Keyboard Shortcuts')).toBeInTheDocument();
 		expect(screen.getByText('Focus search')).toBeInTheDocument();
 		expect(screen.getByText('/')).toBeInTheDocument();
 	});
 
-	it('toggles on "?" keydown', async () => {
-		render(HelpOverlay, { show: false });
-
-		await fireEvent.keyDown(window, { key: '?' });
-		expect(screen.getByText('Keyboard Shortcuts')).toBeInTheDocument();
-
-		await fireEvent.keyDown(window, { key: '?' });
-		expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument();
+	it('documents the double-click-to-open gesture', () => {
+		helpOpen.set(true);
+		render(HelpOverlay);
+		expect(screen.getByText('Open a system (Star Map)')).toBeInTheDocument();
 	});
 
-	it('closes on Escape keydown', async () => {
-		render(HelpOverlay, { show: true });
+	it('closes (clears the store) on close button click', async () => {
+		helpOpen.set(true);
+		render(HelpOverlay);
 
-		await fireEvent.keyDown(window, { key: 'Escape' });
-		expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument();
-	});
+		await fireEvent.click(screen.getByLabelText('Close'));
 
-	it('closes on close button click', async () => {
-		render(HelpOverlay, { show: true });
-
-		const closeButton = screen.getByLabelText('Close');
-		await fireEvent.click(closeButton);
+		expect(get(helpOpen)).toBe(false);
 		expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument();
 	});
 });

@@ -1,29 +1,21 @@
 <script lang="ts">
 	import { X } from 'lucide-svelte';
-
-	let { show = $bindable(false) } = $props();
+	import { helpOpen } from '$lib/stores/ui';
 
 	const shortcuts = [
 		{ key: '?', description: 'Toggle this help overlay' },
 		{ key: '/', description: 'Focus search' },
+		{ key: 'Double-click', description: 'Open a system (Star Map)' },
 		{ key: 'Backspace', description: 'Go back to cluster view' },
 		{ key: 'Escape', description: 'Clear selection / Close menus' },
 		{ key: 'Enter', description: 'Save changes (in Inspector)' },
 		{ key: 'Scroll', description: 'Zoom in/out' },
 		{ key: 'Drag', description: 'Pan view' },
-		{ key: 'Drag System', description: 'Rearrange systems' }
+		{ key: 'Drag System', description: 'Rearrange systems (Star Map)' }
 	];
 
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) {
-			show = !show;
-		} else if (e.key === 'Escape' && show) {
-			show = false;
-		}
-	}
+	let show = $derived($helpOpen);
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 {#if show}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -31,7 +23,7 @@
 	<div
 		class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
 		onclick={(e) => {
-			if (e.target === e.currentTarget) show = false;
+			if (e.target === e.currentTarget) helpOpen.set(false);
 		}}
 	>
 		<div
@@ -42,7 +34,7 @@
 			<div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/30">
 				<h2 id="help-title" class="text-lg font-bold text-slate-100">Keyboard Shortcuts</h2>
 				<button
-					onclick={() => (show = false)}
+					onclick={() => helpOpen.set(false)}
 					class="text-slate-500 hover:text-slate-300 transition-colors"
 					aria-label="Close"
 				>

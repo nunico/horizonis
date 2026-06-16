@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 	import '../app.css';
-	import { viewMode, selectedEntity } from '$lib/stores/appState';
+	import { viewMode, activeSystemId, selectedEntity } from '$lib/stores/appState';
+	import { helpOpen, searchResultsOpen, requestSearchFocus } from '$lib/stores/ui';
+	import { resolveShortcut } from '$lib/actions/shortcuts';
 	import * as appState from '$lib/stores/appState';
 	import * as clusterData from '$lib/stores/clusterData';
 	let { children } = $props();
@@ -23,11 +26,43 @@
 
 	onMount(() => {
 		const handleKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				selectedEntity.set(null);
-			}
-			if (e.key === 'Backspace' && e.target === document.body) {
-				viewMode.set('cluster');
+			const target = e.target as HTMLElement | null;
+			const inEditable = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA';
+
+			const action = resolveShortcut({
+				key: e.key,
+				inEditable,
+				helpOpen: get(helpOpen),
+				searchResultsOpen: get(searchResultsOpen),
+				hasSelection: get(selectedEntity) !== null,
+				viewMode: get(viewMode)
+			});
+
+			switch (action) {
+				case 'toggle-help':
+					e.preventDefault();
+					helpOpen.update((v) => !v);
+					break;
+				case 'close-help':
+					helpOpen.set(false);
+					break;
+				case 'focus-search':
+					e.preventDefault();
+					requestSearchFocus();
+					break;
+				case 'close-search':
+					searchResultsOpen.set(false);
+					(document.activeElement as HTMLElement | null)?.blur();
+					break;
+				case 'clear-selection':
+					selectedEntity.set(null);
+					break;
+				case 'back-to-cluster':
+					viewMode.set('cluster');
+					activeSystemId.set(null);
+					break;
+				case 'none':
+					break;
 			}
 		};
 		window.addEventListener('keydown', handleKeydown);
