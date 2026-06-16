@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import Inspector from './Inspector.svelte';
-import { selectedEntity } from '$lib/stores/appState';
+import { selectedEntity, activeSystemId, viewMode } from '$lib/stores/appState';
 import { cluster } from '$lib/stores/clusterData';
 import { toasts, clearToasts } from '$lib/stores/toast';
 import { get } from 'svelte/store';
@@ -89,6 +89,19 @@ describe('Inspector component', () => {
 		const inspector = screen.getByText('Inspector').closest('div');
 		await fireEvent.keyDown(inspector!, { key: 'Escape' });
 
+		expect(get(selectedEntity)).toBeNull();
+	});
+
+	it('opens the system when the Open System button is clicked', async () => {
+		viewMode.set('cluster');
+		activeSystemId.set(null);
+		selectedEntity.set(get(cluster)!.Systems[0]);
+		render(Inspector);
+
+		await fireEvent.click(screen.getByRole('button', { name: /open system/i }));
+
+		expect(get(activeSystemId)).toBe('sys-1');
+		expect(get(viewMode)).toBe('system');
 		expect(get(selectedEntity)).toBeNull();
 	});
 
