@@ -1,5 +1,17 @@
 # Changelog
 
+###### [2026-06-16] - E2E coverage for UX Phases 1-2
+
+- **Summary**: Add Playwright E2E specs for the feedback and interaction-model changes and make the system map E2E-debuggable.
+- **Changes**:
+  - Added tests/ux-feedback.spec.ts: save shows a 'Changes saved' toast; regenerate via the in-app dialog then Ctrl+Z restores the previous cluster; empty cluster shows the empty state and can generate.
+  - Added tests/interaction-model.spec.ts: click-without-move keeps a system's position and selects it; sub-threshold drag does not move it; selecting does not focus the name field; Inspector 'Open System' enters the system; Linear/Log toggle preserves the zoom ratio.
+  - Updated tests/navigation-flow.spec.ts regenerate test to confirm via the in-app ConfirmDialog instead of window.confirm.
+  - Extracted isE2EDebugEnabled() and used it in both maps so the system map's debug hooks and e2eSystemReady flag activate under Playwright.
+  - Replaced pre-existing 'as any' casts in tests/system-rearrangement.spec.ts with typed shapes.
+- **Files Affected**: apps/web-e2e/tests/ux-feedback.spec.ts, apps/web-e2e/tests/interaction-model.spec.ts, apps/web-e2e/tests/navigation-flow.spec.ts, apps/web-e2e/tests/system-rearrangement.spec.ts, apps/client/src/lib/utils/e2e.ts, apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/SolarSystemMap.svelte
+- **Context**: The Linear/Log camera assertion checks the zoom ratio (mapping-independent) rather than absolute center, which the viewport clamp can shift. 23 E2E tests pass.
+
 ###### [2026-06-16] - UX Phase 2 — interaction model fixes
 
 - **Summary**: Make canvas interactions predictable: drag threshold, no auto-pan, preserved scale-toggle camera, calmer Inspector focus, explicit open-system.
