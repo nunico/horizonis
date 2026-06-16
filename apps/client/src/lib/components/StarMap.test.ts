@@ -170,24 +170,25 @@ describe('StarMap component', () => {
 	it('starts dragging on pointerdown', async () => {
 		render(StarMap);
 
-		let systemNode: any;
+		type MockNode = Record<string, unknown> & { on: ReturnType<typeof vi.fn> };
+		let systemNode: MockNode | undefined;
 		await vi.waitFor(() => {
 			const graphicsInstances = vi.mocked(PIXI.Graphics).mock.results.map((r) => r.value);
-			systemNode = graphicsInstances.find((g) => g.systemId === 'sys1');
+			systemNode = graphicsInstances.find((g) => g.systemId === 'sys1') as MockNode | undefined;
 			expect(systemNode).toBeDefined();
 		});
 
 		const viewportInstance = vi.mocked(Viewport).mock.results[0].value;
 
 		// Get the pointerdown handler
-		const pointerdownHandler = systemNode.on.mock.calls.find(
-			(call: any) => call[0] === 'pointerdown'
-		)[1];
+		const pointerdownHandler = systemNode!.on.mock.calls.find(
+			(call: unknown[]) => call[0] === 'pointerdown'
+		)![1] as (e: { stopPropagation: () => void }) => void;
 
 		// Simulate pointerdown
 		pointerdownHandler({ stopPropagation: vi.fn() });
 
 		expect(viewportInstance.plugins.pause).toHaveBeenCalledWith('drag');
-		expect(systemNode.cursor).toBe('grabbing');
+		expect(systemNode!.cursor).toBe('grabbing');
 	});
 });

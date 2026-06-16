@@ -11,7 +11,6 @@
 	import { setupPixi } from '$lib/pixi/setup';
 	import { MAP_COLORS, LAYOUT, INTERACTION } from '$lib/theme';
 	import { recordSnapshot } from '$lib/stores/history';
-	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
 
 	type WindowWithDebug = Window & {
 		starMapDebug?: {
@@ -26,8 +25,10 @@
 	let isDragging = $state(false);
 	let draggedSystemId = $state<string | null>(null);
 	let resizeHandler: () => void;
-	let systemNodesById = new Map<string, PIXI.Graphics & { systemId: string }>();
-	let portalsBySystemId = new Map<string, typeof portalNodes>();
+	// Imperative PIXI node lookups (not used in reactive contexts); SvelteMap
+	// satisfies the prefer-svelte-reactivity rule without changing semantics.
+	let systemNodesById = new SvelteMap<string, PIXI.Graphics & { systemId: string }>();
+	let portalsBySystemId = new SvelteMap<string, typeof portalNodes>();
 	let portalNodes: {
 		graphics: PIXI.Graphics;
 		fromId: string;
@@ -344,7 +345,7 @@
 
 	function getEnableE2EDebug() {
 		if (typeof window === 'undefined') return false;
-		const win = window as any;
+		const win = window as Window & { PUBLIC_E2E?: string | boolean };
 		return (
 			import.meta.env.DEV ||
 			import.meta.env.PUBLIC_E2E === '1' ||
