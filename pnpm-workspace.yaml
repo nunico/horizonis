@@ -1,9 +1,18 @@
 packages:
   - 'apps/*'
   - 'libs/*'
+# Don't auto-run `pnpm install` before every `pnpm <script>` / `pnpm nx ...`.
+# Without this, pnpm reconciles node_modules on each run and, in a
+# non-interactive shell, aborts on the modules-purge confirmation. Disabling it
+# lets the package.json scripts (test/lint/check/dev) run directly.
+verifyDepsBeforeRun: false
+confirmModulesPurge: false
+# Build scripts pnpm is allowed to run on install (replaces the interactive
+# approve-builds prompt).
 allowBuilds:
-  edgedriver: set this to true or false
-  esbuild: set this to true or false
-  geckodriver: set this to true or false
-  nx: set this to true or false
-  unrs-resolver: set this to true or false
+  edgedriver: true
+  esbuild: true
+  geckodriver: true
+  nx: true
+  sharp: true
+  unrs-resolver: true
