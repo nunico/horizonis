@@ -17,7 +17,7 @@
 
 <nav
 	aria-label="Systems"
-	class="fixed top-20 left-4 z-30 w-60 bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-lg overflow-hidden"
+	class="fixed top-20 left-4 z-30 w-60 max-w-[calc(100vw-2rem)] bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-lg overflow-hidden"
 >
 	<button
 		onclick={() => (open = !open)}
