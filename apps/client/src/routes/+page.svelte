@@ -7,8 +7,8 @@
 	import Inspector from '$lib/components/Inspector.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import HelpOverlay from '$lib/components/HelpOverlay.svelte';
+	import Toast from '$lib/components/Toast.svelte';
 
-	let showHelp = $state(false);
 	let error = $state<string | null>(null);
 
 	onMount(async () => {
@@ -29,14 +29,14 @@
 
 <main class="w-screen h-screen relative bg-slate-950 overflow-hidden">
 	{#if $cluster && $isInitialized}
-		<Navigation bind:showHelp />
+		<Navigation />
 		{#if $viewMode === 'cluster'}
 			<StarMap />
 		{:else}
 			<SolarSystemMap />
 		{/if}
 		<Inspector />
-		<HelpOverlay bind:show={showHelp} />
+		<HelpOverlay />
 	{:else if error}
 		<div
 			class="flex flex-col items-center justify-center w-full h-full bg-slate-950 p-8 text-center"
@@ -89,4 +89,6 @@
 			</p>
 		</div>
 	{/if}
+
+	<Toast />
 </main>
