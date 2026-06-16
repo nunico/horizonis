@@ -34,7 +34,7 @@ test.describe('Layout Obscurity', () => {
 		await expect(inspector).toBeVisible();
 
 		// 2. Check overlap
-		const navBar = page.locator('nav');
+		const navBar = page.locator('nav[aria-label="Primary"]');
 		const navBox = await navBar.boundingBox();
 		const inspectorBox = await inspector.boundingBox();
 
@@ -73,7 +73,7 @@ test.describe('Layout Obscurity', () => {
 		const backButton = page.locator('button', { hasText: 'Back to Cluster' });
 		await expect(backButton).toBeVisible();
 
-		const navBar = page.locator('nav');
+		const navBar = page.locator('nav[aria-label="Primary"]');
 		const navBox = await navBar.boundingBox();
 		const buttonBox = await backButton.boundingBox();
 
