@@ -1,5 +1,19 @@
 # Changelog
 
+###### [2026-06-17] - UX Phase 4 — accessibility
+
+- **Summary**: Add modal focus management, a contrast/icon pass, and a keyboard/screen-reader path to systems.
+- **Changes**:
+  - Added a focusTrap Svelte action (focus container on open, cycle Tab within it, restore focus to the trigger on close); applied to Inspector, HelpOverlay and ConfirmDialog.
+  - Bumped tiny 10px labels to text-xs and lightened low-contrast slate-500/600 label text toward WCAG AA across Inspector, Navigation and the system caption.
+  - Marked decorative lucide icons in labeled controls with aria-hidden.
+  - Added an Announcer live region narrating the current view (cluster vs named system) for screen readers.
+  - Added a SystemList disclosure: a labelled, keyboard-operable list of systems that can be opened without the canvas.
+  - Gave the top navigation bar aria-label="Primary" to distinguish it from the new Systems nav landmark.
+  - Added Vitest tests for focusTrap, Announcer, and SystemList.
+- **Files Affected**: apps/client/src/lib/actions/focusTrap.ts, apps/client/src/lib/components/Inspector.svelte, apps/client/src/lib/components/HelpOverlay.svelte, apps/client/src/lib/components/ConfirmDialog.svelte, apps/client/src/lib/components/Announcer.svelte, apps/client/src/lib/components/SystemList.svelte, apps/client/src/lib/components/Navigation.svelte, apps/client/src/routes/+page.svelte
+- **Context**: The SystemList adds a second nav landmark, so E2E nav locators were scoped to the Primary nav.
+
 ###### [2026-06-16] - UX Phase 3 — search keyboard navigation and help accuracy
 
 - **Summary**: Make the search dropdown keyboard-navigable and bring the help overlay in line with current shortcuts.
