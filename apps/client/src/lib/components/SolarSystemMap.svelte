@@ -15,7 +15,7 @@
 	import { setupPixi } from '$lib/pixi/setup';
 	import { getEntityMaxSatRadius } from '$lib/utils/stellar';
 	import { MAP_COLORS, getSpectralColor, getBodyTypeColor, LAYOUT } from '$lib/theme';
-	const PUBLIC_E2E: string | undefined = import.meta.env?.PUBLIC_E2E as string | undefined;
+	import { isE2EDebugEnabled } from '$lib/utils/e2e';
 
 	type WindowWithDebug = Window & {
 		solarSystemMapDebug?: {
@@ -105,8 +105,7 @@
 			setup.viewport.on('moved', updateScales);
 
 			// Stable E2E debug hook: expose a persistent object with live getters
-			const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
-			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+			if (isE2EDebugEnabled() && typeof window !== 'undefined') {
 				(window as WindowWithDebug).solarSystemMapDebug = {
 					viewport: setup.viewport,
 					get starNodes() {
@@ -393,8 +392,8 @@
 		if (!systemData || !v) return;
 
 		// Signal not ready while (re)rendering system view (E2E instrumentation)
-		const enableE2EDebug = PUBLIC_E2E === '1' || PUBLIC_E2E === 'true';
-		if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+		const enableE2EDebug = isE2EDebugEnabled();
+		if (enableE2EDebug && typeof window !== 'undefined') {
 			window.e2eSystemReady = false;
 		}
 
@@ -448,14 +447,14 @@
 			}
 
 			// Signal readiness as soon as initial layout is applied (microtask)
-			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+			if (enableE2EDebug && typeof window !== 'undefined') {
 				queueMicrotask(() => {
 					window.e2eSystemReady = true;
 				});
 			}
 
 			// Final readiness confirmation (debug hook is assigned on mount and uses live getters)
-			if ((import.meta.env.DEV || enableE2EDebug) && typeof window !== 'undefined') {
+			if (enableE2EDebug && typeof window !== 'undefined') {
 				window.e2eSystemReady = true;
 			}
 		});

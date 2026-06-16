@@ -12,6 +12,7 @@
 	import { MAP_COLORS, LAYOUT, INTERACTION } from '$lib/theme';
 	import { recordSnapshot } from '$lib/stores/history';
 	import { exceedsDragThreshold } from '$lib/utils/drag';
+	import { isE2EDebugEnabled } from '$lib/utils/e2e';
 
 	type WindowWithDebug = Window & {
 		starMapDebug?: {
@@ -162,7 +163,7 @@
 			setup.viewport.on('pointerup', endDrag);
 			setup.viewport.on('pointerupoutside', endDrag);
 
-			if (getEnableE2EDebug()) {
+			if (isE2EDebugEnabled()) {
 				(window as WindowWithDebug).starMapDebug = {
 					viewport: setup.viewport,
 					get lastMinScale() {
@@ -365,20 +366,8 @@
 		}
 	}
 
-	function getEnableE2EDebug() {
-		if (typeof window === 'undefined') return false;
-		const win = window as Window & { PUBLIC_E2E?: string | boolean };
-		return (
-			import.meta.env.DEV ||
-			import.meta.env.PUBLIC_E2E === '1' ||
-			win.PUBLIC_E2E === '1' ||
-			win.PUBLIC_E2E === true ||
-			win.navigator.webdriver
-		);
-	}
-
 	function setClusterReady(ready: boolean) {
-		if (getEnableE2EDebug()) {
+		if (isE2EDebugEnabled()) {
 			if (ready) {
 				queueMicrotask(() => {
 					(window as WindowWithDebug).e2eClusterReady = true;
