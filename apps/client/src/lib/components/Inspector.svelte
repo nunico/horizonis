@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { selectedEntity } from '$lib/stores/appState';
 	import { cluster, saveCluster } from '$lib/stores/clusterData';
+	import { toast } from '$lib/stores/toast';
 	import { X, Save, Tag } from 'lucide-svelte';
 	import type { SolarSystem, Star, OrbitalBody, StarCluster } from '$lib/types/stellar';
 
@@ -85,7 +86,10 @@
 		}
 
 		if (found) {
-			await saveCluster(newCluster);
+			const saved = await saveCluster(newCluster);
+			if (saved) {
+				toast.success('Changes saved');
+			}
 		}
 		selectedEntity.set(null);
 	}

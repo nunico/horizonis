@@ -4,11 +4,13 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import Inspector from './Inspector.svelte';
 import { selectedEntity } from '$lib/stores/appState';
 import { cluster } from '$lib/stores/clusterData';
+import { toasts, clearToasts } from '$lib/stores/toast';
 import { get } from 'svelte/store';
 
 describe('Inspector component', () => {
 	beforeEach(() => {
 		selectedEntity.set(null);
+		clearToasts();
 		cluster.set({
 			Name: 'Test Cluster',
 			Systems: [
@@ -51,6 +53,20 @@ describe('Inspector component', () => {
 
 		expect(get(cluster)!.Systems[0].Name).toBe('New Name');
 		expect(get(selectedEntity)).toBeNull();
+	});
+
+	it('shows a success toast after a successful save', async () => {
+		selectedEntity.set(get(cluster)!.Systems[0]);
+		render(Inspector);
+
+		await fireEvent.input(screen.getByDisplayValue('Old Name'), {
+			target: { value: 'Saved Name' }
+		});
+		await fireEvent.click(screen.getByText('Save Changes'));
+
+		const list = get(toasts);
+		expect(list).toHaveLength(1);
+		expect(list[0]).toMatchObject({ type: 'success' });
 	});
 
 	it('saves on Enter keydown', async () => {

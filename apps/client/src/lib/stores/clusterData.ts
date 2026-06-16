@@ -3,6 +3,7 @@ import { TauriStorage } from '$lib/storage/tauri';
 import { BrowserStorage } from '$lib/storage/browser';
 import type { StorageProvider } from '$lib/storage';
 import type { StarCluster } from '$lib/types/stellar';
+import { toast } from '$lib/stores/toast';
 export const cluster = writable<StarCluster | null>(null);
 export const isInitialized = writable(false);
 
@@ -59,13 +60,16 @@ export async function loadCluster() {
 	}
 }
 
-export async function saveCluster(data: StarCluster) {
+export async function saveCluster(data: StarCluster): Promise<boolean> {
 	const provider = await getStorage();
 	try {
 		await provider.saveCluster(data);
 		cluster.set(data);
+		return true;
 	} catch (e) {
 		console.error('Failed to save cluster:', e);
+		toast.error('Failed to save changes');
+		return false;
 	}
 }
 
@@ -79,6 +83,7 @@ export async function generateNewCluster(seed?: bigint) {
 		return newCluster;
 	} catch (e) {
 		console.error('Failed to generate cluster:', e);
+		toast.error('Failed to generate a new cluster');
 		throw e;
 	}
 }
