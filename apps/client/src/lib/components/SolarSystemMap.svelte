@@ -91,17 +91,13 @@
 
 			setup.viewport.on('zoomed', () => {
 				const currentScale = setup.viewport.scale.x;
-				const zoomingIn = currentScale > lastScale * 1.0001;
 
+				// Track the nearest body (used for zoom-limit clamping) but let
+				// pixi-viewport's wheel zoom-to-cursor drive the camera instead of
+				// nudging the center, which felt like the map fought the user.
 				updateFocus(currentScale);
 				updateZoomLimits();
 				updateScales();
-
-				if (zoomingIn && focusedObject && currentScale > 0.1) {
-					const dx = (focusedObject.worldX - setup.viewport.center.x) * 0.1;
-					const dy = (focusedObject.worldY - setup.viewport.center.y) * 0.1;
-					setup.viewport.moveCenter(setup.viewport.center.x + dx, setup.viewport.center.y + dy);
-				}
 
 				lastScale = currentScale;
 			});
