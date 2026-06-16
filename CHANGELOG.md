@@ -1,5 +1,17 @@
 # Changelog
 
+###### [2026-06-16] - UX Phase 3 — search keyboard navigation and help accuracy
+
+- **Summary**: Make the search dropdown keyboard-navigable and bring the help overlay in line with current shortcuts.
+- **Changes**:
+  - Added arrow Up/Down navigation (wrapping), Enter-to-select, and a highlighted active row to the Navigation search results.
+  - Marked the search input as a combobox controlling the results listbox (aria-expanded/controls, role=option, aria-selected).
+  - Extracted a tested nextIndex reducer (lib/utils/listNav.ts).
+  - Updated HelpOverlay to document Undo (Ctrl/Cmd+Z) and search arrow-key navigation, and to clarify that drag-to-rearrange is Star Map only.
+  - Added Vitest tests for nextIndex, the search arrow/Enter flow, and the updated help content.
+- **Files Affected**: apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/utils/listNav.ts, apps/client/src/lib/components/HelpOverlay.svelte
+- **Context**: None.
+
 ###### [2026-06-16] - E2E coverage for UX Phases 1-2
 
 - **Summary**: Add Playwright E2E specs for the feedback and interaction-model changes and make the system map E2E-debuggable.
