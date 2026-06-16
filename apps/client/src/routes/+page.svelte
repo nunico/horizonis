@@ -8,6 +8,7 @@
 	import Navigation from '$lib/components/Navigation.svelte';
 	import HelpOverlay from '$lib/components/HelpOverlay.svelte';
 	import Toast from '$lib/components/Toast.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 
 	let error = $state<string | null>(null);
 
@@ -32,6 +33,9 @@
 		<Navigation />
 		{#if $viewMode === 'cluster'}
 			<StarMap />
+			{#if ($cluster.Systems?.length ?? 0) === 0}
+				<EmptyState />
+			{/if}
 		{:else}
 			<SolarSystemMap />
 		{/if}
