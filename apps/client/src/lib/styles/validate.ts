@@ -20,8 +20,8 @@ export type ValidationResult = { ok: true; value: StyleDefinition } | { ok: fals
 
 const BODY_TYPES: readonly BodyType[] = ['Planet', 'Moon', 'SpaceStation', 'DwarfPlanet', 'Comet'];
 
-const STAR_SHAPES: readonly StarShape[] = ['disc', 'ring', 'gradient'];
-const BODY_SHAPES: readonly BodyShape[] = ['disc', 'ring', 'banded'];
+const STAR_SHAPES: readonly StarShape[] = ['disc', 'ring', 'gradient', 'sphere'];
+const BODY_SHAPES: readonly BodyShape[] = ['disc', 'ring', 'banded', 'sphere'];
 const NODE_SHAPES: readonly NodeShape[] = ['disc', 'ring'];
 
 const HEX_RE = /^#?[0-9a-fA-F]{6}$/;
@@ -84,6 +84,32 @@ function glow(value: unknown, path: string) {
 	return {
 		radiusFactor: num(r.radiusFactor, `${path}.radiusFactor`),
 		alpha: num(r.alpha, `${path}.alpha`)
+	};
+}
+
+function hexArray(value: unknown, path: string): string[] {
+	if (!Array.isArray(value) || value.length === 0) {
+		fail(path, 'must be a non-empty array');
+	}
+	return (value as unknown[]).map((c, i) => hex(c, `${path}[${i}]`));
+}
+
+function numArray(value: unknown, path: string): number[] {
+	if (!Array.isArray(value) || value.length === 0) {
+		fail(path, 'must be a non-empty array');
+	}
+	return (value as unknown[]).map((n, i) => num(n, `${path}[${i}]`));
+}
+
+function background(value: unknown, path: string) {
+	if (value === undefined) return undefined;
+	const r = asRecord(value, path);
+	return {
+		kind: oneOf(r.kind, ['parallax-starfield'] as const, `${path}.kind`),
+		seed: num(r.seed, `${path}.seed`),
+		density: num(r.density, `${path}.density`),
+		nebulaColors: hexArray(r.nebulaColors, `${path}.nebulaColors`),
+		parallaxFactors: numArray(r.parallaxFactors, `${path}.parallaxFactors`)
 	};
 }
 
@@ -204,6 +230,10 @@ function parse(input: unknown): StyleDefinition {
 			const b = asRecord(effects.bloom, 'effects.bloom');
 			result.effects.bloom = { strength: num(b.strength, 'effects.bloom.strength') };
 		}
+	}
+
+	if (root.background !== undefined) {
+		result.background = background(root.background, 'background');
 	}
 
 	return result;

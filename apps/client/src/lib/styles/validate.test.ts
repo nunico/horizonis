@@ -99,4 +99,57 @@ describe('validateStyleDefinition', () => {
 		(def.stroke.orbit as unknown as Record<string, unknown>).width = 'thick';
 		expect(validateStyleDefinition(def).ok).toBe(false);
 	});
+
+	it('accepts the sphere shape for stars and bodies', () => {
+		const input = makeValid() as unknown as Record<string, unknown>;
+		(input.star as Record<string, unknown>).shape = 'sphere';
+		(input.body as Record<string, unknown>).shape = 'sphere';
+		expect(validateStyleDefinition(input).ok).toBe(true);
+	});
+
+	it('accepts a valid parallax-starfield background', () => {
+		const input = makeValid() as unknown as Record<string, unknown>;
+		input.background = {
+			kind: 'parallax-starfield',
+			seed: 7,
+			density: 1,
+			nebulaColors: ['#3a1d0e', '#1d2a3a'],
+			parallaxFactors: [0.02, 0.1]
+		};
+		expect(validateStyleDefinition(input).ok).toBe(true);
+	});
+
+	it('still accepts a definition with no background block', () => {
+		const input = makeValid() as unknown as Record<string, unknown>;
+		delete (input as { background?: unknown }).background;
+		expect(validateStyleDefinition(input).ok).toBe(true);
+	});
+
+	it('rejects a background with an unknown kind', () => {
+		const input = makeValid() as unknown as Record<string, unknown>;
+		input.background = {
+			kind: 'rainbow',
+			seed: 1,
+			density: 1,
+			nebulaColors: ['#000000'],
+			parallaxFactors: [0.1]
+		};
+		const result = validateStyleDefinition(input);
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.error).toContain('background.kind');
+	});
+
+	it('rejects a background whose nebulaColors are not hex', () => {
+		const input = makeValid() as unknown as Record<string, unknown>;
+		input.background = {
+			kind: 'parallax-starfield',
+			seed: 1,
+			density: 1,
+			nebulaColors: ['not-a-color'],
+			parallaxFactors: [0.1]
+		};
+		const result = validateStyleDefinition(input);
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.error).toContain('background.nebulaColors');
+	});
 });
