@@ -269,11 +269,23 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 		},
 
 		labelStyle(kind: LabelKind): Partial<TextStyleOptions> {
+			const outline = def.label.outline;
 			return {
 				fontFamily: def.label.fontFamily,
 				fontSize: def.label.fontSize,
-				letterSpacing: def.label.letterSpacing,
-				fill: kind === 'body' ? colors.labelSecondary : colors.labelPrimary
+				// PixiJS v8 accumulates letterSpacing per glyph when measuring text;
+				// passing `undefined` yields a NaN width and an invisible (0-size)
+				// label, so always resolve to a number.
+				letterSpacing: def.label.letterSpacing ?? 0,
+				fill: kind === 'body' ? colors.labelSecondary : colors.labelPrimary,
+				stroke: outline
+					? {
+							color: hexToNumber(outline.color),
+							width: outline.width,
+							alpha: outline.alpha ?? 1,
+							join: 'round'
+						}
+					: undefined
 			};
 		},
 

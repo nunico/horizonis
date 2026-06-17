@@ -87,6 +87,16 @@ function glow(value: unknown, path: string) {
 	};
 }
 
+function labelOutline(value: unknown, path: string) {
+	if (value === undefined) return undefined;
+	const r = asRecord(value, path);
+	return {
+		color: hex(r.color, `${path}.color`),
+		width: num(r.width, `${path}.width`),
+		alpha: optionalNum(r.alpha, `${path}.alpha`)
+	};
+}
+
 function hexArray(value: unknown, path: string): string[] {
 	if (!Array.isArray(value) || value.length === 0) {
 		fail(path, 'must be a non-empty array');
@@ -187,7 +197,8 @@ function parse(input: unknown): StyleDefinition {
 		label: {
 			fontFamily: str(label.fontFamily, 'label.fontFamily'),
 			fontSize: num(label.fontSize, 'label.fontSize'),
-			letterSpacing: optionalNum(label.letterSpacing, 'label.letterSpacing')
+			letterSpacing: optionalNum(label.letterSpacing, 'label.letterSpacing'),
+			outline: labelOutline(label.outline, 'label.outline')
 		}
 	};
 

@@ -217,6 +217,23 @@ describe('createDeclarativeStyle', () => {
 		expect(style.labelStyle('body').fill).toBe(0x94a3b8);
 	});
 
+	it('defaults letterSpacing to 0 so PixiJS does not measure a NaN-width label', () => {
+		// Regression: a definition without letterSpacing must not yield
+		// `letterSpacing: undefined`, which makes PixiJS v8 render a 0-size label.
+		const style = createDeclarativeStyle(def({ label: { fontFamily: 'mono', fontSize: 12 } }));
+		expect(style.labelStyle('star').letterSpacing).toBe(0);
+	});
+
+	it('adds a text outline (stroke) to labels when configured', () => {
+		const style = createDeclarativeStyle(
+			def({
+				label: { fontFamily: 'mono', fontSize: 12, outline: { color: '#000000', width: 3 } }
+			})
+		);
+		expect(style.labelStyle('star').stroke).toMatchObject({ color: 0x000000, width: 3 });
+		expect(createDeclarativeStyle(def()).labelStyle('star').stroke).toBeUndefined();
+	});
+
 	it('renders a sphere star with a glow + body sprite when a renderer is given', () => {
 		const style = createDeclarativeStyle(def({ star: { shape: 'sphere' } }));
 		const visual = style.createStarVisual({
