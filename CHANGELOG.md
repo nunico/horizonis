@@ -1,5 +1,17 @@
 # Changelog
 
+###### [2026-06-17] - Procedural realism for the realistic map style
+
+- **Summary**: Extended the realistic map style to render procedurally generated shaded spheres and a parallax star-field background without runtime code execution.
+- **Changes**:
+  - Stars and planets now render as shaded spheres with spectral-class-colored coronal glows and lit terminator lines.
+  - Added deterministic seeded procedural module (styles/procedural/) with cached texture builders (buildStarGlow, buildSphere, buildNebulaLayer, buildStarfieldLayer).
+  - Implemented parallax drifting nebula and multi-layer star field background in both StarMap and SolarSystemMap; absent in tactical style.
+  - Extended style schema with optional `'sphere'` shape and background block; backward-compatible with existing styles.
+  - Validated schema extensions on import; no custom GL shaders (WebGL/WebGPU parity preserved).
+- **Files Affected**: apps/client/src/lib/styles/*, apps/client/src/lib/styles/procedural/, apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/SolarSystemMap.svelte
+- **Context**: Procedural generation baked and cached via PixiJS renderer keeps styles pure JSON and shareable without backend code execution.
+
 ###### [2026-06-17] - Realistic Star Field style tints UI chrome amber/gold
 
 - **Summary**: Extended Realistic Star Field style to tint UI chrome (focus rings, toggles, selection ticks) with warm amber/gold accent via `ui.ramps.sky` override.
