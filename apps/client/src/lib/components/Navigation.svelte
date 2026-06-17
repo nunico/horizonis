@@ -10,6 +10,7 @@
 	import { nextIndex } from '$lib/utils/listNav';
 	import { get } from 'svelte/store';
 	import ConfirmDialog from './ConfirmDialog.svelte';
+	import StylePicker from './StylePicker.svelte';
 
 	let showRegenerateConfirm = $state(false);
 	let regenerating = $state(false);
@@ -258,6 +259,8 @@
 				<p class="text-sm text-slate-500">No results found for "{searchQuery}"</p>
 			</div>
 		{/if}
+
+		<StylePicker />
 
 		<button
 			onclick={() => (showRegenerateConfirm = true)}

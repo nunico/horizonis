@@ -15,7 +15,8 @@ vi.mock('pixi.js', () => {
 		this.renderer = {
 			on: vi.fn(),
 			off: vi.fn(),
-			events: {}
+			events: {},
+			background: { color: 0 }
 		};
 		this.canvas = document.createElement('canvas');
 		return this;
@@ -30,6 +31,8 @@ vi.mock('pixi.js', () => {
 		this.drawCircle = vi.fn().mockReturnThis();
 		this.rect = vi.fn().mockReturnThis();
 		this.stroke = vi.fn().mockReturnThis();
+		this.moveTo = vi.fn().mockReturnThis();
+		this.lineTo = vi.fn().mockReturnThis();
 		this.x = 0;
 		this.y = 0;
 		this.scale = { set: vi.fn() };
@@ -49,7 +52,18 @@ vi.mock('pixi.js', () => {
 		this.destroy = vi.fn();
 		return this;
 	});
-	return { Application, Graphics, Text, Container };
+	const Circle = vi.fn().mockImplementation(function (
+		this: Record<string, unknown>,
+		x: number,
+		y: number,
+		radius: number
+	) {
+		this.x = x;
+		this.y = y;
+		this.radius = radius;
+		return this;
+	});
+	return { Application, Graphics, Text, Container, Circle };
 });
 
 // Mock pixi-viewport
@@ -168,6 +182,24 @@ describe('StarMap component', () => {
 		expect(systemNode.on).toHaveBeenCalledWith('pointerdown', expect.any(Function));
 	});
 
+	it('gives system nodes an explicit hit area so they stay clickable regardless of style', async () => {
+		render(StarMap);
+
+		await vi.waitFor(() => {
+			const graphicsInstances = vi.mocked(PIXI.Graphics).mock.results.map((r) => r.value);
+			const systemNode = graphicsInstances.find((g) => g.systemId === 'sys1');
+			expect(systemNode).toBeDefined();
+		});
+
+		const graphicsInstances = vi.mocked(PIXI.Graphics).mock.results.map((r) => r.value);
+		const systemNode = graphicsInstances.find((g) => g.systemId === 'sys1');
+
+		// A style may draw the node as a stroke-only ring (no fill); hit testing
+		// must not depend on the drawn geometry.
+		expect(systemNode.hitArea).toBeDefined();
+		expect(systemNode.hitArea.radius).toBeGreaterThan(0);
+	});
+
 	it('arms a drag on pointerdown but only starts dragging past the threshold', async () => {
 		render(StarMap);
 
@@ -179,7 +211,10 @@ describe('StarMap component', () => {
 			expect(systemNode).toBeDefined();
 		});
 
-		const viewportInstance = vi.mocked(Viewport).mock.results[0].value as Record<string, unknown> & {
+		const viewportInstance = vi.mocked(Viewport).mock.results[0].value as Record<
+			string,
+			unknown
+		> & {
 			on: ReturnType<typeof vi.fn>;
 			plugins: { pause: ReturnType<typeof vi.fn> };
 		};
