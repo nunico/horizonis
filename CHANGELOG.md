@@ -1,5 +1,16 @@
 # Changelog
 
+###### [2026-06-17] - UX Phase 5 — responsiveness and layering
+
+- **Summary**: Make the layout work on narrow viewports, single-source the navbar height, and fix map layering.
+- **Changes**:
+  - Drive the top nav height from LAYOUT.navbarHeightPx (inline style) so the same token feeds the rendered bar and the viewport clamp math.
+  - Inspector spans full width (minus margins) below the sm breakpoint and is a fixed 320px panel from sm up.
+  - Capped the SystemList width to the viewport and narrowed the search input on small screens so the nav bar no longer overflows.
+  - Enabled sortableChildren and assigned zIndex (portals 0, selection 1, hover 2, system nodes 10) so system labels always render above portal/selection/hover graphics.
+- **Files Affected**: apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/components/Inspector.svelte, apps/client/src/lib/components/SystemList.svelte, apps/client/src/lib/components/StarMap.svelte
+- **Context**: None.
+
 ###### [2026-06-17] - UX Phase 4 — accessibility
 
 - **Summary**: Add modal focus management, a contrast/icon pass, and a keyboard/screen-reader path to systems.
