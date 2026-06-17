@@ -25,6 +25,13 @@ export function hexToNumber(hex: string): number {
 	return parseInt(match[1], 16);
 }
 
+/** Convert a `#RRGGBB` string to a space-separated `"R G B"` triplet for use
+ * in `rgb(var(--x) / <alpha-value>)` Tailwind colors. */
+export function hexToRgbString(hex: string): string {
+	const n = hexToNumber(hex);
+	return `${(n >> 16) & 0xff} ${(n >> 8) & 0xff} ${n & 0xff}`;
+}
+
 const VALID_CLASSES = new Set<string>(Object.keys(OBAFGKM_HEX));
 
 /** Extract the OBAFGKM class from a spectral string, or null if unrecognized. */

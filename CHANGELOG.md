@@ -1,5 +1,18 @@
 # Changelog
 
+###### [2026-06-17] - Extend map-style system to theme UI chrome
+
+- **Summary**: Extended the pluggable map-style system to re-skin the entire UI (navbar, panels, dialogs, controls) via CSS variables, not just the PIXI canvas.
+- **Changes**:
+  - Backed Tailwind `slate` and `sky` color ramps with CSS variables (rgb(var(--slate-N) / <alpha-value>)), with stock Tailwind defaults in app.css.
+  - Added optional `ui` block to style definitions: `fontFamily` plus per-shade `slate`/`sky` ramp overrides.
+  - Implemented `applyUiTheme` helper to apply active style's `ui` theme from the root layout.
+  - Updated "Tactical CRT" to mint-on-black monospace chrome; "Realistic Star Field" uses default slate ramp.
+  - Extended style validation to cover the optional `ui` block.
+  - Added Vitest tests for CSS-variable builder; extended Playwright E2E to assert chrome re-skins on style switch.
+- **Files Affected**: apps/client/src/lib/styles/*, apps/client/src/app.css, apps/client/src/routes/+layout.svelte, apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/components/Inspector.svelte
+- **Context**: None.
+
 ###### [2026-06-17] - Pluggable map render styles for StarMap and SolarSystemMap
 
 - **Summary**: Implemented a pluggable, swappable map-style system with live switching, persistence, and JSON import/export.

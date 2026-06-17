@@ -1,5 +1,13 @@
-import type { StyleDefinition, StarShape, BodyShape, NodeShape, SpectralClass } from './types';
-import { SPECTRAL_CLASSES } from './types';
+import type {
+	StyleDefinition,
+	StarShape,
+	BodyShape,
+	NodeShape,
+	SpectralClass,
+	RampShade,
+	RampOverride
+} from './types';
+import { SPECTRAL_CLASSES, RAMP_SHADES } from './types';
 import type { BodyType } from '$lib/types/stellar';
 
 /**
@@ -153,6 +161,30 @@ function parse(input: unknown): StyleDefinition {
 			letterSpacing: optionalNum(label.letterSpacing, 'label.letterSpacing')
 		}
 	};
+
+	if (root.ui !== undefined) {
+		const ui = asRecord(root.ui, 'ui');
+		const uiOut: StyleDefinition['ui'] = { fontFamily: str(ui.fontFamily, 'ui.fontFamily') };
+		if (ui.ramps !== undefined) {
+			const ramps = asRecord(ui.ramps, 'ui.ramps');
+			const parseRamp = (value: unknown, name: string): RampOverride | undefined => {
+				if (value === undefined) return undefined;
+				const r = asRecord(value, name);
+				const out: RampOverride = {};
+				for (const shade of RAMP_SHADES) {
+					if (r[shade] !== undefined) {
+						out[shade as RampShade] = hex(r[shade], `${name}.${shade}`);
+					}
+				}
+				return out;
+			};
+			uiOut.ramps = {
+				slate: parseRamp(ramps.slate, 'ui.ramps.slate'),
+				sky: parseRamp(ramps.sky, 'ui.ramps.sky')
+			};
+		}
+		result.ui = uiOut;
+	}
 
 	if (root.effects !== undefined) {
 		const effects = asRecord(root.effects, 'effects');

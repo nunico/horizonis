@@ -115,6 +115,7 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 	return {
 		meta: def.meta,
 		colors,
+		ui: def.ui,
 		definition: def,
 
 		createStarVisual({ star, baseRadius }: StarVisualContext): Container {

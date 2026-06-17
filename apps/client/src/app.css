@@ -2,7 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Default UI-chrome theme = the "realistic" look. These are the stock Tailwind
+ * slate/sky RGB triplets; the Tailwind config references them via
+ * rgb(var(--slate-N) / <alpha-value>). The active map style overrides any
+ * subset of these (see $lib/styles/ui.ts) to re-skin the whole UI.
+ */
+:root {
+	--hz-font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+	--slate-50: 248 250 252;
+	--slate-100: 241 245 249;
+	--slate-200: 226 232 240;
+	--slate-300: 203 213 225;
+	--slate-400: 148 163 184;
+	--slate-500: 100 116 139;
+	--slate-600: 71 85 105;
+	--slate-700: 51 65 85;
+	--slate-800: 30 41 59;
+	--slate-900: 15 23 42;
+	--slate-950: 2 6 23;
+
+	--sky-50: 240 249 255;
+	--sky-100: 224 242 254;
+	--sky-200: 186 230 253;
+	--sky-300: 125 211 252;
+	--sky-400: 56 189 248;
+	--sky-500: 14 165 233;
+	--sky-600: 2 132 199;
+	--sky-700: 3 105 161;
+	--sky-800: 7 89 133;
+	--sky-900: 12 74 110;
+	--sky-950: 8 47 73;
+}
+
 html,
 body {
 	@apply bg-slate-950 text-slate-100 overflow-hidden h-full w-full;
+	font-family: var(--hz-font);
 }
