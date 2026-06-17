@@ -253,10 +253,9 @@ describe('createDeclarativeStyle', () => {
 				}
 			})
 		);
-		const bg = style.createBackground(
-			{ width: 800, height: 600 },
-			fakeRenderer()
-		) as unknown as { children: unknown[] };
+		const bg = style.createBackground({ width: 800, height: 600 }, fakeRenderer()) as unknown as {
+			children: unknown[];
+		};
 		expect(bg).not.toBeNull();
 		expect(bg.children.length).toBe(3);
 	});
@@ -288,10 +287,9 @@ describe('createDeclarativeStyle', () => {
 				}
 			})
 		);
-		const bg = style.createBackground(
-			{ width: 800, height: 600 },
-			fakeRenderer()
-		) as unknown as { children: Array<{ position: { x: number; y: number } }> };
+		const bg = style.createBackground({ width: 800, height: 600 }, fakeRenderer()) as unknown as {
+			children: Array<{ position: { x: number; y: number } }>;
+		};
 		style.parallaxBackground!(bg as never, { x: 100, y: 200 });
 		expect(bg.children[0].position).toMatchObject({ x: -10, y: -20 });
 		expect(bg.children[1].position).toMatchObject({ x: -50, y: -100 });

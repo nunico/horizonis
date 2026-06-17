@@ -46,10 +46,7 @@ const BODY_SURFACE: Record<BodyType, SurfaceTreatment> = {
 };
 
 /** Add a centered sprite for a baked texture to a visual container. */
-function addSprite(
-	visual: Container,
-	texture: ReturnType<Renderer['generateTexture']>
-): void {
+function addSprite(visual: Container, texture: ReturnType<Renderer['generateTexture']>): void {
 	const sprite = new Sprite(texture);
 	sprite.anchor.set(0.5);
 	visual.addChild(sprite);
@@ -81,19 +78,13 @@ function hashId(id: string): number {
  * edge out to `radiusFactor`, faint at the rim and stronger toward the core,
  * approximating a radial bloom (a single flat disc reads as a hard grey ring).
  */
-function addGlow(
-	visual: Container,
-	baseRadius: number,
-	color: number,
-	glow?: GlowSpec
-): void {
+function addGlow(visual: Container, baseRadius: number, color: number, glow?: GlowSpec): void {
 	if (!glow) return;
 	const steps = 6;
 	for (let i = 1; i <= steps; i++) {
 		// i = 1 is the largest, faintest ring; i = steps hugs the body
 		// and is brightest.
-		const radius =
-			baseRadius * (1 + (glow.radiusFactor - 1) * (1 - (i - 1) / steps));
+		const radius = baseRadius * (1 + (glow.radiusFactor - 1) * (1 - (i - 1) / steps));
 		const halo = new Graphics();
 		halo.circle(0, 0, radius).fill({
 			color,
@@ -118,19 +109,13 @@ function drawRing(visual: Container, radius: number, color: number): void {
 	visual.addChild(g);
 }
 
-function drawGradient(
-	visual: Container,
-	radius: number,
-	color: number
-): void {
+function drawGradient(visual: Container, radius: number, color: number): void {
 	// Fake a radial gradient with a base disc plus a brighter inner highlight.
 	const base = new Graphics();
 	base.circle(0, 0, radius).fill({ color });
 	visual.addChild(base);
 	const core = new Graphics();
-	core
-		.circle(0, 0, radius * 0.55)
-		.fill({ color: lighten(color, 0.6), alpha: 0.9 });
+	core.circle(0, 0, radius * 0.55).fill({ color: lighten(color, 0.6), alpha: 0.9 });
 	visual.addChild(core);
 }
 
@@ -147,34 +132,19 @@ function drawBanded(visual: Container, radius: number, color: number): void {
 	visual.addChild(bands);
 }
 
-function drawStarShape(
-	visual: Container,
-	shape: StarShape,
-	radius: number,
-	color: number
-): void {
+function drawStarShape(visual: Container, shape: StarShape, radius: number, color: number): void {
 	if (shape === 'ring') return drawRing(visual, radius, color);
 	if (shape === 'gradient') return drawGradient(visual, radius, color);
 	return drawDisc(visual, radius, color);
 }
 
-function drawBodyShape(
-	visual: Container,
-	shape: BodyShape,
-	radius: number,
-	color: number
-): void {
+function drawBodyShape(visual: Container, shape: BodyShape, radius: number, color: number): void {
 	if (shape === 'ring') return drawRing(visual, radius, color);
 	if (shape === 'banded') return drawBanded(visual, radius, color);
 	return drawDisc(visual, radius, color);
 }
 
-function drawNodeShape(
-	visual: Container,
-	shape: NodeShape,
-	radius: number,
-	color: number
-): void {
+function drawNodeShape(visual: Container, shape: NodeShape, radius: number, color: number): void {
 	if (shape === 'ring') return drawRing(visual, radius, color);
 	return drawDisc(visual, radius, color);
 }
@@ -208,19 +178,11 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 		ui: def.ui,
 		definition: def,
 
-		createStarVisual({
-			star,
-			baseRadius,
-			renderer
-		}: StarVisualContext): Container {
+		createStarVisual({ star, baseRadius, renderer }: StarVisualContext): Container {
 			const visual = new Container();
-			const color = resolveSpectralColor(
-				def.palette.spectral,
-				star.SpectralClass
-			);
+			const color = resolveSpectralColor(def.palette.spectral, star.SpectralClass);
 			if (def.star.shape === 'sphere' && renderer) {
-				const glowRadius =
-					baseRadius * (def.star.glow?.radiusFactor ?? 2.6);
+				const glowRadius = baseRadius * (def.star.glow?.radiusFactor ?? 2.6);
 				addSprite(
 					visual,
 					buildStarGlow(renderer, {
@@ -242,20 +204,11 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 				return visual;
 			}
 			addGlow(visual, baseRadius, color, def.star.glow);
-			drawStarShape(
-				visual,
-				fallbackStarShape(def.star.shape),
-				baseRadius,
-				color
-			);
+			drawStarShape(visual, fallbackStarShape(def.star.shape), baseRadius, color);
 			return visual;
 		},
 
-		createBodyVisual({
-			body,
-			baseRadius,
-			renderer
-		}: BodyVisualContext): Container {
+		createBodyVisual({ body, baseRadius, renderer }: BodyVisualContext): Container {
 			const visual = new Container();
 			const color = resolveBodyColor(def.palette.body, body.BodyType);
 			if (def.body.shape === 'sphere' && renderer) {
@@ -273,38 +226,20 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 				return visual;
 			}
 			addGlow(visual, baseRadius, color, def.body.glow);
-			drawBodyShape(
-				visual,
-				fallbackBodyShape(def.body.shape),
-				baseRadius,
-				color
-			);
+			drawBodyShape(visual, fallbackBodyShape(def.body.shape), baseRadius, color);
 			return visual;
 		},
 
-		createSystemNodeVisual({
-			baseRadius
-		}: SystemNodeVisualContext): Container {
+		createSystemNodeVisual({ baseRadius }: SystemNodeVisualContext): Container {
 			const visual = new Container();
 			addGlow(visual, baseRadius, colors.systemFill, def.systemNode.glow);
-			drawNodeShape(
-				visual,
-				def.systemNode.shape,
-				baseRadius,
-				colors.systemFill
-			);
+			drawNodeShape(visual, def.systemNode.shape, baseRadius, colors.systemFill);
 			return visual;
 		},
 
-		stylePortal(
-			graphics: Graphics,
-			from: PointLike,
-			to: PointLike,
-			ctx: LinkContext
-		): void {
+		stylePortal(graphics: Graphics, from: PointLike, to: PointLike, ctx: LinkContext): void {
 			const color = ctx.highlighted ? colors.accent : colors.linkIdle;
-			const alpha =
-				ctx.hovered || ctx.highlighted ? 1 : def.stroke.portal.alpha;
+			const alpha = ctx.hovered || ctx.highlighted ? 1 : def.stroke.portal.alpha;
 			graphics
 				.clear()
 				.moveTo(from.x, from.y)
@@ -320,21 +255,17 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 					? colors.orbitHover
 					: colors.linkIdle;
 			const alpha = emphasized ? 0.8 : def.stroke.orbit.alpha;
-			const width =
-				def.stroke.orbit.width * (emphasized ? 2 : 1) * ctx.scale;
+			const width = def.stroke.orbit.width * (emphasized ? 2 : 1) * ctx.scale;
 			graphics.clear().circle(0, 0, ctx.radius).stroke({ width, color, alpha });
 		},
 
 		styleRegion(graphics: Graphics, ctx: RegionContext): void {
 			const width = Math.max(0, ctx.outerRadius - ctx.innerRadius);
-			graphics
-				.clear()
-				.circle(0, 0, ctx.outerRadius)
-				.stroke({
-					width,
-					color: colors.region,
-					alpha: def.stroke.region.alpha
-				});
+			graphics.clear().circle(0, 0, ctx.outerRadius).stroke({
+				width,
+				color: colors.region,
+				alpha: def.stroke.region.alpha
+			});
 		},
 
 		labelStyle(kind: LabelKind): Partial<TextStyleOptions> {
@@ -349,11 +280,7 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 		createStageOverlay(screen): Container | null {
 			const scanlines = def.effects?.scanlines;
 			if (!scanlines) return null;
-			return createScanlineOverlay(
-				screen,
-				scanlines,
-				def.palette.labelPrimary
-			);
+			return createScanlineOverlay(screen, scanlines, def.palette.labelPrimary);
 		},
 
 		createBackground(screen, renderer): Container | null {
@@ -397,10 +324,7 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 			if (!bg) return;
 			container.children.forEach((child, i) => {
 				const factor = bg.parallaxFactors[i] ?? 0;
-				(child as Container).position.set(
-					-camera.x * factor,
-					-camera.y * factor
-				);
+				(child as Container).position.set(-camera.x * factor, -camera.y * factor);
 			});
 		}
 	};
