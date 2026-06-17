@@ -1,5 +1,16 @@
 # Changelog
 
+###### [2026-06-17] - Fix missing map labels in the realistic style
+
+- **Summary**: Fixed a bug where star/planet/system name labels were invisible in the realistic map style due to undefined letterSpacing causing NaN-width text in PixiJS v8, and added optional label outline support for better legibility over bright coronal glows.
+- **Changes**:
+  - Fixed declarative renderer to default `letterSpacing` to 0 instead of passing undefined to PixiJS v8.
+  - Added optional `outline` property to text style schema for label stroke rendering.
+  - Extended style validation to cover the optional `outline` property.
+  - Enabled dark text outline on the realistic style for improved label legibility over bright nebula/orbital regions.
+- **Files Affected**: apps/client/src/lib/styles/declarative.ts, apps/client/src/lib/styles/types.ts, apps/client/src/lib/styles/validate.ts, apps/client/src/lib/styles/builtins/realistic.ts
+- **Context**: PixiJS v8's text measurement fails silently when letterSpacing is undefined (NaN width), rendering zero-size text; the outline mask helps labels stand out against procedural background glow.
+
 ###### [2026-06-17] - Procedural realism for the realistic map style
 
 - **Summary**: Extended the realistic map style to render procedurally generated shaded spheres and a parallax star-field background without runtime code execution.
