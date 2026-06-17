@@ -48,11 +48,11 @@ export const realisticStyle: StyleDefinition = {
 			default: '#c2a888'
 		}
 	},
-	// Strong coronal glow on stars (Zalos/Zahedan in the reference).
-	star: { shape: 'gradient', glow: { radiusFactor: 2.6, alpha: 0.3 } },
-	// Small shaded spheres with a faint glow rather than banding every body.
-	body: { shape: 'disc', glow: { radiusFactor: 1.5, alpha: 0.18 } },
-	// Glowing amber cluster dots.
+	// Spectrally-colored sphere with a strong coronal glow.
+	star: { shape: 'sphere', glow: { radiusFactor: 2.8, alpha: 0.35 } },
+	// Lit sphere with terminator; gas-giant bands / rocky mottling by type.
+	body: { shape: 'sphere', glow: { radiusFactor: 1.4, alpha: 0.16 } },
+	// Glowing amber cluster dots (unchanged).
 	systemNode: { shape: 'disc', glow: { radiusFactor: 2.4, alpha: 0.35 } },
 	stroke: {
 		orbit: { width: 1, alpha: 0.3 },
@@ -76,5 +76,14 @@ export const realisticStyle: StyleDefinition = {
 				'900': '#78350f'
 			}
 		}
+	},
+	// Procedural parallax star field behind the maps. Warm Coriolis nebula
+	// tones; three layers drift at increasing speed for depth.
+	background: {
+		kind: 'parallax-starfield',
+		seed: 1337,
+		density: 1,
+		nebulaColors: ['#3a1d0e', '#241a33', '#1d2a3a'],
+		parallaxFactors: [0.02, 0.05, 0.1]
 	}
 };
