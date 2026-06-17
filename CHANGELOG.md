@@ -1,5 +1,15 @@
 # Changelog
 
+###### [2026-06-17] - Realistic Star Field style tints UI chrome amber/gold
+
+- **Summary**: Extended Realistic Star Field style to tint UI chrome (focus rings, toggles, selection ticks) with warm amber/gold accent via `ui.ramps.sky` override.
+- **Changes**:
+  - Updated Realistic Star Field style to override `ui.ramps.sky` with amber/gold color ramp for UI accents.
+  - Kept neutral slate panels to maintain contrast and readability.
+  - Extended E2E tests to assert amber accent variable is applied.
+- **Files Affected**: apps/client/src/lib/styles/*, apps/web-e2e/tests/*.spec.ts
+- **Context**: None.
+
 ###### [2026-06-17] - Rework Realistic Star Field map style to match Third Horizon reference
 
 - **Summary**: Recolored the Realistic Star Field style to match Coriolis Third Horizon aesthetic with warm dark field, glowing amber systems, and gold portal links.

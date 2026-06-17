@@ -60,7 +60,21 @@ export const realisticStyle: StyleDefinition = {
 		region: { width: 1, alpha: 0.18 }
 	},
 	label: { fontFamily: 'sans-serif', fontSize: 14 },
-	// UI chrome uses the default (stock Tailwind) slate/sky ramps from app.css;
-	// only the font is pinned so it matches the canvas labels.
-	ui: { fontFamily: 'ui-sans-serif, system-ui, sans-serif' }
+	// UI chrome keeps the neutral slate panels but shifts the accent (the `sky`
+	// ramp: focus rings, active toggles, selection ticks) to amber/gold so it
+	// reads as one piece with the warm Coriolis map.
+	ui: {
+		fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+		ramps: {
+			sky: {
+				'300': '#fcd34d',
+				'400': '#fbbf24',
+				'500': '#f59e0b',
+				'600': '#d97706',
+				'700': '#b45309',
+				'800': '#92400e',
+				'900': '#78350f'
+			}
+		}
+	}
 };
