@@ -76,6 +76,8 @@
 	let hoverGraphics: PIXI.Graphics;
 	// Screen-space overlay (e.g. CRT scanlines) owned by the active style.
 	let styleOverlay: PIXI.Container | null = null;
+	// Screen-space parallax background owned by the active style (below viewport).
+	let styleBackground: PIXI.Container | null = null;
 
 	onMount(async () => {
 		if (!container) return;
@@ -92,6 +94,7 @@
 				},
 				() => {
 					updateZoomLimits();
+					rebuildStyleBackground();
 					rebuildStyleOverlay();
 				}
 			);
@@ -114,7 +117,10 @@
 
 				lastScale = currentScale;
 			});
-			setup.viewport.on('moved', updateScales);
+			setup.viewport.on('moved', () => {
+				updateScales();
+				applyParallax();
+			});
 
 			// Stable E2E debug hook: expose a persistent object with live getters
 			if (isE2EDebugEnabled() && typeof window !== 'undefined') {
@@ -178,10 +184,38 @@
 		}
 	}
 
+	/** Rebuild the screen-fixed parallax background beneath the viewport. */
+	function rebuildStyleBackground() {
+		if (!app) return;
+		if (styleBackground) {
+			styleBackground.destroy({ children: true });
+			styleBackground = null;
+		}
+		const bg = $activeStyle.createBackground(
+			{ width: app.screen.width, height: app.screen.height },
+			app.renderer
+		);
+		if (bg) {
+			app.stage.addChildAt(bg, 0);
+			styleBackground = bg;
+			applyParallax();
+		}
+	}
+
+	/** Offset the background layers for the current camera (parallax). */
+	function applyParallax() {
+		if (!styleBackground || !viewport) return;
+		$activeStyle.parallaxBackground?.(styleBackground, {
+			x: viewport.center.x,
+			y: viewport.center.y
+		});
+	}
+
 	/** Apply the active style's canvas background and overlay. */
 	function applyStyleChrome() {
 		if (!app) return;
 		app.renderer.background.color = $activeStyle.colors.background;
+		rebuildStyleBackground();
 		rebuildStyleOverlay();
 	}
 
@@ -540,7 +574,7 @@
 		starCenter.addChild(starVisual);
 
 		const baseRadius = getVisualRadius(star.RadiusSol * 695700);
-		starVisual.addChild($activeStyle.createStarVisual({ star, baseRadius }));
+		starVisual.addChild($activeStyle.createStarVisual({ star, baseRadius, renderer: app?.renderer }));
 
 		starVisual.eventMode = 'static';
 		starVisual.cursor = 'pointer';
@@ -654,7 +688,7 @@
 		bodyCenter.addChild(bodyVisual);
 
 		const baseRadius = getVisualRadius(body.RadiusKm);
-		bodyVisual.addChild($activeStyle.createBodyVisual({ body, baseRadius }));
+		bodyVisual.addChild($activeStyle.createBodyVisual({ body, baseRadius, renderer: app?.renderer }));
 
 		bodyVisual.eventMode = 'static';
 		bodyVisual.cursor = 'pointer';
