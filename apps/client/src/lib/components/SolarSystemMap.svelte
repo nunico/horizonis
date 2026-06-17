@@ -574,7 +574,9 @@
 		starCenter.addChild(starVisual);
 
 		const baseRadius = getVisualRadius(star.RadiusSol * 695700);
-		starVisual.addChild($activeStyle.createStarVisual({ star, baseRadius, renderer: app?.renderer }));
+		starVisual.addChild(
+			$activeStyle.createStarVisual({ star, baseRadius, renderer: app?.renderer })
+		);
 
 		starVisual.eventMode = 'static';
 		starVisual.cursor = 'pointer';
@@ -688,7 +690,9 @@
 		bodyCenter.addChild(bodyVisual);
 
 		const baseRadius = getVisualRadius(body.RadiusKm);
-		bodyVisual.addChild($activeStyle.createBodyVisual({ body, baseRadius, renderer: app?.renderer }));
+		bodyVisual.addChild(
+			$activeStyle.createBodyVisual({ body, baseRadius, renderer: app?.renderer })
+		);
 
 		bodyVisual.eventMode = 'static';
 		bodyVisual.cursor = 'pointer';

@@ -39,9 +39,13 @@ const { mockActiveStyle } = vi.hoisted(() => {
 });
 
 vi.mock('$lib/stores/style', () => {
-	const { readable } = require('svelte/store');
 	return {
-		activeStyle: readable(mockActiveStyle),
+		activeStyle: {
+			subscribe: (run: (value: typeof mockActiveStyle) => void) => {
+				run(mockActiveStyle);
+				return () => {};
+			}
+		},
 		activeStyleId: { subscribe: vi.fn() },
 		availableStyles: { subscribe: vi.fn() },
 		setActiveStyle: vi.fn(),

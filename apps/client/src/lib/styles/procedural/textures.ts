@@ -111,23 +111,20 @@ export function buildNebulaLayer(
 	renderer: Renderer,
 	p: { size: number; seed: number; colors: number[]; blobCount: number }
 ): Texture {
-	return memo(
-		`nebula:${p.size}:${p.seed}:${p.colors.join(',')}:${p.blobCount}`,
-		() => {
-			const rng = createRng(p.seed);
-			const g = new Graphics();
-			for (let i = 0; i < p.blobCount; i++) {
-				const x = rng() * p.size;
-				const y = rng() * p.size;
-				const rad = p.size * (0.15 + rng() * 0.25);
-				const color = p.colors[Math.floor(rng() * p.colors.length)];
-				for (let j = 4; j >= 1; j--) {
-					g.circle(x, y, (rad * j) / 4).fill({ color, alpha: 0.05 });
-				}
+	return memo(`nebula:${p.size}:${p.seed}:${p.colors.join(',')}:${p.blobCount}`, () => {
+		const rng = createRng(p.seed);
+		const g = new Graphics();
+		for (let i = 0; i < p.blobCount; i++) {
+			const x = rng() * p.size;
+			const y = rng() * p.size;
+			const rad = p.size * (0.15 + rng() * 0.25);
+			const color = p.colors[Math.floor(rng() * p.colors.length)];
+			for (let j = 4; j >= 1; j--) {
+				g.circle(x, y, (rad * j) / 4).fill({ color, alpha: 0.05 });
 			}
-			return renderer.generateTexture(g);
 		}
-	);
+		return renderer.generateTexture(g);
+	});
 }
 
 /** Scattered background stars of varying brightness over transparency. */
