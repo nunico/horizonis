@@ -11,6 +11,7 @@
 	import { setupPixi } from '$lib/pixi/setup';
 	import { LAYOUT, INTERACTION } from '$lib/theme';
 	import { activeStyle } from '$lib/stores/style';
+	import { clearTextureCache } from '$lib/styles/procedural/textures';
 	import { recordSnapshot } from '$lib/stores/history';
 	import { exceedsDragThreshold } from '$lib/utils/drag';
 	import { isE2EDebugEnabled } from '$lib/utils/e2e';
@@ -198,6 +199,10 @@
 		if (app) {
 			if (resizeHandler) app.renderer.off('resize', resizeHandler);
 			app.destroy(true, { children: true, texture: true });
+			// `texture: true` frees the GPU textures backing our baked sprites, so
+			// drop the module-level cache too — otherwise a remount (e.g. the
+			// cluster↔system view toggle) would reuse destroyed textures.
+			clearTextureCache();
 		}
 	});
 
