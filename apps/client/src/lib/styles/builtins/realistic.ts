@@ -52,5 +52,8 @@ export const realisticStyle: StyleDefinition = {
 		portal: { width: 2, alpha: 0.5 },
 		region: { width: 1, alpha: 0.2 }
 	},
-	label: { fontFamily: 'sans-serif', fontSize: 14 }
+	label: { fontFamily: 'sans-serif', fontSize: 14 },
+	// UI chrome uses the default (stock Tailwind) slate/sky ramps from app.css;
+	// only the font is pinned so it matches the canvas labels.
+	ui: { fontFamily: 'ui-sans-serif, system-ui, sans-serif' }
 };

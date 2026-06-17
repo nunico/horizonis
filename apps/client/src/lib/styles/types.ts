@@ -94,6 +94,52 @@ export interface EffectsSpec {
 	bloom?: BloomSpec;
 }
 
+/** Tailwind ramp shades the UI chrome draws from. */
+export type RampShade =
+	| '50'
+	| '100'
+	| '200'
+	| '300'
+	| '400'
+	| '500'
+	| '600'
+	| '700'
+	| '800'
+	| '900'
+	| '950';
+
+export const RAMP_SHADES: readonly RampShade[] = [
+	'50',
+	'100',
+	'200',
+	'300',
+	'400',
+	'500',
+	'600',
+	'700',
+	'800',
+	'900',
+	'950'
+] as const;
+
+/** Per-shade hex overrides for a Tailwind color ramp (any subset of shades). */
+export type RampOverride = Partial<Record<RampShade, string>>;
+
+/**
+ * Optional theming of the HTML/CSS chrome (navbar, panels, dialogs, toasts).
+ * The app's Tailwind `slate`/`sky` palettes are backed by CSS variables; a
+ * style overrides those ramps to re-skin the whole UI without per-component
+ * edits. Omitted ramps fall back to the default (realistic) values in app.css.
+ */
+export interface UiThemeSpec {
+	/** CSS font-family applied to the document body. */
+	fontFamily: string;
+	ramps?: {
+		slate?: RampOverride;
+		sky?: RampOverride;
+	};
+}
+
 export interface StyleMeta {
 	id: string;
 	name: string;
@@ -116,6 +162,8 @@ export interface StyleDefinition {
 	stroke: { orbit: StrokeSpec; portal: StrokeSpec; region: StrokeSpec };
 	label: LabelSpec;
 	effects?: EffectsSpec;
+	/** Optional theming of the surrounding HTML/CSS UI chrome. */
+	ui?: UiThemeSpec;
 }
 
 /** Runtime color tokens (PixiJS 0xRRGGBB numbers) read by overlay code. */
@@ -192,6 +240,8 @@ export interface MapStyle {
 	 * (not GL filters) so it behaves identically on WebGL and WebGPU.
 	 */
 	createStageOverlay(screen: { width: number; height: number }): Container | null;
+	/** Optional theming of the surrounding HTML/CSS chrome. */
+	ui?: UiThemeSpec;
 	/** The definition this style was built from, for export. Absent for code styles. */
 	definition?: StyleDefinition;
 }

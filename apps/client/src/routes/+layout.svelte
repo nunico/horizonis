@@ -9,7 +9,14 @@
 	import { toast } from '$lib/stores/toast';
 	import * as appState from '$lib/stores/appState';
 	import * as clusterData from '$lib/stores/clusterData';
+	import { activeStyle } from '$lib/stores/style';
+	import { applyUiTheme } from '$lib/styles/ui';
 	let { children } = $props();
+
+	// Re-skin the HTML/CSS chrome whenever the active map style changes.
+	$effect(() => {
+		applyUiTheme($activeStyle.ui);
+	});
 
 	if (typeof window !== 'undefined' && (import.meta.env.DEV || window.navigator.webdriver)) {
 		window.stores = {

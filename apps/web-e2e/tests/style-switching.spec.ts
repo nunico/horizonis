@@ -85,6 +85,30 @@ test.describe('Map style switching', () => {
 		).toHaveAttribute('aria-checked', 'true');
 	});
 
+	test('re-skins the HTML chrome (CSS variables + font) when switching styles', async ({
+		page
+	}) => {
+		const readChrome = () =>
+			page.evaluate(() => {
+				const root = getComputedStyle(document.documentElement);
+				return {
+					surface: root.getPropertyValue('--slate-900').trim(),
+					font: getComputedStyle(document.body).fontFamily
+				};
+			});
+
+		const realistic = await readChrome();
+		// Stock Tailwind slate-900.
+		expect(realistic.surface).toBe('15 23 42');
+
+		await page.getByRole('button', { name: 'Map style' }).click();
+		await page.getByRole('menuitemradio', { name: /Tactical CRT/ }).click();
+
+		await expect.poll(async () => (await readChrome()).surface).toBe('6 25 15');
+		const tactical = await readChrome();
+		expect(tactical.font.toLowerCase()).toContain('mono');
+	});
+
 	test('imports a style file, activates it, and keeps it after reload', async ({ page }) => {
 		await page.getByRole('button', { name: 'Map style' }).click();
 
