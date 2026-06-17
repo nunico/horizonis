@@ -39,14 +39,32 @@ vi.mock('pixi.js', () => {
 	class Container {
 		children: unknown[] = [];
 		eventMode = 'auto';
+		interactiveChildren = true;
+		position = {
+			x: 0,
+			y: 0,
+			set(x: number, y: number) {
+				this.x = x;
+				this.y = y;
+			}
+		};
 		onRender: (() => void) | undefined;
 		addChild(c: unknown) {
 			this.children.push(c);
 			return c;
 		}
 	}
-	return { Graphics, Container };
+	class Sprite {
+		anchor = { set: () => {} };
+		texture: unknown;
+		constructor(texture: unknown) {
+			this.texture = texture;
+		}
+	}
+	return { Graphics, Container, Sprite };
 });
+
+const fakeRenderer = () => ({ generateTexture: () => ({}) }) as never;
 
 import { createDeclarativeStyle } from './declarative';
 import type { StyleDefinition } from './types';
@@ -197,5 +215,85 @@ describe('createDeclarativeStyle', () => {
 			fill: 0xf1f5f9
 		});
 		expect(style.labelStyle('body').fill).toBe(0x94a3b8);
+	});
+
+	it('renders a sphere star with a glow + body sprite when a renderer is given', () => {
+		const style = createDeclarativeStyle(def({ star: { shape: 'sphere' } }));
+		const visual = style.createStarVisual({
+			star: star('G2V'),
+			baseRadius: 10,
+			renderer: fakeRenderer()
+		}) as unknown as { children: unknown[] };
+		expect(visual.children.length).toBe(2);
+	});
+
+	it('falls back to vector drawing for a sphere star with no renderer', () => {
+		const style = createDeclarativeStyle(def({ star: { shape: 'sphere' } }));
+		const visual = style.createStarVisual({
+			star: star('G2V'),
+			baseRadius: 10
+		}) as unknown as { children: Array<{ fills?: unknown[] }> };
+		expect(visual.children.some((c) => Array.isArray(c.fills))).toBe(true);
+	});
+
+	it('returns null from createBackground when the style has no background', () => {
+		const style = createDeclarativeStyle(def());
+		expect(style.createBackground({ width: 800, height: 600 }, fakeRenderer())).toBeNull();
+	});
+
+	it('builds one layer per parallax factor when a background is configured', () => {
+		const style = createDeclarativeStyle(
+			def({
+				background: {
+					kind: 'parallax-starfield',
+					seed: 1,
+					density: 1,
+					nebulaColors: ['#112233'],
+					parallaxFactors: [0.02, 0.05, 0.1]
+				}
+			})
+		);
+		const bg = style.createBackground(
+			{ width: 800, height: 600 },
+			fakeRenderer()
+		) as unknown as { children: unknown[] };
+		expect(bg).not.toBeNull();
+		expect(bg.children.length).toBe(3);
+	});
+
+	it('returns null from createBackground without a renderer', () => {
+		const style = createDeclarativeStyle(
+			def({
+				background: {
+					kind: 'parallax-starfield',
+					seed: 1,
+					density: 1,
+					nebulaColors: ['#112233'],
+					parallaxFactors: [0.1]
+				}
+			})
+		);
+		expect(style.createBackground({ width: 800, height: 600 })).toBeNull();
+	});
+
+	it('parallaxBackground offsets each layer by camera * factor', () => {
+		const style = createDeclarativeStyle(
+			def({
+				background: {
+					kind: 'parallax-starfield',
+					seed: 1,
+					density: 1,
+					nebulaColors: ['#112233'],
+					parallaxFactors: [0.1, 0.5]
+				}
+			})
+		);
+		const bg = style.createBackground(
+			{ width: 800, height: 600 },
+			fakeRenderer()
+		) as unknown as { children: Array<{ position: { x: number; y: number } }> };
+		style.parallaxBackground!(bg as never, { x: 100, y: 200 });
+		expect(bg.children[0].position).toMatchObject({ x: -10, y: -20 });
+		expect(bg.children[1].position).toMatchObject({ x: -50, y: -100 });
 	});
 });

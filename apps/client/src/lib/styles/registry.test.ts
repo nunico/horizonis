@@ -23,7 +23,8 @@ function fakeStyle(id: string, name = id): MapStyle {
 		styleOrbit: () => {},
 		styleRegion: () => {},
 		labelStyle: () => ({}),
-		createStageOverlay: () => null
+		createStageOverlay: () => null,
+		createBackground: () => null
 	};
 }
 
