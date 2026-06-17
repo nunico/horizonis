@@ -149,7 +149,10 @@ function parse(input: unknown): StyleDefinition {
 			shape: oneOf(bodyShape.shape, BODY_SHAPES, 'body.shape'),
 			glow: glow(bodyShape.glow, 'body.glow')
 		},
-		systemNode: { shape: oneOf(systemNode.shape, NODE_SHAPES, 'systemNode.shape') },
+		systemNode: {
+			shape: oneOf(systemNode.shape, NODE_SHAPES, 'systemNode.shape'),
+			glow: glow(systemNode.glow, 'systemNode.glow')
+		},
 		stroke: {
 			orbit: stroke(strokeIn.orbit, 'stroke.orbit'),
 			portal: stroke(strokeIn.portal, 'stroke.portal'),

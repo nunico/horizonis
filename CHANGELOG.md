@@ -1,5 +1,17 @@
 # Changelog
 
+###### [2026-06-17] - Rework Realistic Star Field map style to match Third Horizon reference
+
+- **Summary**: Recolored the Realistic Star Field style to match Coriolis Third Horizon aesthetic with warm dark field, glowing amber systems, and gold portal links.
+- **Changes**:
+  - Recolored the realistic style with warm near-black field, glowing amber system dots, gold portal links in cluster view.
+  - Stars now render with stronger coronal glow; planets as shaded discs with subtle glow instead of banded.
+  - Added optional `glow` property to `systemNode` in style definitions for cluster system dot bloom.
+  - Improved glow renderer from single disc to layered radial falloff for soft bloom effect.
+  - Extended style import validation to cover new `systemNode.glow` property.
+- **Files Affected**: apps/client/src/lib/styles/*, apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/SolarSystemMap.svelte
+- **Context**: None.
+
 ###### [2026-06-17] - Extend map-style system to theme UI chrome
 
 - **Summary**: Extended the pluggable map-style system to re-skin the entire UI (navbar, panels, dialogs, controls) via CSS variables, not just the PIXI canvas.

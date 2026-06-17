@@ -158,7 +158,7 @@ export interface StyleDefinition {
 	palette: StylePalette;
 	star: { shape: StarShape; glow?: GlowSpec };
 	body: { shape: BodyShape; glow?: GlowSpec };
-	systemNode: { shape: NodeShape };
+	systemNode: { shape: NodeShape; glow?: GlowSpec };
 	stroke: { orbit: StrokeSpec; portal: StrokeSpec; region: StrokeSpec };
 	label: LabelSpec;
 	effects?: EffectsSpec;

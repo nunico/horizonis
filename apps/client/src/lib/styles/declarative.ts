@@ -29,12 +29,21 @@ function lighten(color: number, t: number): number {
 	return (mix(r) << 16) | (mix(g) << 8) | mix(b);
 }
 
-/** Draw a soft glow halo behind a shape when the style specifies one. */
+/**
+ * Draw a soft glow halo behind a shape: several concentric discs from the body
+ * edge out to `radiusFactor`, faint at the rim and stronger toward the core,
+ * approximating a radial bloom (a single flat disc reads as a hard grey ring).
+ */
 function addGlow(visual: Container, baseRadius: number, color: number, glow?: GlowSpec): void {
 	if (!glow) return;
-	const halo = new Graphics();
-	halo.circle(0, 0, baseRadius * glow.radiusFactor).fill({ color, alpha: glow.alpha });
-	visual.addChild(halo);
+	const steps = 6;
+	for (let i = 1; i <= steps; i++) {
+		// i = 1 is the largest, faintest ring; i = steps hugs the body and is brightest.
+		const radius = baseRadius * (1 + (glow.radiusFactor - 1) * (1 - (i - 1) / steps));
+		const halo = new Graphics();
+		halo.circle(0, 0, radius).fill({ color, alpha: glow.alpha * (i / steps) * 0.6 });
+		visual.addChild(halo);
+	}
 }
 
 function drawDisc(visual: Container, radius: number, color: number): void {
@@ -136,6 +145,7 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 
 		createSystemNodeVisual({ baseRadius }: SystemNodeVisualContext): Container {
 			const visual = new Container();
+			addGlow(visual, baseRadius, colors.systemFill, def.systemNode.glow);
 			drawNodeShape(visual, def.systemNode.shape, baseRadius, colors.systemFill);
 			return visual;
 		},
