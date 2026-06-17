@@ -59,7 +59,15 @@ export const realisticStyle: StyleDefinition = {
 		portal: { width: 2, alpha: 0.55 },
 		region: { width: 1, alpha: 0.18 }
 	},
-	label: { fontFamily: 'sans-serif', fontSize: 14 },
+	// A soft dark halo keeps the warm labels legible over the bright coronal
+	// glow and the nebula/region wash (distance 0 + blur reads as an outline).
+	// A dark outline keeps the warm labels legible over the bright coronal glow
+	// and the nebula/region wash.
+	label: {
+		fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+		fontSize: 14,
+		outline: { color: '#000000', width: 3, alpha: 0.85 }
+	},
 	// UI chrome keeps the neutral slate panels but shifts the accent (the `sky`
 	// ramp: focus rings, active toggles, selection ticks) to amber/gold so it
 	// reads as one piece with the warm Coriolis map.

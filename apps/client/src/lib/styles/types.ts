@@ -72,10 +72,22 @@ export interface StrokeSpec {
 	alpha: number;
 }
 
+/**
+ * Crisp text outline so labels stay legible over bright glows and busy
+ * backgrounds. Maps to a PixiJS text stroke drawn around each glyph.
+ */
+export interface LabelOutlineSpec {
+	color: string;
+	width: number;
+	alpha?: number;
+}
+
 export interface LabelSpec {
 	fontFamily: string;
 	fontSize: number;
 	letterSpacing?: number;
+	/** Optional contrast outline so labels survive bright/cluttered styles. */
+	outline?: LabelOutlineSpec;
 }
 
 export interface ScanlinesSpec {
