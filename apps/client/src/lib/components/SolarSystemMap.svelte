@@ -16,6 +16,7 @@
 	import { getEntityMaxSatRadius } from '$lib/utils/stellar';
 	import { LAYOUT } from '$lib/theme';
 	import { activeStyle } from '$lib/stores/style';
+	import { clearTextureCache } from '$lib/styles/procedural/textures';
 	import { isE2EDebugEnabled } from '$lib/utils/e2e';
 
 	type WindowWithDebug = Window & {
@@ -164,6 +165,10 @@
 		if (app) {
 			if (resizeHandler) app.renderer.off('resize', resizeHandler);
 			app.destroy(true, { children: true, texture: true });
+			// `texture: true` frees the GPU textures backing our baked sprites, so
+			// drop the module-level cache too — otherwise a remount (e.g. the
+			// cluster↔system view toggle) would reuse destroyed textures.
+			clearTextureCache();
 		}
 	});
 
