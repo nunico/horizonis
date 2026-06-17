@@ -93,13 +93,15 @@ test.describe('Map style switching', () => {
 				const root = getComputedStyle(document.documentElement);
 				return {
 					surface: root.getPropertyValue('--slate-900').trim(),
+					accent: root.getPropertyValue('--sky-500').trim(),
 					font: getComputedStyle(document.body).fontFamily
 				};
 			});
 
 		const realistic = await readChrome();
-		// Stock Tailwind slate-900.
+		// Stock Tailwind slate-900 panels with an amber accent (amber-500).
 		expect(realistic.surface).toBe('15 23 42');
+		expect(realistic.accent).toBe('245 158 11');
 
 		await page.getByRole('button', { name: 'Map style' }).click();
 		await page.getByRole('menuitemradio', { name: /Tactical CRT/ }).click();
