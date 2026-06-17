@@ -69,10 +69,44 @@ describe('procedural textures', () => {
 		expect(r.generateTexture).toHaveBeenCalledTimes(1);
 	});
 
+	it('bakes a mottled sphere (the rocky-surface path)', () => {
+		const r = fakeRenderer();
+		buildSphere(r as never, {
+			radius: 8,
+			color: 0x996633,
+			surface: 'mottle',
+			lightAngle: 2.2,
+			seed: 7
+		});
+		expect(r.generateTexture).toHaveBeenCalledTimes(1);
+	});
+
+	it('bakes a bare sphere with no surface treatment', () => {
+		const r = fakeRenderer();
+		buildSphere(r as never, {
+			radius: 8,
+			color: 0xffffff,
+			surface: 'none',
+			lightAngle: 0,
+			seed: 1
+		});
+		expect(r.generateTexture).toHaveBeenCalledTimes(1);
+	});
+
+	it('caches each surface treatment under a distinct key', () => {
+		const r = fakeRenderer();
+		const base = { radius: 8, color: 0x3366ff, lightAngle: 0.6, seed: 3 } as const;
+		buildSphere(r as never, { ...base, surface: 'none' });
+		buildSphere(r as never, { ...base, surface: 'bands' });
+		buildSphere(r as never, { ...base, surface: 'mottle' });
+		expect(r.generateTexture).toHaveBeenCalledTimes(3);
+	});
+
 	it('bakes nebula and starfield layers deterministically (no rebake on identical params)', () => {
 		const r = fakeRenderer();
-		buildNebulaLayer(r as never, { size: 512, seed: 1, colors: [0x112233], blobCount: 4 });
-		buildNebulaLayer(r as never, { size: 512, seed: 1, colors: [0x112233], blobCount: 4 });
+		const colors = [0x112233, 0x331122];
+		buildNebulaLayer(r as never, { size: 512, seed: 1, colors, blobCount: 4 });
+		buildNebulaLayer(r as never, { size: 512, seed: 1, colors, blobCount: 4 });
 		buildStarfieldLayer(r as never, { size: 512, seed: 2, count: 50, tint: 0xffffff });
 		expect(r.generateTexture).toHaveBeenCalledTimes(2);
 	});
