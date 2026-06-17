@@ -1,4 +1,4 @@
-import type { Container, Graphics, TextStyleOptions } from 'pixi.js';
+import type { Container, Graphics, Renderer, TextStyleOptions } from 'pixi.js';
 import type { Star, OrbitalBody, SolarSystem, BodyType } from '$lib/types/stellar';
 
 /**
@@ -54,9 +54,12 @@ export interface StylePalette {
 	body: BodyPalette;
 }
 
-export type StarShape = 'disc' | 'ring' | 'gradient';
-export type BodyShape = 'disc' | 'ring' | 'banded';
+export type StarShape = 'disc' | 'ring' | 'gradient' | 'sphere';
+export type BodyShape = 'disc' | 'ring' | 'banded' | 'sphere';
 export type NodeShape = 'disc' | 'ring';
+
+/** Per-body-type surface treatment for the procedural `'sphere'` shape. */
+export type SurfaceTreatment = 'none' | 'bands' | 'mottle';
 
 export interface GlowSpec {
 	/** Outer glow radius as a multiple of the body's base radius. */
@@ -92,6 +95,23 @@ export interface BloomSpec {
 export interface EffectsSpec {
 	scanlines?: ScanlinesSpec;
 	bloom?: BloomSpec;
+}
+
+/**
+ * Procedural parallax star-field background. Baked once per (seed, screen) and
+ * drawn behind the viewport. `parallaxFactors` has one entry per layer (far →
+ * near, ~0.02..0.1); layers translate by `-cameraCenter * factor` on pan.
+ */
+export interface BackgroundSpec {
+	kind: 'parallax-starfield';
+	/** Deterministic seed so every reload/user sees the same field. */
+	seed: number;
+	/** Relative background-star count multiplier (1 = default). */
+	density: number;
+	/** Hex blobs painted into the far nebula layer. */
+	nebulaColors: string[];
+	/** Drift fraction per layer, far → near. */
+	parallaxFactors: number[];
 }
 
 /** Tailwind ramp shades the UI chrome draws from. */
@@ -164,6 +184,8 @@ export interface StyleDefinition {
 	effects?: EffectsSpec;
 	/** Optional theming of the surrounding HTML/CSS UI chrome. */
 	ui?: UiThemeSpec;
+	/** Optional procedural background (parallax star field). */
+	background?: BackgroundSpec;
 }
 
 /** Runtime color tokens (PixiJS 0xRRGGBB numbers) read by overlay code. */
@@ -183,16 +205,25 @@ export interface StarVisualContext {
 	star: Star;
 	/** Size budget computed by the component from `getVisualRadius`. */
 	baseRadius: number;
+	/** Active PIXI renderer, used to bake procedural textures. Optional so
+	 * styles that draw only vector primitives (and unit tests) work without it. */
+	renderer?: Renderer;
 }
 
 export interface BodyVisualContext {
 	body: OrbitalBody;
 	baseRadius: number;
+	/** Active PIXI renderer, used to bake procedural textures. Optional so
+	 * styles that draw only vector primitives (and unit tests) work without it. */
+	renderer?: Renderer;
 }
 
 export interface SystemNodeVisualContext {
 	system: SolarSystem;
 	baseRadius: number;
+	/** Active PIXI renderer, used to bake procedural textures. Optional so
+	 * styles that draw only vector primitives (and unit tests) work without it. */
+	renderer?: Renderer;
 }
 
 export interface LinkContext {
@@ -240,6 +271,20 @@ export interface MapStyle {
 	 * (not GL filters) so it behaves identically on WebGL and WebGPU.
 	 */
 	createStageOverlay(screen: { width: number; height: number }): Container | null;
+	/**
+	 * Build a screen-space background container (parallax star field) sized to
+	 * the canvas, or null when the style has no background. Added BELOW the
+	 * viewport. Needs the renderer to bake textures; returns null without one.
+	 */
+	createBackground(
+		screen: { width: number; height: number },
+		renderer?: Renderer
+	): Container | null;
+	/**
+	 * Reposition background layers for the current camera center (parallax).
+	 * No-op for styles without a background.
+	 */
+	parallaxBackground?(container: Container, camera: PointLike): void;
 	/** Optional theming of the surrounding HTML/CSS chrome. */
 	ui?: UiThemeSpec;
 	/** The definition this style was built from, for export. Absent for code styles. */
