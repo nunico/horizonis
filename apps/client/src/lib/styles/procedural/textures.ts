@@ -63,7 +63,7 @@ export function buildSphere(
 	}
 ): Texture {
 	return memo(
-		`sphere:${p.color}:${p.radius}:${p.surface}:${p.lightAngle.toFixed(2)}:${p.seed}`,
+		`sphere:${p.color}:${p.radius}:${p.surface}:${p.lightAngle.toFixed(4)}:${p.seed}`,
 		() => {
 			const r = p.radius;
 			const cont = new Container();
@@ -75,10 +75,11 @@ export function buildSphere(
 				const off = t * r * 0.45;
 				const cx = r + Math.cos(p.lightAngle) * off;
 				const cy = r - Math.sin(p.lightAngle) * off;
-				const tint = shade(limb, t);
+				// Outermost disc is the dark limb; inner discs brighten toward the
+				// lit core (negative shade darkens the night side, positive lightens).
 				const color = i === 0 ? limb : shade(p.color, (t - 0.5) * 0.6);
 				const g = new Graphics();
-				g.circle(cx, cy, rad).fill({ color: i === 0 ? tint : color, alpha: 1 });
+				g.circle(cx, cy, rad).fill({ color, alpha: 1 });
 				cont.addChild(g);
 			}
 			if (p.surface === 'bands') {
