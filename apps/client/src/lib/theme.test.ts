@@ -1,23 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import {
-	getSpectralColor,
-	getBodyTypeColor,
-	MAP_COLORS,
-	LAYOUT,
-	INTERACTION
-} from './theme';
+import { getSpectralColor, getBodyTypeColor, MAP_COLORS, LAYOUT, INTERACTION } from './theme';
 
 describe('getSpectralColor', () => {
-	it('returns the G-class color for spectral classes starting with G', () => {
+	it('returns the documented color for every OBAFGKM class', () => {
+		expect(getSpectralColor('O9V')).toBe(MAP_COLORS.spectralO);
+		expect(getSpectralColor('B0')).toBe(MAP_COLORS.spectralB);
+		expect(getSpectralColor('A0V')).toBe(MAP_COLORS.spectralA);
+		expect(getSpectralColor('F8')).toBe(MAP_COLORS.spectralF);
 		expect(getSpectralColor('G2V')).toBe(MAP_COLORS.spectralG);
-	});
-
-	it('returns the M-class color for spectral classes starting with M', () => {
+		expect(getSpectralColor('K5')).toBe(MAP_COLORS.spectralK);
 		expect(getSpectralColor('M5V')).toBe(MAP_COLORS.spectralM);
 	});
 
-	it('returns the default star color for other spectral classes', () => {
-		expect(getSpectralColor('A0V')).toBe(MAP_COLORS.spectralDefault);
+	it('returns the default star color for an unknown classification', () => {
+		expect(getSpectralColor('DA')).toBe(MAP_COLORS.spectralDefault);
 	});
 
 	it('returns the default star color for an empty string', () => {

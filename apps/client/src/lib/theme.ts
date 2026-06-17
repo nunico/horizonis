@@ -10,9 +10,15 @@ import type { BodyType } from '$lib/types/stellar';
  */
 
 export const MAP_COLORS = {
-	// Star spectral-class fills
-	spectralG: 0xfde047,
-	spectralM: 0xf97316,
+	// Star spectral-class fills — OBAFGKM sequence from
+	// docs/stellar_classifications.md (blue → white → yellow → orange → red).
+	spectralO: 0x6b9fff,
+	spectralB: 0x9fc8ff,
+	spectralA: 0xe8e8e8,
+	spectralF: 0xfff8d6,
+	spectralG: 0xffd966,
+	spectralK: 0xff9966,
+	spectralM: 0xff6644,
 	spectralDefault: 0x38bdf8,
 
 	// Orbital-body fills (keyed by BodyType)
@@ -47,11 +53,20 @@ const BODY_TYPE_COLORS: Record<BodyType, number> = {
 	Comet: MAP_COLORS.bodyComet
 };
 
-/** Resolve a star's fill color from its spectral classification. */
+const SPECTRAL_COLORS: Record<string, number> = {
+	O: MAP_COLORS.spectralO,
+	B: MAP_COLORS.spectralB,
+	A: MAP_COLORS.spectralA,
+	F: MAP_COLORS.spectralF,
+	G: MAP_COLORS.spectralG,
+	K: MAP_COLORS.spectralK,
+	M: MAP_COLORS.spectralM
+};
+
+/** Resolve a star's fill color from its OBAFGKM spectral classification. */
 export function getSpectralColor(spectralClass: string): number {
-	if (spectralClass.startsWith('G')) return MAP_COLORS.spectralG;
-	if (spectralClass.startsWith('M')) return MAP_COLORS.spectralM;
-	return MAP_COLORS.spectralDefault;
+	const letter = spectralClass.charAt(0).toUpperCase();
+	return SPECTRAL_COLORS[letter] ?? MAP_COLORS.spectralDefault;
 }
 
 /** Resolve an orbital body's fill color from its type, with a safe fallback. */

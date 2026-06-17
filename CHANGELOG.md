@@ -1,5 +1,20 @@
 # Changelog
 
+###### [2026-06-17] - Pluggable map render styles for StarMap and SolarSystemMap
+
+- **Summary**: Implemented a pluggable, swappable map-style system with live switching, persistence, and JSON import/export.
+- **Changes**:
+  - Added `MapStyle` runtime contract and `StyleDefinition` JSON-serializable format under `apps/client/src/lib/styles/`.
+  - Implemented declarative renderer (`createDeclarativeStyle`) for safe style sharing without code execution.
+  - Added optional hand-written `MapStyle` code escape-hatch for advanced customization.
+  - Added two built-in styles: "Realistic Star Field" (dark space, spectral gradients, shaded planets) and "Tactical CRT" (mint-on-black, scanlines, simple primitives).
+  - Added live style switching via `StylePicker` dropdown in the navigation bar with JSON export.
+  - Added style import with validation and persistent storage (localStorage, works in web and Tauri desktop).
+  - Extended star coloring to full OBAFGKM spectral sequence per stellar classification docs.
+  - Added Vitest tests for style registry, palette/spectral resolution, validation, persistence, renderer, and store; component tests for maps and picker; Playwright E2E for switching, import, and reload persistence.
+- **Files Affected**: apps/client/src/lib/styles/*, apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/SolarSystemMap.svelte, apps/client/src/lib/components/Navigation.svelte, apps/client/src/lib/stores/*, apps/client/src/lib/theme.ts
+- **Context**: Decoupling appearance from layout/interaction enables user theming while maintaining clean architecture. Declarative JSON-based styles provide a safe sharing path without runtime code execution.
+
 ###### [2026-06-17] - GitHub Actions CI/CD pipelines
 
 - **Summary**: Added GitHub Actions workflows for automated testing, linting, and cross-platform desktop builds.

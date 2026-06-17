@@ -9,7 +9,8 @@
 	import { SpatialGrid } from '$lib/utils/spatial';
 	import { getUniquePortals } from '$lib/utils/stellar';
 	import { setupPixi } from '$lib/pixi/setup';
-	import { MAP_COLORS, LAYOUT, INTERACTION } from '$lib/theme';
+	import { LAYOUT, INTERACTION } from '$lib/theme';
+	import { activeStyle } from '$lib/stores/style';
 	import { recordSnapshot } from '$lib/stores/history';
 	import { exceedsDragThreshold } from '$lib/utils/drag';
 	import { isE2EDebugEnabled } from '$lib/utils/e2e';
@@ -51,6 +52,8 @@
 	let clusterCenter = { x: 0, y: 0 };
 	let selectionGraphics: PIXI.Graphics;
 	let hoverGraphics: PIXI.Graphics;
+	// Screen-space overlay (e.g. CRT scanlines) owned by the active style.
+	let styleOverlay: PIXI.Container | null = null;
 
 	// Optimization: System lookup Map
 	let systemsById = $derived(new SvelteMap($cluster?.Systems?.map((s) => [s.Id, s]) || []));
@@ -63,7 +66,13 @@
 		const pixiApp = new PIXI.Application();
 		app = pixiApp;
 		try {
-			const setup = await setupPixi({ container, app: pixiApp }, updateZoomLimits);
+			const setup = await setupPixi(
+				{ container, app: pixiApp, backgroundColor: $activeStyle.colors.background },
+				() => {
+					updateZoomLimits();
+					rebuildStyleOverlay();
+				}
+			);
 			viewport = setup.viewport;
 			resizeHandler = setup.resizeHandler;
 
@@ -124,9 +133,7 @@
 			const endDrag = async () => {
 				// A press that never crossed the drag threshold is just a click/select.
 				if (!isDragging || !draggedSystemId || !viewport || !$cluster) {
-					const pressedNode = draggedSystemId
-						? systemNodesById.get(draggedSystemId)
-						: undefined;
+					const pressedNode = draggedSystemId ? systemNodesById.get(draggedSystemId) : undefined;
 					if (pressedNode) {
 						pressedNode.cursor = 'pointer';
 						pressedNode.alpha = 1;
@@ -188,6 +195,30 @@
 		}
 	});
 
+	/** Rebuild the screen-space style overlay (scanlines etc.) for the canvas. */
+	function rebuildStyleOverlay() {
+		if (!app) return;
+		if (styleOverlay) {
+			styleOverlay.destroy({ children: true });
+			styleOverlay = null;
+		}
+		const overlay = $activeStyle.createStageOverlay({
+			width: app.screen.width,
+			height: app.screen.height
+		});
+		if (overlay) {
+			app.stage.addChild(overlay);
+			styleOverlay = overlay;
+		}
+	}
+
+	/** Apply the active style's canvas background and overlay. */
+	function applyStyleChrome() {
+		if (!app) return;
+		app.renderer.background.color = $activeStyle.colors.background;
+		rebuildStyleOverlay();
+	}
+
 	function updateScales() {
 		if (!viewport) return;
 		const s = 1 / viewport.scale.x;
@@ -210,7 +241,7 @@
 				[portal.fromPos, portal.toPos].forEach((pos) => {
 					hoverGraphics
 						.circle(pos.x, pos.y, 14 * s)
-						.stroke({ width: 2 * s, color: MAP_COLORS.hover, alpha: 0.6 });
+						.stroke({ width: 2 * s, color: $activeStyle.colors.hover, alpha: 0.6 });
 				});
 			}
 		}
@@ -227,7 +258,9 @@
 						y = node.y;
 					}
 				}
-				hoverGraphics.circle(x, y, 14 * s).stroke({ width: 2 * s, color: MAP_COLORS.hover, alpha: 0.4 });
+				hoverGraphics
+					.circle(x, y, 14 * s)
+					.stroke({ width: 2 * s, color: $activeStyle.colors.hover, alpha: 0.4 });
 			}
 		}
 	}
@@ -251,7 +284,9 @@
 		}
 
 		const s = 1 / viewport.scale.x;
-		selectionGraphics.circle(x, y, 18 * s).stroke({ width: 2 * s, color: MAP_COLORS.accent, alpha: 0.8 });
+		selectionGraphics
+			.circle(x, y, 18 * s)
+			.stroke({ width: 2 * s, color: $activeStyle.colors.accent, alpha: 0.8 });
 	}
 
 	function updateFocus(currentScale: number) {
@@ -339,15 +374,11 @@
 
 			const isHighlighted = isHovered || isConnectedToHoveredSystem || isConnectedToSelectedSystem;
 
-			const color = isHighlighted ? MAP_COLORS.accent : MAP_COLORS.linkIdle;
-			const alpha = isHighlighted ? 0.8 : 0.5;
-			const width = (isHighlighted ? 3 : 2) * s;
-
-			portal.graphics
-				.clear()
-				.moveTo(portal.fromPos.x, portal.fromPos.y)
-				.lineTo(portal.toPos.x, portal.toPos.y)
-				.stroke({ width, color, alpha });
+			$activeStyle.stylePortal(portal.graphics, portal.fromPos, portal.toPos, {
+				hovered: isHovered,
+				highlighted: isHighlighted,
+				scale: s
+			});
 
 			const hitWidth = Math.max(10, 5 / viewport.scale.x);
 			// Cache hitArea object if possible, but it depends on viewport scale here
@@ -431,12 +462,15 @@
 			const node = new PIXI.Graphics() as PIXI.Graphics & { systemId: string };
 			node.systemId = system.Id;
 			node.zIndex = 10;
-			node.circle(0, 0, 10).fill(MAP_COLORS.systemFill);
+			node.addChild($activeStyle.createSystemNodeVisual({ system, baseRadius: 10 }));
 
 			node.x = system.X;
 			node.y = system.Y;
 			node.eventMode = 'static';
 			node.cursor = 'pointer';
+			// Interaction must not depend on the style's drawn shape (e.g. a
+			// stroke-only ring has no fill to hit-test), so set an explicit hit area.
+			node.hitArea = new PIXI.Circle(0, 0, 10);
 
 			node.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 				e.stopPropagation();
@@ -472,11 +506,7 @@
 
 			const label = new PIXI.Text({
 				text: system.Name,
-				style: {
-					fontFamily: 'sans-serif',
-					fontSize: 14,
-					fill: MAP_COLORS.labelPrimary
-				}
+				style: $activeStyle.labelStyle('system')
 			});
 			label.anchor.set(0.5, 0);
 			label.y = 15;
@@ -546,6 +576,21 @@
 	$effect(() => {
 		if ($selectedEntity !== undefined) {
 			drawSelection();
+		}
+	});
+
+	// Re-skin live when the active style changes: update canvas chrome and
+	// rebuild the scene, preserving the current camera.
+	let lastStyleId: string | null = null;
+	$effect(() => {
+		const id = $activeStyle.meta.id;
+		if (!viewport || !app) return;
+		const isFirstApply = lastStyleId === null;
+		if (id === lastStyleId) return;
+		lastStyleId = id;
+		applyStyleChrome();
+		if (!isFirstApply) {
+			queueMicrotask(() => renderCluster(false));
 		}
 	});
 </script>

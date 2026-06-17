@@ -16,7 +16,8 @@ vi.mock('pixi.js', () => {
 		this.renderer = {
 			on: vi.fn(),
 			off: vi.fn(),
-			events: {}
+			events: {},
+			background: { color: 0 }
 		};
 		this.canvas = document.createElement('canvas');
 		return this;
@@ -31,6 +32,8 @@ vi.mock('pixi.js', () => {
 		this.drawCircle = vi.fn().mockReturnThis();
 		this.rect = vi.fn().mockReturnThis();
 		this.stroke = vi.fn().mockReturnThis();
+		this.moveTo = vi.fn().mockReturnThis();
+		this.lineTo = vi.fn().mockReturnThis();
 		this.x = 0;
 		this.y = 0;
 		this.scale = { set: vi.fn() };
@@ -58,7 +61,18 @@ vi.mock('pixi.js', () => {
 		this.cursor = 'default';
 		return this;
 	});
-	return { Application, Graphics, Text, Container };
+	const Circle = vi.fn().mockImplementation(function (
+		this: Record<string, unknown>,
+		x: number,
+		y: number,
+		radius: number
+	) {
+		this.x = x;
+		this.y = y;
+		this.radius = radius;
+		return this;
+	});
+	return { Application, Graphics, Text, Container, Circle };
 });
 
 // Mock pixi-viewport

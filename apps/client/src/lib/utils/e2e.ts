@@ -11,9 +11,9 @@ export function isE2EDebugEnabled(): boolean {
 	const win = window as Window & { PUBLIC_E2E?: string | boolean };
 	return Boolean(
 		import.meta.env.DEV ||
-			import.meta.env.PUBLIC_E2E === '1' ||
-			win.PUBLIC_E2E === '1' ||
-			win.PUBLIC_E2E === true ||
-			win.navigator.webdriver
+		import.meta.env.PUBLIC_E2E === '1' ||
+		win.PUBLIC_E2E === '1' ||
+		win.PUBLIC_E2E === true ||
+		win.navigator.webdriver
 	);
 }

@@ -14,7 +14,8 @@
 	} from '$lib/pixi/scaling';
 	import { setupPixi } from '$lib/pixi/setup';
 	import { getEntityMaxSatRadius } from '$lib/utils/stellar';
-	import { MAP_COLORS, getSpectralColor, getBodyTypeColor, LAYOUT } from '$lib/theme';
+	import { LAYOUT } from '$lib/theme';
+	import { activeStyle } from '$lib/stores/style';
 	import { isE2EDebugEnabled } from '$lib/utils/e2e';
 
 	type WindowWithDebug = Window & {
@@ -73,6 +74,8 @@
 	let maxSystemRadius = 0;
 	let selectionGraphics: PIXI.Graphics;
 	let hoverGraphics: PIXI.Graphics;
+	// Screen-space overlay (e.g. CRT scanlines) owned by the active style.
+	let styleOverlay: PIXI.Container | null = null;
 
 	onMount(async () => {
 		if (!container) return;
@@ -80,8 +83,17 @@
 		app = pixiApp;
 		try {
 			const setup = await setupPixi(
-				{ container, app: pixiApp, worldWidth: 100000, worldHeight: 100000 },
-				updateZoomLimits
+				{
+					container,
+					app: pixiApp,
+					worldWidth: 100000,
+					worldHeight: 100000,
+					backgroundColor: $activeStyle.colors.background
+				},
+				() => {
+					updateZoomLimits();
+					rebuildStyleOverlay();
+				}
 			);
 			viewport = setup.viewport;
 			resizeHandler = setup.resizeHandler;
@@ -148,6 +160,30 @@
 			app.destroy(true, { children: true, texture: true });
 		}
 	});
+
+	/** Rebuild the screen-space style overlay (scanlines etc.) for the canvas. */
+	function rebuildStyleOverlay() {
+		if (!app) return;
+		if (styleOverlay) {
+			styleOverlay.destroy({ children: true });
+			styleOverlay = null;
+		}
+		const overlay = $activeStyle.createStageOverlay({
+			width: app.screen.width,
+			height: app.screen.height
+		});
+		if (overlay) {
+			app.stage.addChild(overlay);
+			styleOverlay = overlay;
+		}
+	}
+
+	/** Apply the active style's canvas background and overlay. */
+	function applyStyleChrome() {
+		if (!app) return;
+		app.renderer.background.color = $activeStyle.colors.background;
+		rebuildStyleOverlay();
+	}
 
 	function updateScales() {
 		if (!viewport || !systemData) return;
@@ -221,15 +257,13 @@
 		for (const orbit of orbitNodes) {
 			const isHovered = hoveredEntityId === orbit.entityId;
 			const isSelected = selectedId === orbit.entityId;
-			const color = isSelected
-				? MAP_COLORS.accent
-				: isHovered
-					? MAP_COLORS.orbitHover
-					: MAP_COLORS.linkIdle;
-			const alpha = isSelected || isHovered ? 0.8 : 0.4;
-			const width = (isSelected || isHovered ? 2 : 1) * s;
 
-			orbit.graphics.clear().circle(0, 0, orbit.radius).stroke({ width, color, alpha });
+			$activeStyle.styleOrbit(orbit.graphics, {
+				hovered: isHovered,
+				selected: isSelected,
+				scale: s,
+				radius: orbit.radius
+			});
 
 			const hitWidth = Math.max(10, 5 / viewport.scale.x);
 			orbit.graphics.hitArea = {
@@ -271,7 +305,7 @@
 			const s = 1 / viewport.scale.x;
 			selectionGraphics
 				.circle(worldX, worldY, radius + 8 * s)
-				.stroke({ width: 2 * s, color: MAP_COLORS.accent, alpha: 0.8 });
+				.stroke({ width: 2 * s, color: $activeStyle.colors.accent, alpha: 0.8 });
 		}
 	}
 
@@ -377,7 +411,7 @@
 
 		if (outer > maxSystemRadius) maxSystemRadius = outer;
 
-		r.circle(0, 0, outer).stroke({ width: outer - inner, color: MAP_COLORS.region, alpha: 0.2 });
+		$activeStyle.styleRegion(r, { innerRadius: inner, outerRadius: outer });
 		viewport.addChild(r);
 	}
 
@@ -505,14 +539,14 @@
 		const starVisual = new PIXI.Container();
 		starCenter.addChild(starVisual);
 
-		const g = new PIXI.Graphics();
-		const color = getSpectralColor(star.SpectralClass);
 		const baseRadius = getVisualRadius(star.RadiusSol * 695700);
-		g.circle(0, 0, baseRadius).fill(color);
-		starVisual.addChild(g);
+		starVisual.addChild($activeStyle.createStarVisual({ star, baseRadius }));
 
 		starVisual.eventMode = 'static';
 		starVisual.cursor = 'pointer';
+		// Hit-test against the size budget, not the style's drawn shape (a
+		// stroke-only ring has no fill geometry to hit).
+		starVisual.hitArea = new PIXI.Circle(0, 0, baseRadius);
 		starVisual.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 			e.stopPropagation();
 			selectedEntity.set(star);
@@ -526,7 +560,7 @@
 			hoverGraphics
 				.clear()
 				.circle(worldX, worldY, baseRadius * starVisual.scale.x + 4 * s)
-				.stroke({ width: 2 * s, color: MAP_COLORS.hover, alpha: 0.4 });
+				.stroke({ width: 2 * s, color: $activeStyle.colors.hover, alpha: 0.4 });
 		});
 
 		starVisual.on('pointerout', () => {
@@ -537,7 +571,7 @@
 
 		const label = new PIXI.Text({
 			text: star.Name,
-			style: { fontFamily: 'sans-serif', fontSize: 14, fill: MAP_COLORS.labelPrimary }
+			style: $activeStyle.labelStyle('star')
 		});
 		label.anchor.set(0.5, 0);
 		label.y = baseRadius + 5;
@@ -561,7 +595,7 @@
 			const r = new PIXI.Graphics();
 			const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
 			const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
-			r.circle(0, 0, outer).stroke({ width: outer - inner, color: MAP_COLORS.region, alpha: 0.2 });
+			$activeStyle.styleRegion(r, { innerRadius: inner, outerRadius: outer });
 			starCenter.addChild(r);
 		}
 	}
@@ -619,13 +653,13 @@
 		const bodyVisual = new PIXI.Container();
 		bodyCenter.addChild(bodyVisual);
 
-		const g = new PIXI.Graphics();
 		const baseRadius = getVisualRadius(body.RadiusKm);
-		g.circle(0, 0, baseRadius).fill(getBodyTypeColor(body.BodyType));
-		bodyVisual.addChild(g);
+		bodyVisual.addChild($activeStyle.createBodyVisual({ body, baseRadius }));
 
 		bodyVisual.eventMode = 'static';
 		bodyVisual.cursor = 'pointer';
+		// Hit-test against the size budget, not the style's drawn shape.
+		bodyVisual.hitArea = new PIXI.Circle(0, 0, baseRadius);
 		bodyVisual.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
 			e.stopPropagation();
 			selectedEntity.set(body);
@@ -639,7 +673,7 @@
 			hoverGraphics
 				.clear()
 				.circle(worldX, worldY, baseRadius * bodyVisual.scale.x + 4 * s)
-				.stroke({ width: 2 * s, color: MAP_COLORS.hover, alpha: 0.4 });
+				.stroke({ width: 2 * s, color: $activeStyle.colors.hover, alpha: 0.4 });
 		});
 
 		bodyVisual.on('pointerout', () => {
@@ -650,7 +684,7 @@
 
 		const label = new PIXI.Text({
 			text: body.Name,
-			style: { fontFamily: 'sans-serif', fontSize: 12, fill: MAP_COLORS.labelSecondary }
+			style: $activeStyle.labelStyle('body')
 		});
 		label.anchor.set(0.5, 0);
 		label.y = baseRadius + 4;
@@ -673,22 +707,23 @@
 		});
 	}
 
+	/** Capture the current framing in AU so it can be restored after a re-render. */
+	function capturePreserveCamera(): PreserveCamera | null {
+		if (!viewport || lastMinScale <= 0) return null;
+		const cx = viewport.center.x;
+		const cy = viewport.center.y;
+		return {
+			centerAu: pixelsToAu(Math.hypot(cx, cy), scaleConfig),
+			angle: Math.atan2(cy, cx),
+			zoomRatio: viewport.scale.x / lastMinScale
+		};
+	}
+
 	function setMode(mode: 'linear' | 'log') {
 		if (scaleConfig.mode === mode) return;
 
-		// Capture the current framing in AU so the view stays put when the
-		// linear/log pixel mapping changes underneath it.
-		let preserve: PreserveCamera | null = null;
-		if (viewport && lastMinScale > 0) {
-			const cx = viewport.center.x;
-			const cy = viewport.center.y;
-			preserve = {
-				centerAu: pixelsToAu(Math.hypot(cx, cy), scaleConfig),
-				angle: Math.atan2(cy, cx),
-				zoomRatio: viewport.scale.x / lastMinScale
-			};
-		}
-
+		// Keep the view put when the linear/log pixel mapping changes underneath it.
+		const preserve = capturePreserveCamera();
 		scaleConfig.mode = mode;
 		renderSystem(preserve);
 	}
@@ -702,6 +737,21 @@
 	$effect(() => {
 		if ($selectedEntity !== undefined) {
 			drawSelection();
+		}
+	});
+
+	// Re-skin live when the active style changes: update canvas chrome and
+	// rebuild the scene, preserving the current camera framing.
+	let lastStyleId: string | null = null;
+	$effect(() => {
+		const id = $activeStyle.meta.id;
+		if (!viewport || !app) return;
+		const isFirstApply = lastStyleId === null;
+		if (id === lastStyleId) return;
+		lastStyleId = id;
+		applyStyleChrome();
+		if (!isFirstApply && systemData) {
+			renderSystem(capturePreserveCamera());
 		}
 	});
 </script>
