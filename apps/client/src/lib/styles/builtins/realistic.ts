@@ -2,29 +2,33 @@ import type { StyleDefinition } from '../types';
 import { OBAFGKM_HEX } from '../palette';
 
 /**
- * Default look: a realistic dark star field. Authored purely as declarative
- * data (no privileged code path) so users can export, fork, and extend it like
- * any imported style. Stars get a glowing gradient core colored by OBAFGKM
- * class; gas-giant-scale planets read as banded discs.
+ * Default look, modelled on the Coriolis "Third Horizon" maps: a warm
+ * near-black star field with glowing amber system dots and gold portal lines in
+ * the cluster, and spectrally-classified stars with strong coronal glow plus
+ * shaded planets on faint orbit rings in the system view. Authored purely as
+ * declarative data so users can export, fork, and extend it like any imported
+ * style.
  */
 export const realisticStyle: StyleDefinition = {
 	meta: {
 		id: 'realistic',
 		name: 'Realistic Star Field',
-		version: '1.0.0',
+		version: '1.1.0',
 		author: 'Horizonis',
-		description: 'Dark space with glowing, spectrally-classified stars and shaded planets.'
+		description: 'Coriolis-style warm star field: glowing amber systems and spectral stars.'
 	},
-	backgroundColor: '#020617',
+	backgroundColor: '#070503',
 	palette: {
-		accent: '#38bdf8',
-		hover: '#ffffff',
-		linkIdle: '#334155',
-		orbitHover: '#f1f5f9',
-		region: '#475569',
-		labelPrimary: '#f1f5f9',
-		labelSecondary: '#94a3b8',
-		systemFill: '#38bdf8',
+		// Gold selection / highlighted portals; muted gold-tan links at rest read
+		// as amber portal lines in the cluster and faint orbit rings in-system.
+		accent: '#ffc15e',
+		hover: '#fff4d6',
+		linkIdle: '#9a7b3f',
+		orbitHover: '#e8c98a',
+		region: '#7a5a2a',
+		labelPrimary: '#f6e8cc',
+		labelSecondary: '#c2a06a',
+		systemFill: '#f4a63c',
 		spectral: {
 			O: OBAFGKM_HEX.O,
 			B: OBAFGKM_HEX.B,
@@ -33,24 +37,27 @@ export const realisticStyle: StyleDefinition = {
 			G: OBAFGKM_HEX.G,
 			K: OBAFGKM_HEX.K,
 			M: OBAFGKM_HEX.M,
-			default: '#38bdf8'
+			default: '#ffb454'
 		},
 		body: {
-			Planet: '#60a5fa',
-			Moon: '#94a3b8',
-			SpaceStation: '#ec4899',
-			DwarfPlanet: '#a78bfa',
-			Comet: '#2dd4bf',
-			default: '#ffffff'
+			Planet: '#7c9fd6',
+			Moon: '#b7a78f',
+			SpaceStation: '#e0843c',
+			DwarfPlanet: '#b08a6a',
+			Comet: '#8fd4c8',
+			default: '#c2a888'
 		}
 	},
-	star: { shape: 'gradient', glow: { radiusFactor: 2.1, alpha: 0.22 } },
-	body: { shape: 'banded', glow: { radiusFactor: 1.4, alpha: 0.12 } },
-	systemNode: { shape: 'disc' },
+	// Strong coronal glow on stars (Zalos/Zahedan in the reference).
+	star: { shape: 'gradient', glow: { radiusFactor: 2.6, alpha: 0.3 } },
+	// Small shaded spheres with a faint glow rather than banding every body.
+	body: { shape: 'disc', glow: { radiusFactor: 1.5, alpha: 0.18 } },
+	// Glowing amber cluster dots.
+	systemNode: { shape: 'disc', glow: { radiusFactor: 2.4, alpha: 0.35 } },
 	stroke: {
-		orbit: { width: 1, alpha: 0.35 },
-		portal: { width: 2, alpha: 0.5 },
-		region: { width: 1, alpha: 0.2 }
+		orbit: { width: 1, alpha: 0.3 },
+		portal: { width: 2, alpha: 0.55 },
+		region: { width: 1, alpha: 0.18 }
 	},
 	label: { fontFamily: 'sans-serif', fontSize: 14 },
 	// UI chrome uses the default (stock Tailwind) slate/sky ramps from app.css;
