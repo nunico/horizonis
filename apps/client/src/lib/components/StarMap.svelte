@@ -54,6 +54,8 @@
 	let hoverGraphics: PIXI.Graphics;
 	// Screen-space overlay (e.g. CRT scanlines) owned by the active style.
 	let styleOverlay: PIXI.Container | null = null;
+	// Screen-space parallax background owned by the active style (below viewport).
+	let styleBackground: PIXI.Container | null = null;
 
 	// Optimization: System lookup Map
 	let systemsById = $derived(new SvelteMap($cluster?.Systems?.map((s) => [s.Id, s]) || []));
@@ -70,6 +72,7 @@
 				{ container, app: pixiApp, backgroundColor: $activeStyle.colors.background },
 				() => {
 					updateZoomLimits();
+					rebuildStyleBackground();
 					rebuildStyleOverlay();
 				}
 			);
@@ -88,7 +91,10 @@
 
 				lastScale = currentScale;
 			});
-			setup.viewport.on('moved', updateScales);
+			setup.viewport.on('moved', () => {
+				updateScales();
+				applyParallax();
+			});
 
 			setup.viewport.on('pointermove', (e: PIXI.FederatedPointerEvent) => {
 				if (!draggedSystemId || !viewport) return;
@@ -212,10 +218,38 @@
 		}
 	}
 
+	/** Rebuild the screen-fixed parallax background beneath the viewport. */
+	function rebuildStyleBackground() {
+		if (!app) return;
+		if (styleBackground) {
+			styleBackground.destroy({ children: true });
+			styleBackground = null;
+		}
+		const bg = $activeStyle.createBackground(
+			{ width: app.screen.width, height: app.screen.height },
+			app.renderer
+		);
+		if (bg) {
+			app.stage.addChildAt(bg, 0); // below the viewport (index 0)
+			styleBackground = bg;
+			applyParallax();
+		}
+	}
+
+	/** Offset the background layers for the current camera (parallax). */
+	function applyParallax() {
+		if (!styleBackground || !viewport) return;
+		$activeStyle.parallaxBackground?.(styleBackground, {
+			x: viewport.center.x,
+			y: viewport.center.y
+		});
+	}
+
 	/** Apply the active style's canvas background and overlay. */
 	function applyStyleChrome() {
 		if (!app) return;
 		app.renderer.background.color = $activeStyle.colors.background;
+		rebuildStyleBackground();
 		rebuildStyleOverlay();
 	}
 
@@ -462,7 +496,13 @@
 			const node = new PIXI.Graphics() as PIXI.Graphics & { systemId: string };
 			node.systemId = system.Id;
 			node.zIndex = 10;
-			node.addChild($activeStyle.createSystemNodeVisual({ system, baseRadius: 10 }));
+			node.addChild(
+				$activeStyle.createSystemNodeVisual({
+					system,
+					baseRadius: 10,
+					renderer: app?.renderer
+				})
+			);
 
 			node.x = system.X;
 			node.y = system.Y;

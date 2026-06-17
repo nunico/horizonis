@@ -5,18 +5,62 @@ import { cluster } from '$lib/stores/clusterData';
 import * as PIXI from 'pixi.js';
 import { Viewport } from 'pixi-viewport';
 
+// ---------------------------------------------------------------------------
+// Mock $lib/stores/style so tests never touch real PIXI renderer code paths.
+// vi.hoisted ensures the object is available when vi.mock factory runs.
+// ---------------------------------------------------------------------------
+const { mockActiveStyle } = vi.hoisted(() => {
+	const mockActiveStyle = {
+		meta: { id: 'test-style', name: 'Test', version: '1' },
+		colors: {
+			background: 0x000000,
+			accent: 0xffffff,
+			hover: 0xaaaaaa,
+			linkIdle: 0x555555,
+			orbitHover: 0x888888,
+			region: 0x333333,
+			labelPrimary: 0xffffff,
+			labelSecondary: 0xaaaaaa,
+			systemFill: 0x0088ff
+		},
+		labelStyle: vi.fn(() => ({})),
+		createSystemNodeVisual: vi.fn(() => ({ anchor: { set: vi.fn() }, addChild: vi.fn() })),
+		createStageOverlay: vi.fn(() => null),
+		createBackground: vi.fn(() => null),
+		parallaxBackground: vi.fn(),
+		stylePortal: vi.fn(),
+		styleOrbit: vi.fn(),
+		styleRegion: vi.fn(),
+		createStarVisual: vi.fn(() => ({ anchor: { set: vi.fn() }, addChild: vi.fn() })),
+		createBodyVisual: vi.fn(() => ({ anchor: { set: vi.fn() }, addChild: vi.fn() }))
+	};
+	return { mockActiveStyle };
+});
+
+vi.mock('$lib/stores/style', () => {
+	const { readable } = require('svelte/store');
+	return {
+		activeStyle: readable(mockActiveStyle),
+		activeStyleId: { subscribe: vi.fn() },
+		availableStyles: { subscribe: vi.fn() },
+		setActiveStyle: vi.fn(),
+		DEFAULT_STYLE_ID: 'test-style'
+	};
+});
+
 // Mock PIXI.js
 vi.mock('pixi.js', () => {
 	const Application = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
 		this.init = vi.fn().mockResolvedValue(undefined);
 		this.destroy = vi.fn();
-		this.stage = { addChild: vi.fn() };
+		this.stage = { addChild: vi.fn(), addChildAt: vi.fn() };
 		this.screen = { width: 800, height: 600 };
 		this.renderer = {
 			on: vi.fn(),
 			off: vi.fn(),
 			events: {},
-			background: { color: 0 }
+			background: { color: 0 },
+			generateTexture: vi.fn(() => ({}))
 		};
 		this.canvas = document.createElement('canvas');
 		return this;
@@ -198,6 +242,13 @@ describe('StarMap component', () => {
 		// must not depend on the drawn geometry.
 		expect(systemNode.hitArea).toBeDefined();
 		expect(systemNode.hitArea.radius).toBeGreaterThan(0);
+	});
+
+	it('asks the active style for a background on mount', async () => {
+		render(StarMap);
+		await vi.waitFor(() => {
+			expect(mockActiveStyle.createBackground).toHaveBeenCalled();
+		});
 	});
 
 	it('arms a drag on pointerdown but only starts dragging past the threshold', async () => {
