@@ -1,5 +1,15 @@
 # Changelog
 
+###### [2026-06-17] - GitHub Actions CI/CD pipelines
+
+- **Summary**: Added GitHub Actions workflows for automated testing, linting, and cross-platform desktop builds.
+- **Changes**:
+  - Created `.github/workflows/ci.yml` (push to main and PRs): runs pnpm nx run-many --targets=check,lint,test and cargo test --workspace --locked on ubuntu-22.04.
+  - Created `.github/workflows/release.yml` (semver tags): cross-platform builds (macOS universal, Linux x86_64, Windows x86_64) using tauri-apps/tauri-action, attaches installers to draft GitHub Release.
+  - Both workflows cache pnpm store and Rust build artifacts; CI uses jdx/mise-action to honor mise.toml/mise.lock.
+- **Files Affected**: .github/workflows/ci.yml, .github/workflows/release.yml
+- **Context**: None.
+
 ###### [2026-06-17] - UX Phase 5 — responsiveness and layering
 
 - **Summary**: Make the layout work on narrow viewports, single-source the navbar height, and fix map layering.

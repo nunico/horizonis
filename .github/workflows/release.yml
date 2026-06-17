@@ -1,0 +1,88 @@
+name: Release
+
+# Build and publish desktop bundles when a semver tag (e.g. v1.2.3) is pushed.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'      # stable releases  -> v1.2.3
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'    # pre-releases      -> v1.2.3-rc.1
+
+# Allow the workflow to create the GitHub Release and upload assets.
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build desktop bundles (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: macOS (universal)
+            os: macos-latest
+            args: --target universal-apple-darwin
+            rust-targets: aarch64-apple-darwin x86_64-apple-darwin
+          - name: Linux (x86_64)
+            os: ubuntu-22.04
+            args: ''
+            rust-targets: ''
+          - name: Windows (x86_64)
+            os: windows-latest
+            args: ''
+            rust-targets: ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Tauri system dependencies (Linux)
+        if: matrix.platform.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libxdo-dev \
+            libssl-dev \
+            build-essential \
+            file \
+            wget
+
+      # Installs node, pnpm and rust exactly as pinned in mise.toml / mise.lock.
+      - name: Set up toolchains (mise)
+        uses: jdx/mise-action@v2
+
+      # macOS needs both arch targets to produce a universal binary.
+      - name: Add Rust targets
+        if: matrix.platform.rust-targets != ''
+        shell: bash
+        run: rustup target add ${{ matrix.platform.rust-targets }}
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+
+      # tauri-action's beforeBuildCommand (`npm run build:web`) needs the
+      # workspace dependencies present before it builds the client.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Builds the SvelteKit client (via the configured beforeBuildCommand),
+      # bundles the Tauri app, and attaches the installers to a GitHub Release.
+      - name: Build and release Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: apps/shell
+          tagName: ${{ github.ref_name }}
+          releaseName: Horizonis ${{ github.ref_name }}
+          releaseBody: See the assets below to download and install this version.
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.platform.args }}
