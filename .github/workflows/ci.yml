@@ -31,8 +31,11 @@ jobs:
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
 
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+
       - name: Build internal WASM package
-        run: npx wasm-pack build --target web -- --features wasm
+        run: wasm-pack build --target web -- --features wasm
         working-directory: ./libs/procedural-gen
 
       - name: Install Tauri system dependencies
