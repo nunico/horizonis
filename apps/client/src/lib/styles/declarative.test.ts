@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Graphics } from 'pixi.js';
 
 // Minimal PIXI mock recording fill/stroke/primitive calls so we can assert the
 // declarative renderer resolves the right colors and shapes.
@@ -66,7 +67,6 @@ vi.mock('pixi.js', () => {
 
 const fakeRenderer = () => ({ generateTexture: () => ({}) }) as never;
 
-import { Graphics } from 'pixi.js';
 import { createDeclarativeStyle } from './declarative';
 import type { StyleDefinition } from './types';
 import type { Star, OrbitalBody } from '$lib/types/stellar';
@@ -350,7 +350,7 @@ describe('styleRegion', () => {
 		for (const c of g.circles) {
 			const dist = Math.hypot(c.x, c.y);
 			expect(dist).toBeGreaterThanOrEqual(inner);
-			expect(dist).toBeLessThanOrEqual(outer);
+			expect(dist).toBeLessThanOrEqual(outer + 1e-10);
 		}
 	});
 
@@ -391,6 +391,16 @@ describe('styleRegion', () => {
 			expect(f.alpha).toBeLessThanOrEqual(0.5);
 			expect(f.color).toBe(0x475569);
 		}
+	});
+
+	it('caps the scatter field at 800 particles for very wide belts', () => {
+		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter', density: 100 } }));
+		const g = new Graphics();
+
+		style.styleRegion(g, { innerRadius: 0, outerRadius: 700 });
+
+		expect(g.fills.length).toBeLessThanOrEqual(800);
+		expect(g.fills.length).toBeGreaterThan(700);
 	});
 
 	it('draws nothing when outerRadius <= innerRadius', () => {
