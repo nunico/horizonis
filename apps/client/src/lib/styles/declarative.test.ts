@@ -326,6 +326,16 @@ type RecordingGraphics = Graphics & {
 const recordingGraphics = (): RecordingGraphics => new Graphics() as unknown as RecordingGraphics;
 
 describe('styleRegion', () => {
+	it('draws the annulus when kind is explicitly band', () => {
+		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'band' } }));
+		const g = recordingGraphics();
+
+		style.styleRegion(g, { innerRadius: 100, outerRadius: 160 });
+
+		expect(g.strokes).toHaveLength(1);
+		expect(g.fills).toHaveLength(0);
+	});
+
 	it('draws a solid annulus when regionStyle is absent (band default)', () => {
 		const style = createDeclarativeStyle(def());
 		const g = recordingGraphics();

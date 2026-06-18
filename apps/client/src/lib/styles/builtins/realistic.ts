@@ -62,8 +62,6 @@ export const realisticStyle: StyleDefinition = {
 	// Asteroid belts as a scattered field of small rocks rather than a solid
 	// translucent band — far more believable than a flat coloured annulus.
 	regionStyle: { kind: 'scatter' },
-	// A soft dark halo keeps the warm labels legible over the bright coronal
-	// glow and the nebula/region wash (distance 0 + blur reads as an outline).
 	// A dark outline keeps the warm labels legible over the bright coronal glow
 	// and the nebula/region wash.
 	label: {
