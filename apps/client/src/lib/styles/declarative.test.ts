@@ -314,10 +314,21 @@ describe('createDeclarativeStyle', () => {
 	});
 });
 
+// The mocked `Graphics` records every primitive call; expose those recorders
+// with types so the scatter assertions stay type-safe (the real PixiJS
+// `Graphics` has no `circles`/`fills`/`strokes`/`cleared` members).
+type RecordingGraphics = Graphics & {
+	circles: Array<{ x: number; y: number; r: number }>;
+	fills: Array<{ color?: number; alpha?: number }>;
+	strokes: Array<{ width?: number; color?: number; alpha?: number }>;
+	cleared: number;
+};
+const recordingGraphics = (): RecordingGraphics => new Graphics() as unknown as RecordingGraphics;
+
 describe('styleRegion', () => {
 	it('draws a solid annulus when regionStyle is absent (band default)', () => {
 		const style = createDeclarativeStyle(def());
-		const g = new Graphics();
+		const g = recordingGraphics();
 
 		style.styleRegion(g, { innerRadius: 100, outerRadius: 160 });
 
@@ -329,7 +340,7 @@ describe('styleRegion', () => {
 
 	it('draws a scattered particle field when kind is scatter', () => {
 		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter' } }));
-		const g = new Graphics();
+		const g = recordingGraphics();
 
 		style.styleRegion(g, { innerRadius: 100, outerRadius: 160 });
 
@@ -341,7 +352,7 @@ describe('styleRegion', () => {
 
 	it('keeps every scatter particle inside the [inner, outer] band', () => {
 		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter' } }));
-		const g = new Graphics();
+		const g = recordingGraphics();
 		const inner = 100;
 		const outer = 160;
 
@@ -356,8 +367,8 @@ describe('styleRegion', () => {
 
 	it('is deterministic: same context yields identical particles', () => {
 		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter' } }));
-		const a = new Graphics();
-		const b = new Graphics();
+		const a = recordingGraphics();
+		const b = recordingGraphics();
 
 		style.styleRegion(a, { innerRadius: 100, outerRadius: 160 });
 		style.styleRegion(b, { innerRadius: 100, outerRadius: 160 });
@@ -369,8 +380,8 @@ describe('styleRegion', () => {
 	it('honors density, sizeRange, and alphaRange knobs', () => {
 		const sparse = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter', density: 2 } }));
 		const dense = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter', density: 20 } }));
-		const gSparse = new Graphics();
-		const gDense = new Graphics();
+		const gSparse = recordingGraphics();
+		const gDense = recordingGraphics();
 
 		sparse.styleRegion(gSparse, { innerRadius: 100, outerRadius: 160 });
 		dense.styleRegion(gDense, { innerRadius: 100, outerRadius: 160 });
@@ -379,7 +390,7 @@ describe('styleRegion', () => {
 		const ranged = createDeclarativeStyle(
 			def({ regionStyle: { kind: 'scatter', sizeRange: [1, 2], alphaRange: [0.3, 0.5] } })
 		);
-		const g = new Graphics();
+		const g = recordingGraphics();
 		ranged.styleRegion(g, { innerRadius: 100, outerRadius: 160 });
 
 		for (const c of g.circles) {
@@ -395,7 +406,7 @@ describe('styleRegion', () => {
 
 	it('caps the scatter field at 800 particles for very wide belts', () => {
 		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter', density: 100 } }));
-		const g = new Graphics();
+		const g = recordingGraphics();
 
 		style.styleRegion(g, { innerRadius: 0, outerRadius: 700 });
 
@@ -405,7 +416,7 @@ describe('styleRegion', () => {
 
 	it('draws nothing when outerRadius <= innerRadius', () => {
 		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter' } }));
-		const g = new Graphics();
+		const g = recordingGraphics();
 
 		expect(() => style.styleRegion(g, { innerRadius: 160, outerRadius: 100 })).not.toThrow();
 		expect(g.fills).toHaveLength(0);
