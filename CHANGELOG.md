@@ -1,5 +1,17 @@
 # Changelog
 
+###### [2026-06-18] - Realistic map style visual refinements
+
+- **Summary**: Subtler orbit rings and asteroid belts rendered as scattered particles instead of translucent bands for increased visual realism.
+- **Changes**:
+  - Lowered resting orbit ring stroke alpha from 0.3 to 0.1; hover/selection brightness preserved.
+  - Replaced flat asteroid belt bands with deterministic scattered particle fields; count scales with belt area (max 800).
+  - Added size/brightness variation and density bias toward belt center for particle realism.
+  - Added optional `regionStyle` field to `StyleDefinition` with `kind: 'band' | 'scatter'` and customizable `density`, `sizeRange`, `alphaRange`.
+  - Defaults to `'band'` for backward compatibility; tactical style and existing styles unchanged.
+- **Files Affected**: apps/client/src/lib/styles/types.ts, apps/client/src/lib/styles/declarative.ts, apps/client/src/lib/styles/declarative.test.ts, apps/client/src/lib/styles/builtins/realistic.ts, apps/client/src/lib/styles/builtins/realistic.test.ts
+- **Context**: None.
+
 ###### [2026-06-17] - Fix missing map labels in the realistic style
 
 - **Summary**: Fixed a bug where star/planet/system name labels were invisible in the realistic map style due to undefined letterSpacing causing NaN-width text in PixiJS v8, and added optional label outline support for better legibility over bright coronal glows.
