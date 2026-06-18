@@ -18,6 +18,13 @@
 				"cwd": "libs/procedural-gen"
 			}
 		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "cargo fmt && cargo clippy",
+				"cwd": "libs/procedural-gen"
+			}
+		},
 		"test": {
 			"executor": "nx:run-commands",
 			"options": {
