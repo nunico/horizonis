@@ -312,13 +312,7 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 			graphics.clear();
 			const regionStyle = def.regionStyle;
 			if (regionStyle?.kind === 'scatter') {
-				drawScatterBelt(
-					graphics,
-					ctx.innerRadius,
-					ctx.outerRadius,
-					colors.region,
-					regionStyle
-				);
+				drawScatterBelt(graphics, ctx.innerRadius, ctx.outerRadius, colors.region, regionStyle);
 				return;
 			}
 			const width = Math.max(0, ctx.outerRadius - ctx.innerRadius);
