@@ -1,7 +1,20 @@
 [env]
-_.path = './node_modules/.bin'
+_.path = ['{{config_root}}/node_modules/.bin']
+
+NODE_ENV = "{{ env.NODE_ENV | default(value='development') }}"
 
 [tools]
-node = 'lts'
-pnpm = 'latest'
-rust = 'latest'
+node = '26'
+rust = '1.95'
+
+[hooks]
+postinstall = 'npx --yes corepack enable'
+
+[tasks.pnpm-install]
+description = 'Installs dependencies with pnpm'
+run = 'pnpm install'
+sources = ['package.json', 'pnpm-lock.yaml', 'mise.toml']
+outputs = ['node_modules/.pnpm/lock.yaml']
+
+[settings]
+experimental = true
