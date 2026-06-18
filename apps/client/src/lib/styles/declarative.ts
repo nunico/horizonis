@@ -192,8 +192,11 @@ function drawScatterBelt(
 	const alphaRange = spec.alphaRange ?? [0.25, 0.9];
 
 	const area = Math.PI * (outer * outer - inner * inner);
+	// density is "particles per 10,000 px²"; cap the total to bound draw cost.
 	const count = Math.min(800, Math.round((area / 10000) * density));
 
+	// Spatial-hash mix using two large primes (Teschner et al.) so belts that
+	// differ by only a few pixels still get independent seeds.
 	const seed = (Math.round(inner) * 73856093) ^ (Math.round(outer) * 19349663);
 	const rng = createRng(seed);
 
