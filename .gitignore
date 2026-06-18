@@ -25,3 +25,6 @@ WixTools/
 .nx/
 /test-results/
 playwright-report/
+
+# Visual-companion brainstorm scratch
+.superpowers/
