@@ -72,6 +72,24 @@ export interface StrokeSpec {
 	alpha: number;
 }
 
+/** How orbital regions (asteroid belts) render. */
+export type RegionStyleKind = 'band' | 'scatter';
+
+/**
+ * Orbital-region (asteroid belt) appearance. `'band'` draws the legacy solid
+ * annulus stroke; `'scatter'` draws a deterministic field of small particles.
+ * Scatter knobs are optional and fall back to the defaults in the renderer.
+ */
+export interface RegionStyleSpec {
+	kind: RegionStyleKind;
+	/** scatter only — particles per 10,000 px² of band area. Default 6. */
+	density?: number;
+	/** scatter only — [min, max] particle radius in px. Default [0.4, 1.8]. */
+	sizeRange?: [number, number];
+	/** scatter only — [min, max] per-particle alpha. Default [0.25, 0.9]. */
+	alphaRange?: [number, number];
+}
+
 /**
  * Crisp text outline so labels stay legible over bright glows and busy
  * backgrounds. Maps to a PixiJS text stroke drawn around each glyph.
@@ -192,6 +210,8 @@ export interface StyleDefinition {
 	body: { shape: BodyShape; glow?: GlowSpec };
 	systemNode: { shape: NodeShape; glow?: GlowSpec };
 	stroke: { orbit: StrokeSpec; portal: StrokeSpec; region: StrokeSpec };
+	/** How orbital regions (asteroid belts) render. Absent ⇒ `'band'`. */
+	regionStyle?: RegionStyleSpec;
 	label: LabelSpec;
 	effects?: EffectsSpec;
 	/** Optional theming of the surrounding HTML/CSS UI chrome. */
