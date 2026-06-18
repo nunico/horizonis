@@ -8,6 +8,7 @@ import {
 	buildNebulaLayer,
 	buildStarfieldLayer
 } from './procedural/textures';
+import { createRng } from './procedural/noise';
 import type { BodyType } from '$lib/types/stellar';
 import type {
 	StyleDefinition,
@@ -24,6 +25,7 @@ import type {
 	LinkContext,
 	OrbitContext,
 	RegionContext,
+	RegionStyleSpec,
 	LabelKind,
 	PointLike
 } from './types';
@@ -164,6 +166,50 @@ function toColors(def: StyleDefinition): MapColors {
 	};
 }
 
+/** Linear interpolation between a [min, max] pair by t in [0, 1]. */
+function lerpRange(range: readonly [number, number], t: number): number {
+	return range[0] + (range[1] - range[0]) * t;
+}
+
+/**
+ * Draw a deterministic asteroid belt: small particles scattered across the
+ * [inner, outer] band, biased toward the middle so the field thins at both
+ * edges. Seeded from the rounded radii, so a belt looks identical on every
+ * reload. Particle count scales with band area and is hard-capped for cost.
+ * Time complexity: O(count), with count ≤ 800.
+ */
+function drawScatterBelt(
+	graphics: Graphics,
+	inner: number,
+	outer: number,
+	color: number,
+	spec: RegionStyleSpec
+): void {
+	if (outer <= inner) return;
+
+	const density = spec.density ?? 6;
+	const sizeRange = spec.sizeRange ?? [0.4, 1.8];
+	const alphaRange = spec.alphaRange ?? [0.25, 0.9];
+
+	const area = Math.PI * (outer * outer - inner * inner);
+	const count = Math.min(800, Math.round((area / 10000) * density));
+
+	const seed = (Math.round(inner) * 73856093) ^ (Math.round(outer) * 19349663);
+	const rng = createRng(seed);
+
+	for (let i = 0; i < count; i++) {
+		const angle = rng() * Math.PI * 2;
+		// Average three uniforms → bell-ish bias toward the band's middle.
+		const u = (rng() + rng() + rng()) / 3;
+		const radius = inner + (outer - inner) * u;
+		const x = Math.cos(angle) * radius;
+		const y = Math.sin(angle) * radius;
+		const size = lerpRange(sizeRange, rng());
+		const alpha = lerpRange(alphaRange, rng());
+		graphics.circle(x, y, size).fill({ color, alpha });
+	}
+}
+
 /**
  * Turn a JSON {@link StyleDefinition} into the runtime {@link MapStyle} the map
  * components consume. This is the safe-sharing path: imported style files flow
@@ -260,8 +306,20 @@ export function createDeclarativeStyle(def: StyleDefinition): MapStyle {
 		},
 
 		styleRegion(graphics: Graphics, ctx: RegionContext): void {
+			graphics.clear();
+			const regionStyle = def.regionStyle;
+			if (regionStyle?.kind === 'scatter') {
+				drawScatterBelt(
+					graphics,
+					ctx.innerRadius,
+					ctx.outerRadius,
+					colors.region,
+					regionStyle
+				);
+				return;
+			}
 			const width = Math.max(0, ctx.outerRadius - ctx.innerRadius);
-			graphics.clear().circle(0, 0, ctx.outerRadius).stroke({
+			graphics.circle(0, 0, ctx.outerRadius).stroke({
 				width,
 				color: colors.region,
 				alpha: def.stroke.region.alpha

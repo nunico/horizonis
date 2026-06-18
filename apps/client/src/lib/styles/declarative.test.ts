@@ -66,6 +66,7 @@ vi.mock('pixi.js', () => {
 
 const fakeRenderer = () => ({ generateTexture: () => ({}) }) as never;
 
+import { Graphics } from 'pixi.js';
 import { createDeclarativeStyle } from './declarative';
 import type { StyleDefinition } from './types';
 import type { Star, OrbitalBody } from '$lib/types/stellar';
@@ -310,5 +311,94 @@ describe('createDeclarativeStyle', () => {
 		style.parallaxBackground!(bg as never, { x: 100, y: 200 });
 		expect(bg.children[0].position).toMatchObject({ x: -10, y: -20 });
 		expect(bg.children[1].position).toMatchObject({ x: -50, y: -100 });
+	});
+});
+
+describe('styleRegion', () => {
+	it('draws a solid annulus when regionStyle is absent (band default)', () => {
+		const style = createDeclarativeStyle(def());
+		const g = new Graphics();
+
+		style.styleRegion(g, { innerRadius: 100, outerRadius: 160 });
+
+		expect(g.circles).toHaveLength(1);
+		expect(g.strokes).toHaveLength(1);
+		expect(g.fills).toHaveLength(0);
+		expect(g.cleared).toBe(1);
+	});
+
+	it('draws a scattered particle field when kind is scatter', () => {
+		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter' } }));
+		const g = new Graphics();
+
+		style.styleRegion(g, { innerRadius: 100, outerRadius: 160 });
+
+		expect(g.fills.length).toBeGreaterThan(20);
+		expect(g.strokes).toHaveLength(0);
+		expect(g.cleared).toBe(1);
+		expect(g.circles).toHaveLength(g.fills.length);
+	});
+
+	it('keeps every scatter particle inside the [inner, outer] band', () => {
+		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter' } }));
+		const g = new Graphics();
+		const inner = 100;
+		const outer = 160;
+
+		style.styleRegion(g, { innerRadius: inner, outerRadius: outer });
+
+		for (const c of g.circles) {
+			const dist = Math.hypot(c.x, c.y);
+			expect(dist).toBeGreaterThanOrEqual(inner);
+			expect(dist).toBeLessThanOrEqual(outer);
+		}
+	});
+
+	it('is deterministic: same context yields identical particles', () => {
+		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter' } }));
+		const a = new Graphics();
+		const b = new Graphics();
+
+		style.styleRegion(a, { innerRadius: 100, outerRadius: 160 });
+		style.styleRegion(b, { innerRadius: 100, outerRadius: 160 });
+
+		expect(a.circles).toEqual(b.circles);
+		expect(a.fills).toEqual(b.fills);
+	});
+
+	it('honors density, sizeRange, and alphaRange knobs', () => {
+		const sparse = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter', density: 2 } }));
+		const dense = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter', density: 20 } }));
+		const gSparse = new Graphics();
+		const gDense = new Graphics();
+
+		sparse.styleRegion(gSparse, { innerRadius: 100, outerRadius: 160 });
+		dense.styleRegion(gDense, { innerRadius: 100, outerRadius: 160 });
+		expect(gDense.fills.length).toBeGreaterThan(gSparse.fills.length);
+
+		const ranged = createDeclarativeStyle(
+			def({ regionStyle: { kind: 'scatter', sizeRange: [1, 2], alphaRange: [0.3, 0.5] } })
+		);
+		const g = new Graphics();
+		ranged.styleRegion(g, { innerRadius: 100, outerRadius: 160 });
+
+		for (const c of g.circles) {
+			expect(c.r).toBeGreaterThanOrEqual(1);
+			expect(c.r).toBeLessThanOrEqual(2);
+		}
+		for (const f of g.fills) {
+			expect(f.alpha).toBeGreaterThanOrEqual(0.3);
+			expect(f.alpha).toBeLessThanOrEqual(0.5);
+			expect(f.color).toBe(0x475569);
+		}
+	});
+
+	it('draws nothing when outerRadius <= innerRadius', () => {
+		const style = createDeclarativeStyle(def({ regionStyle: { kind: 'scatter' } }));
+		const g = new Graphics();
+
+		expect(() => style.styleRegion(g, { innerRadius: 160, outerRadius: 100 })).not.toThrow();
+		expect(g.fills).toHaveLength(0);
+		expect(g.cleared).toBe(1);
 	});
 });
