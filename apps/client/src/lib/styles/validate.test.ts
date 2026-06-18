@@ -152,4 +152,54 @@ describe('validateStyleDefinition', () => {
 		expect(result.ok).toBe(false);
 		if (!result.ok) expect(result.error).toContain('background.nebulaColors');
 	});
+
+	it('accepts and preserves an optional regionStyle scatter block with knobs', () => {
+		const def = makeValid();
+		def.regionStyle = {
+			kind: 'scatter',
+			density: 8,
+			sizeRange: [0.5, 2],
+			alphaRange: [0.2, 0.8]
+		};
+		const result = validateStyleDefinition(def);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.value.regionStyle).toEqual({
+				kind: 'scatter',
+				density: 8,
+				sizeRange: [0.5, 2],
+				alphaRange: [0.2, 0.8]
+			});
+		}
+	});
+
+	it('accepts a regionStyle band block', () => {
+		const def = makeValid();
+		def.regionStyle = { kind: 'band' };
+		const result = validateStyleDefinition(def);
+		expect(result.ok).toBe(true);
+		if (result.ok) expect(result.value.regionStyle).toEqual({ kind: 'band' });
+	});
+
+	it('leaves regionStyle undefined when the field is absent', () => {
+		const result = validateStyleDefinition(makeValid());
+		expect(result.ok).toBe(true);
+		if (result.ok) expect(result.value.regionStyle).toBeUndefined();
+	});
+
+	it('rejects a regionStyle with an invalid kind', () => {
+		const def = makeValid() as unknown as Record<string, unknown>;
+		def.regionStyle = { kind: 'sprinkles' };
+		const result = validateStyleDefinition(def);
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.error).toMatch(/regionStyle\.kind/);
+	});
+
+	it('rejects a regionStyle whose sizeRange is not a number pair', () => {
+		const def = makeValid() as unknown as Record<string, unknown>;
+		def.regionStyle = { kind: 'scatter', sizeRange: [1] };
+		const result = validateStyleDefinition(def);
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.error).toMatch(/regionStyle\.sizeRange/);
+	});
 });

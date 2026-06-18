@@ -5,7 +5,8 @@ import type {
 	NodeShape,
 	SpectralClass,
 	RampShade,
-	RampOverride
+	RampOverride,
+	RegionStyleSpec
 } from './types';
 import { SPECTRAL_CLASSES, RAMP_SHADES } from './types';
 import type { BodyType } from '$lib/types/stellar';
@@ -121,6 +122,26 @@ function background(value: unknown, path: string) {
 		nebulaColors: hexArray(r.nebulaColors, `${path}.nebulaColors`),
 		parallaxFactors: numArray(r.parallaxFactors, `${path}.parallaxFactors`)
 	};
+}
+
+function numTuple(value: unknown, path: string): [number, number] {
+	if (!Array.isArray(value) || value.length !== 2) {
+		fail(path, 'must be a [min, max] number pair');
+	}
+	const arr = value as unknown[];
+	return [num(arr[0], `${path}[0]`), num(arr[1], `${path}[1]`)];
+}
+
+function regionStyle(value: unknown, path: string): RegionStyleSpec | undefined {
+	if (value === undefined) return undefined;
+	const r = asRecord(value, path);
+	const out: RegionStyleSpec = {
+		kind: oneOf(r.kind, ['band', 'scatter'] as const, `${path}.kind`)
+	};
+	if (r.density !== undefined) out.density = num(r.density, `${path}.density`);
+	if (r.sizeRange !== undefined) out.sizeRange = numTuple(r.sizeRange, `${path}.sizeRange`);
+	if (r.alphaRange !== undefined) out.alphaRange = numTuple(r.alphaRange, `${path}.alphaRange`);
+	return out;
 }
 
 function parse(input: unknown): StyleDefinition {
@@ -245,6 +266,10 @@ function parse(input: unknown): StyleDefinition {
 
 	if (root.background !== undefined) {
 		result.background = background(root.background, 'background');
+	}
+
+	if (root.regionStyle !== undefined) {
+		result.regionStyle = regionStyle(root.regionStyle, 'regionStyle');
 	}
 
 	return result;
