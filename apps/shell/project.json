@@ -23,7 +23,7 @@
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "cargo fmt && cargo clippy",
+				"command": "cargo fmt --check && cargo clippy",
 				"cwd": "apps/shell"
 			}
 		},
