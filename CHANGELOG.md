@@ -1,5 +1,15 @@
 # Changelog
 
+###### [2026-06-19] - Fix horizonis-client Vitest suite (localStorage, gitignore)
+
+- **Summary**: Fixed 37 failing horizonis-client tests caused by Node 26 experimental localStorage shadowing jsdom's implementation.
+- **Changes**:
+  - Implemented in-memory Storage.prototype backing (WeakMap keyed per instance) to restore localStorage in jsdom environment.
+  - Exposed a Storage instance as globalThis.localStorage; spec-conformant so Storage.prototype spies remain functional.
+  - Updated .gitignore to match test-results/ in any directory, not just root.
+- **Files Affected**: apps/client/src/test/setup.ts, .gitignore
+- **Context**: Node 22+ exposes a getter on window.localStorage that returns undefined without --localstorage-file flag; in jsdom where window === globalThis, this shadows jsdom's real Storage and breaks every test touching localStorage. Routing through Storage.prototype preserves the spy contract.
+
 ###### [2026-06-18] - Realistic map style visual refinements
 
 - **Summary**: Subtler orbit rings and asteroid belts rendered as scattered particles instead of translucent bands for increased visual realism.
