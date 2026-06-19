@@ -15,8 +15,8 @@
 		"test": "nx run-many --targets=test",
 		"check": "nx run-many --targets=check",
 		"verify": "NX_PACKAGE_MANAGER=npm npm exec -- nx run-many --targets=check,lint,test",
-		"e2e:web": "nx test web-e2e",
-		"e2e:desktop": "TARGET=desktop nx test e2e-tests",
+		"e2e:web": "nx e2e web-e2e",
+		"e2e:desktop": "TARGET=desktop nx e2e e2e-tests",
 		"e2e": "npm run e2e:web && npm run e2e:desktop",
 		"format": "prettier --write ."
 	},
