@@ -1,21 +1,61 @@
-use crate::models::{StarCluster, SolarSystem, Star, OrbitalBody, BodyType, OrbitalRegion, Portal};
-use uuid::Uuid;
+use crate::models::{BodyType, OrbitalBody, OrbitalRegion, Portal, SolarSystem, Star, StarCluster};
+use delaunator::{triangulate, Point};
 use rand::prelude::*;
 use rand::rngs::StdRng;
-use delaunator::{Point, triangulate};
 use std::collections::HashSet;
+use uuid::Uuid;
 
 const SYSTEM_NAMES: &[&str] = &[
-    "Alpha Centauri", "Sirius", "Epsilon Eridani", "Procyon", "61 Cygni",
-    "Tau Ceti", "Vega", "Altair", "Fomalhaut", "Arcturus",
-    "Pollux", "Capella", "Regulus", "Castor", "Spica",
-    "Rigel", "Betelgeuse", "Deneb", "Antares", "Aldebaran",
-    "Canopus", "Achernar", "Hadar", "Acrux", "Bellatrix",
-    "Elnath", "Alnilam", "Alnitak", "Alioth", "Kaus Australis",
-    "Mirfak", "Dubhe", "Wezen", "Sargas", "Avior",
-    "Menkalinan", "Atria", "Alhena", "Peacock", "Alsephina",
-    "Mirzam", "Alphard", "Hamal", "Algieba", "Diphda",
-    "Nunki", "Menkent", "Mirach", "Alpheratz", "Saiph"
+    "Alpha Centauri",
+    "Sirius",
+    "Epsilon Eridani",
+    "Procyon",
+    "61 Cygni",
+    "Tau Ceti",
+    "Vega",
+    "Altair",
+    "Fomalhaut",
+    "Arcturus",
+    "Pollux",
+    "Capella",
+    "Regulus",
+    "Castor",
+    "Spica",
+    "Rigel",
+    "Betelgeuse",
+    "Deneb",
+    "Antares",
+    "Aldebaran",
+    "Canopus",
+    "Achernar",
+    "Hadar",
+    "Acrux",
+    "Bellatrix",
+    "Elnath",
+    "Alnilam",
+    "Alnitak",
+    "Alioth",
+    "Kaus Australis",
+    "Mirfak",
+    "Dubhe",
+    "Wezen",
+    "Sargas",
+    "Avior",
+    "Menkalinan",
+    "Atria",
+    "Alhena",
+    "Peacock",
+    "Alsephina",
+    "Mirzam",
+    "Alphard",
+    "Hamal",
+    "Algieba",
+    "Diphda",
+    "Nunki",
+    "Menkent",
+    "Mirach",
+    "Alpheratz",
+    "Saiph",
 ];
 
 const SPECTRAL_CLASSES: &[(&str, f32, f32)] = &[
@@ -32,7 +72,7 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
     let mut rng = StdRng::seed_from_u64(seed);
     let system_count = rng.random_range(15..25);
     let mut systems = Vec::with_capacity(system_count);
-    
+
     // Generate system positions and basic data
     let mut names = SYSTEM_NAMES.to_vec();
     names.shuffle(&mut rng);
@@ -46,21 +86,27 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
 
         let x = rng.random_range(-1500.0..1500.0);
         let y = rng.random_range(-1500.0..1500.0);
-        
+
         systems.push(generate_solar_system(&mut rng, name, x, y));
     }
 
     // Generate portals using Delaunay triangulation
-    let points: Vec<Point> = systems.iter().map(|s| Point { x: s.x as f64, y: s.y as f64 }).collect();
+    let points: Vec<Point> = systems
+        .iter()
+        .map(|s| Point {
+            x: s.x as f64,
+            y: s.y as f64,
+        })
+        .collect();
     let tri = triangulate(&points);
-    
+
     // Extract unique edges
     let mut edges = HashSet::new();
     for i in 0..tri.triangles.len() / 3 {
         let t1 = tri.triangles[3 * i];
         let t2 = tri.triangles[3 * i + 1];
         let t3 = tri.triangles[3 * i + 2];
-        
+
         for (u, v) in [(t1, t2), (t2, t3), (t3, t1)] {
             let (start, end) = if u < v { (u, v) } else { (v, u) };
             edges.insert((start, end));
@@ -159,34 +205,39 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
 
 fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> SolarSystem {
     let id = gen_uuid(rng);
-    
+
     // Determine number of stars
-    let num_stars = if rng.random_bool(0.2) { // 20% binary/trinary
-        if rng.random_bool(0.7) { 2 } else { 3 }
+    let num_stars = if rng.random_bool(0.2) {
+        // 20% binary/trinary
+        if rng.random_bool(0.7) {
+            2
+        } else {
+            3
+        }
     } else {
         1
     };
 
     let mut stars = Vec::with_capacity(num_stars);
-    
+
     for i in 0..num_stars {
         let star_name = if num_stars > 1 {
             format!("{} {}", name, (b'A' + i as u8) as char)
         } else {
             name.clone()
         };
-        
+
         let class_info = SPECTRAL_CLASSES.choose(rng).unwrap();
         let mass = class_info.1 * rng.random_range(0.9..1.1);
-        
+
         stars.push(Star {
             id: gen_uuid(rng),
             name: star_name,
             spectral_class: class_info.0.to_string(),
             mass_sol: mass,
             radius_sol: class_info.2 * rng.random_range(0.9..1.1),
-            orbit_au: 0.0, // Will be set below
-            satellites: Vec::new(), // Will be set below
+            orbit_au: 0.0,               // Will be set below
+            satellites: Vec::new(),      // Will be set below
             orbital_regions: Vec::new(), // Will be set below
         });
     }
@@ -204,7 +255,7 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
         } else {
             let d_inner = rng.random_range(30.0..60.0);
             let d_outer = rng.random_range(200.0..500.0);
-            
+
             // Distances from system barycenter
             // Star 0 and 1 are a tight pair orbiting each other
             let m0 = stars[0].mass_sol;
@@ -227,7 +278,9 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
                     continue;
                 }
                 let dist = (stars[i].orbit_au - stars[j].orbit_au).abs();
-                if dist < min_dist && dist > 0.01 { min_dist = dist; }
+                if dist < min_dist && dist > 0.01 {
+                    min_dist = dist;
+                }
             }
             stable_limit = min_dist * 0.35;
         }
@@ -239,12 +292,18 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
             if current_orbit > stable_limit {
                 break;
             }
-            stars[i].satellites.push(generate_body(rng, j, current_orbit));
+            stars[i]
+                .satellites
+                .push(generate_body(rng, j, current_orbit));
         }
 
         // Generate star-level regions
         if rng.random_bool(0.5) {
-            let last_orbit = stars[i].satellites.last().map(|b| b.orbit_au).unwrap_or(current_orbit);
+            let last_orbit = stars[i]
+                .satellites
+                .last()
+                .map(|b| b.orbit_au)
+                .unwrap_or(current_orbit);
             let inner = last_orbit * rng.random_range(1.2..1.8);
             let outer = inner + rng.random_range(0.5..2.0);
             if outer < stable_limit {
@@ -270,7 +329,11 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
         }
     } else {
         if rng.random_bool(0.3) {
-            let last_planet_orbit = stars[0].satellites.last().map(|b| b.orbit_au).unwrap_or(1.0);
+            let last_planet_orbit = stars[0]
+                .satellites
+                .last()
+                .map(|b| b.orbit_au)
+                .unwrap_or(1.0);
             let orbit = last_planet_orbit * rng.random_range(5.0..20.0);
             orbital_bodies.push(generate_body(rng, 10, orbit));
         }
@@ -286,7 +349,7 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
         } else {
             5.0
         };
-        
+
         let inner = base_orbit * rng.random_range(0.8..1.2);
         orbital_regions.push(OrbitalRegion {
             name: "Asteroid Belt".to_string(),
@@ -310,25 +373,30 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
 
 fn generate_body(rng: &mut impl Rng, index: usize, orbit_au: f32) -> OrbitalBody {
     let is_gas_giant = orbit_au > 4.0;
-    
+
     let (body_type, radius_km, mass_earth, tags) = if is_gas_giant {
         let mass: f32 = rng.random_range(15.0..318.0);
         let density: f32 = rng.random_range(0.7..1.7);
-        let radius_earth_equiv = (mass / (density / 5.51)).powf(1.0/3.0);
+        let radius_earth_equiv = (mass / (density / 5.51)).powf(1.0 / 3.0);
         let radius_km = radius_earth_equiv * 6371.0;
-        
-        (BodyType::Planet, radius_km, mass, vec!["Gas Giant".to_string()])
+
+        (
+            BodyType::Planet,
+            radius_km,
+            mass,
+            vec!["Gas Giant".to_string()],
+        )
     } else {
         let mass: f32 = rng.random_range(0.05..2.0);
         let density: f32 = rng.random_range(3.5..5.5);
-        let radius_earth_equiv = (mass / (density / 5.51)).powf(1.0/3.0);
+        let radius_earth_equiv = (mass / (density / 5.51)).powf(1.0 / 3.0);
         let radius_km = radius_earth_equiv * 6371.0;
-        
+
         let mut tags = vec!["Terrestrial".to_string()];
         if orbit_au > 0.7 && orbit_au < 1.5 && rng.random_bool(0.3) {
             tags.push("Habitable".to_string());
         }
-        
+
         (BodyType::Planet, radius_km, mass, tags)
     };
 
@@ -338,8 +406,8 @@ fn generate_body(rng: &mut impl Rng, index: usize, orbit_au: f32) -> OrbitalBody
         for j in 0..num_moons {
             let moon_mass: f32 = mass_earth * rng.random_range(0.0001..0.01);
             let moon_density: f32 = rng.random_range(2.0..3.5);
-            let moon_radius_earth_equiv = (moon_mass / (moon_density / 5.51)).powf(1.0/3.0);
-            
+            let moon_radius_earth_equiv = (moon_mass / (moon_density / 5.51)).powf(1.0 / 3.0);
+
             satellites.push(OrbitalBody {
                 id: gen_uuid(rng),
                 name: format!("Moon {}", j + 1),
@@ -455,12 +523,7 @@ mod tests {
                     signature.push(star.satellites.len() as u64);
                     signature.push(star.orbital_regions.len() as u64);
                     signature.extend(star.name.as_bytes().iter().map(|b| *b as u64));
-                    signature.extend(
-                        star.spectral_class
-                            .as_bytes()
-                            .iter()
-                            .map(|b| *b as u64),
-                    );
+                    signature.extend(star.spectral_class.as_bytes().iter().map(|b| *b as u64));
 
                     for body in &star.satellites {
                         signature.extend(body_signature(body));
@@ -469,9 +532,7 @@ mod tests {
                     for region in &star.orbital_regions {
                         signature.push(region.inner_radius_au.to_bits() as u64);
                         signature.push(region.outer_radius_au.to_bits() as u64);
-                        signature.extend(
-                            region.name.as_bytes().iter().map(|b| *b as u64),
-                        );
+                        signature.extend(region.name.as_bytes().iter().map(|b| *b as u64));
                     }
                 }
 

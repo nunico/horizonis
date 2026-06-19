@@ -1,8 +1,8 @@
-mod storage;
 mod commands;
+mod storage;
 
-use std::sync::Mutex;
 use procedural_gen::StarCluster;
+use std::sync::Mutex;
 
 pub struct AppState {
     pub cluster: Mutex<Option<StarCluster>>,
