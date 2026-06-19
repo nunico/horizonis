@@ -23,7 +23,7 @@ target/
 WixTools/
 
 .nx/
-/test-results/
+test-results/
 playwright-report/
 
 # Visual-companion brainstorm scratch
