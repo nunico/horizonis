@@ -1,6 +1,6 @@
+use procedural_gen::{generate_cluster, StarCluster};
 use std::fs;
 use std::path::PathBuf;
-use procedural_gen::{StarCluster, generate_cluster};
 use tauri::{AppHandle, Manager};
 
 pub struct StorageManager {
@@ -9,9 +9,11 @@ pub struct StorageManager {
 
 impl StorageManager {
     pub fn new(app_handle: &AppHandle) -> Result<Self, String> {
-        let app_dir = app_handle.path().app_data_dir()
+        let app_dir = app_handle
+            .path()
+            .app_data_dir()
             .map_err(|e| e.to_string())?;
-        
+
         if !app_dir.exists() {
             fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
         }
@@ -34,19 +36,19 @@ impl StorageManager {
             return Ok(cluster);
         }
 
-        let content = fs::read_to_string(&self.file_path)
-            .map_err(|e| e.to_string())?;
-        
+        let content = fs::read_to_string(&self.file_path).map_err(|e| e.to_string())?;
+
         serde_json::from_str(&content).map_err(|e| e.to_string())
     }
 
     pub fn save(&self, cluster: &StarCluster) -> Result<(), String> {
         let content = serde_json::to_string_pretty(cluster)
             .map_err(|e| format!("Failed to serialize cluster: {}", e))?;
-        
+
         let temp_path = self.file_path.with_extension("json.tmp");
         fs::write(&temp_path, content).map_err(|e| format!("Failed to write temp file: {}", e))?;
-        fs::rename(&temp_path, &self.file_path).map_err(|e| format!("Failed to rename temp file: {}", e))
+        fs::rename(&temp_path, &self.file_path)
+            .map_err(|e| format!("Failed to rename temp file: {}", e))
     }
 
     fn create_default_cluster(&self) -> StarCluster {
