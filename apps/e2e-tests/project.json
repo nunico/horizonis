@@ -4,7 +4,7 @@
 	"projectType": "application",
 	"sourceRoot": "apps/e2e-tests/test",
 	"targets": {
-		"test": {
+		"e2e": {
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "wdio run wdio.conf.js",
