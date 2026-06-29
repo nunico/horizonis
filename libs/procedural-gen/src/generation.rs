@@ -237,32 +237,35 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
             mass_sol: mass,
             radius_sol: class_info.2 * rng.random_range(0.9..1.1),
             orbit_au: 0.0,               // Will be set below
+            companion_distance_au: 0.0,  // Main-star-relative distance
+            companion_angle_rad: 0.0,    // Main-star-relative angle
             satellites: Vec::new(),      // Will be set below
             orbital_regions: Vec::new(), // Will be set below
         });
     }
 
     if num_stars > 1 {
-        // Simple barycentric setup
-        // Binary: Stars A and B separated by 40-100 AU
-        // Trinary: A and B separated by 30-60 AU, C at 200-500 AU
+        // Simple main-star-relative setup.
+        // Binary: companion separated by 40-100 AU.
+        // Trinary: first companion at 30-60 AU, second at 200-500 AU.
         if num_stars == 2 {
             let d = rng.random_range(40.0..100.0);
-            let m0 = stars[0].mass_sol;
-            let m1 = stars[1].mass_sol;
-            stars[0].orbit_au = d * (m1 / (m0 + m1));
-            stars[1].orbit_au = -d * (m0 / (m0 + m1)); // Opposite side
+            stars[1].orbit_au = d;
+            stars[1].companion_distance_au = d;
+            stars[1].companion_angle_rad = rng.random_range(0.0..std::f32::consts::TAU);
         } else {
             let d_inner = rng.random_range(30.0..60.0);
             let d_outer = rng.random_range(200.0..500.0);
+            let base_angle = rng.random_range(0.0..std::f32::consts::TAU);
 
-            // Distances from system barycenter
-            // Star 0 and 1 are a tight pair orbiting each other
-            let m0 = stars[0].mass_sol;
-            let m1 = stars[1].mass_sol;
-            stars[0].orbit_au = d_inner * (m1 / (m0 + m1));
-            stars[1].orbit_au = -d_inner * (m0 / (m0 + m1));
+            stars[1].orbit_au = d_inner;
+            stars[1].companion_distance_au = d_inner;
+            stars[1].companion_angle_rad = base_angle;
+
             stars[2].orbit_au = d_outer;
+            stars[2].companion_distance_au = d_outer;
+            stars[2].companion_angle_rad =
+                (base_angle + std::f32::consts::PI).rem_euclid(std::f32::consts::TAU);
         }
     }
 
@@ -277,7 +280,11 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
                 if i == j {
                     continue;
                 }
-                let dist = (stars[i].orbit_au - stars[j].orbit_au).abs();
+                let dx = stars[i].companion_distance_au * stars[i].companion_angle_rad.cos()
+                    - stars[j].companion_distance_au * stars[j].companion_angle_rad.cos();
+                let dy = stars[i].companion_distance_au * stars[i].companion_angle_rad.sin()
+                    - stars[j].companion_distance_au * stars[j].companion_angle_rad.sin();
+                let dist = dx.hypot(dy);
                 if dist < min_dist && dist > 0.01 {
                     min_dist = dist;
                 }
@@ -520,6 +527,8 @@ mod tests {
                     signature.push(star.mass_sol.to_bits() as u64);
                     signature.push(star.radius_sol.to_bits() as u64);
                     signature.push(star.orbit_au.to_bits() as u64);
+                    signature.push(star.companion_distance_au.to_bits() as u64);
+                    signature.push(star.companion_angle_rad.to_bits() as u64);
                     signature.push(star.satellites.len() as u64);
                     signature.push(star.orbital_regions.len() as u64);
                     signature.extend(star.name.as_bytes().iter().map(|b| *b as u64));
@@ -667,14 +676,24 @@ mod tests {
                 assert!((2..=3).contains(&system.stars.len()));
 
                 for (index, star) in system.stars.iter().enumerate() {
-                    assert_ne!(star.orbit_au, 0.0);
+                    if index == 0 {
+                        assert_eq!(star.orbit_au, 0.0);
+                    } else {
+                        assert_ne!(star.orbit_au, 0.0);
+                    }
 
                     let mut min_star_distance = f32::MAX;
                     for (other_index, other_star) in system.stars.iter().enumerate() {
                         if index == other_index {
                             continue;
                         }
-                        let distance = (star.orbit_au - other_star.orbit_au).abs();
+                        let dx = star.companion_distance_au * star.companion_angle_rad.cos()
+                            - other_star.companion_distance_au
+                                * other_star.companion_angle_rad.cos();
+                        let dy = star.companion_distance_au * star.companion_angle_rad.sin()
+                            - other_star.companion_distance_au
+                                * other_star.companion_angle_rad.sin();
+                        let distance = dx.hypot(dy);
                         if distance > 0.01 {
                             min_star_distance = min_star_distance.min(distance);
                         }
@@ -689,6 +708,45 @@ mod tests {
                         let stable_limit = min_star_distance * 0.35;
                         assert!(max_orbit <= stable_limit + f32::EPSILON);
                     }
+                }
+            }
+        }
+
+        assert!(
+            found_multi_star_system,
+            "expected at least one generated multi-star system"
+        );
+    }
+
+    #[test]
+    fn test_generate_cluster_multistar_systems_use_main_star_relative_positions() {
+        let mut found_multi_star_system = false;
+
+        for seed in 0_u64..512 {
+            let cluster = generate_cluster(seed);
+            for system in &cluster.systems {
+                if system.stars.len() < 2 {
+                    continue;
+                }
+
+                found_multi_star_system = true;
+                let main_star = &system.stars[0];
+                assert_eq!(main_star.companion_distance_au, 0.0);
+                assert_eq!(main_star.companion_angle_rad, 0.0);
+
+                for companion in system.stars.iter().skip(1) {
+                    assert!(
+                        companion.companion_distance_au > 0.0,
+                        "companion stars must store distance from the main star"
+                    );
+                    assert!(
+                        (0.0..std::f32::consts::TAU).contains(&companion.companion_angle_rad),
+                        "companion stars must store a relative angle in radians"
+                    );
+                    assert_eq!(
+                        companion.orbit_au, companion.companion_distance_au,
+                        "legacy star orbit radius mirrors the main-star-relative distance"
+                    );
                 }
             }
         }

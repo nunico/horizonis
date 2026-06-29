@@ -32,6 +32,10 @@ pub struct Star {
     #[serde(default)]
     pub orbit_au: f32,
     #[serde(default)]
+    pub companion_distance_au: f32,
+    #[serde(default)]
+    pub companion_angle_rad: f32,
+    #[serde(default)]
     pub satellites: Vec<OrbitalBody>,
     #[serde(default)]
     pub orbital_regions: Vec<OrbitalRegion>,

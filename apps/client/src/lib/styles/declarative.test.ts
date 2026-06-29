@@ -123,6 +123,8 @@ const star = (spectralClass: string): Star => ({
 	RadiusSol: 1,
 	MassSol: 1,
 	OrbitAu: 0,
+	CompanionDistanceAu: 0,
+	CompanionAngleRad: 0,
 	Satellites: [],
 	OrbitalRegions: []
 });

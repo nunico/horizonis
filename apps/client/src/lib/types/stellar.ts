@@ -21,6 +21,8 @@ export interface Star {
 	RadiusSol: number;
 	MassSol: number;
 	OrbitAu: number;
+	CompanionDistanceAu: number;
+	CompanionAngleRad: number;
 	Satellites: OrbitalBody[];
 	OrbitalRegions: OrbitalRegion[];
 }

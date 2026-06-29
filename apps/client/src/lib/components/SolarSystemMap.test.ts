@@ -56,6 +56,12 @@ vi.mock('$lib/stores/style', () => {
 
 // Mock PIXI.js
 vi.mock('pixi.js', () => {
+	const createdTexts: Array<{
+		text: string;
+		y: number;
+		anchor: { set: ReturnType<typeof vi.fn> };
+	}> = [];
+	const createdContainers: Array<Record<string, unknown>> = [];
 	const Application = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
 		this.init = vi.fn().mockResolvedValue(undefined);
 		this.destroy = vi.fn();
@@ -91,11 +97,18 @@ vi.mock('pixi.js', () => {
 		this.hitArea = {};
 		return this;
 	});
-	const Text = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
+	const Text = vi.fn().mockImplementation(function (
+		this: Record<string, unknown>,
+		options?: { text?: string }
+	) {
 		this.anchor = { set: vi.fn() };
 		this.addChild = vi.fn();
 		this.scale = { set: vi.fn() };
 		this.y = 0;
+		this.text = options?.text ?? '';
+		createdTexts.push(
+			this as { text: string; y: number; anchor: { set: ReturnType<typeof vi.fn> } }
+		);
 		return this;
 	});
 	const Container = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
@@ -108,6 +121,7 @@ vi.mock('pixi.js', () => {
 		this.scale = { set: vi.fn() };
 		this.eventMode = 'none';
 		this.cursor = 'default';
+		createdContainers.push(this);
 		return this;
 	});
 	const Circle = vi.fn().mockImplementation(function (
@@ -121,7 +135,15 @@ vi.mock('pixi.js', () => {
 		this.radius = radius;
 		return this;
 	});
-	return { Application, Graphics, Text, Container, Circle };
+	return {
+		Application,
+		Graphics,
+		Text,
+		Container,
+		Circle,
+		__createdTexts: createdTexts,
+		__createdContainers: createdContainers
+	};
 });
 
 // Mock pixi-viewport
@@ -164,6 +186,8 @@ describe('SolarSystemMap component', () => {
 							MassSol: 1.0,
 							RadiusSol: 1.0,
 							OrbitAu: 0.0,
+							CompanionDistanceAu: 0.0,
+							CompanionAngleRad: 0.0,
 							Satellites: [],
 							OrbitalRegions: []
 						}
@@ -250,4 +274,289 @@ describe('SolarSystemMap component', () => {
 		expect(get(activeSystemId)).toBeNull();
 		expect(get(selectedEntity)).toBeNull();
 	});
+
+	it('renders a multi-star system overview using main-star-relative positions', async () => {
+		// Arrange
+		const stars = [
+			{
+				Id: 'main',
+				Name: 'Main Star',
+				SpectralClass: 'G2V',
+				MassSol: 1,
+				RadiusSol: 1,
+				OrbitAu: 0,
+				CompanionDistanceAu: 0,
+				CompanionAngleRad: 0,
+				Satellites: [],
+				OrbitalRegions: []
+			},
+			{
+				Id: 'companion',
+				Name: 'Companion Star',
+				SpectralClass: 'M5V',
+				MassSol: 0.2,
+				RadiusSol: 0.2,
+				OrbitAu: 75,
+				CompanionDistanceAu: 75,
+				CompanionAngleRad: Math.PI / 2,
+				Satellites: [],
+				OrbitalRegions: []
+			}
+		];
+		cluster.set({
+			Name: 'Test Cluster',
+			Systems: [
+				{
+					Id: 'sys1',
+					Name: 'System 1',
+					X: 0,
+					Y: 0,
+					Stars: stars,
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+
+		// Act
+		render(SolarSystemMap);
+
+		// Assert
+		await vi.waitFor(() => {
+			const containers = (
+				PIXI as unknown as { __createdContainers: Array<{ x: number; y: number }> }
+			).__createdContainers;
+			expect(containers.some((container) => Math.abs(container.x) < 0.001 && container.y > 0)).toBe(
+				true
+			);
+		});
+	});
+
+	it('keeps system-wide orbital bodies visible in overview mode', async () => {
+		// Arrange
+		cluster.set({
+			Name: 'Test Cluster',
+			Systems: [
+				{
+					Id: 'sys1',
+					Name: 'System 1',
+					X: 0,
+					Y: 0,
+					Stars: [
+						{
+							Id: 'main',
+							Name: 'Main Star',
+							SpectralClass: 'G2V',
+							MassSol: 1,
+							RadiusSol: 1,
+							OrbitAu: 0,
+							CompanionDistanceAu: 0,
+							CompanionAngleRad: 0,
+							Satellites: [],
+							OrbitalRegions: []
+						}
+					],
+					OrbitalBodies: [
+						{
+							Id: 'circumbinary-planet',
+							Name: 'Circumbinary Planet',
+							BodyType: 'Planet' as const,
+							OrbitAu: 8,
+							RadiusKm: 6371,
+							MassEarth: 1,
+							Satellites: [],
+							Tags: []
+						}
+					],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+
+		// Act
+		render(SolarSystemMap);
+
+		// Assert
+		await vi.waitFor(() => {
+			const texts = (PIXI as unknown as { __createdTexts: Array<{ text: string }> }).__createdTexts;
+			expect(texts.some((text) => text.text.includes('Circumbinary Planet'))).toBe(true);
+		});
+	});
+
+	it('defaults single-star systems to visible detail rendering', async () => {
+		// Arrange
+		cluster.set({
+			Name: 'Test Cluster',
+			Systems: [
+				{
+					Id: 'sys1',
+					Name: 'System 1',
+					X: 0,
+					Y: 0,
+					Stars: [
+						{
+							Id: 'main',
+							Name: 'Main Star',
+							SpectralClass: 'G2V',
+							MassSol: 1,
+							RadiusSol: 1,
+							OrbitAu: 0,
+							CompanionDistanceAu: 0,
+							CompanionAngleRad: 0,
+							Satellites: [
+								{
+									Id: 'planet-1',
+									Name: 'Planet One',
+									BodyType: 'Planet' as const,
+									OrbitAu: 2,
+									RadiusKm: 6371,
+									MassEarth: 1,
+									Satellites: [],
+									Tags: []
+								}
+							],
+							OrbitalRegions: []
+						}
+					],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+		selectedEntity.set(null);
+
+		// Act
+		render(SolarSystemMap);
+
+		// Assert
+		await vi.waitFor(() => {
+			const texts = (PIXI as unknown as { __createdTexts: Array<{ text: string }> }).__createdTexts;
+			expect(texts.some((text) => text.text.includes('Main Star'))).toBe(true);
+			expect(texts.some((text) => text.text.includes('Planet One'))).toBe(true);
+		});
+	});
+
+	it('renders only the selected star detail view and its satellites', async () => {
+		// Arrange
+		const selectedStar = {
+			Id: 'selected-star',
+			Name: 'Selected Star',
+			SpectralClass: 'K0V',
+			MassSol: 0.8,
+			RadiusSol: 0.8,
+			OrbitAu: 40,
+			CompanionDistanceAu: 40,
+			CompanionAngleRad: 0,
+			Satellites: [
+				{
+					Id: 'planet-1',
+					Name: 'Planet One',
+					BodyType: 'Planet' as const,
+					OrbitAu: 2,
+					RadiusKm: 6371,
+					MassEarth: 1,
+					Satellites: [],
+					Tags: []
+				}
+			],
+			OrbitalRegions: []
+		};
+		cluster.set({
+			Name: 'Test Cluster',
+			Systems: [
+				{
+					Id: 'sys1',
+					Name: 'System 1',
+					X: 0,
+					Y: 0,
+					Stars: [
+						{
+							...selectedStar,
+							Id: 'overview-only',
+							Name: 'Overview Only',
+							Satellites: []
+						},
+						selectedStar
+					],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+		selectedEntity.set(selectedStar);
+
+		// Act
+		render(SolarSystemMap);
+
+		// Assert
+		await vi.waitFor(() => {
+			const texts = (PIXI as unknown as { __createdTexts: Array<{ text: string }> }).__createdTexts;
+			expect(texts.some((text) => text.text.includes('Selected Star'))).toBe(true);
+			expect(texts.some((text) => text.text.includes('Planet One'))).toBe(true);
+			expect(texts.some((text) => text.text.includes('Overview Only'))).toBe(false);
+		});
+	});
+
+	it('includes orbital radius in AU labels', async () => {
+		// Arrange
+		cluster.set({
+			Name: 'Test Cluster',
+			Systems: [
+				{
+					Id: 'sys1',
+					Name: 'System 1',
+					X: 0,
+					Y: 0,
+					Stars: [
+						{
+							Id: 'main',
+							Name: 'Main Star',
+							SpectralClass: 'G2V',
+							MassSol: 1,
+							RadiusSol: 1,
+							OrbitAu: 0,
+							CompanionDistanceAu: 0,
+							CompanionAngleRad: 0,
+							Satellites: [
+								{
+									Id: 'planet-1',
+									Name: 'Planet One',
+									BodyType: 'Planet' as const,
+									OrbitAu: 2,
+									RadiusKm: 6371,
+									MassEarth: 1,
+									Satellites: [],
+									Tags: []
+								}
+							],
+							OrbitalRegions: []
+						}
+					],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+		selectedEntity.set(clusterValue().Systems[0].Stars[0]);
+
+		// Act
+		render(SolarSystemMap);
+
+		// Assert
+		await vi.waitFor(() => {
+			const texts = (PIXI as unknown as { __createdTexts: Array<{ text: string }> }).__createdTexts;
+			expect(
+				texts.some((text) => text.text.includes('Planet One') && text.text.includes('2 AU'))
+			).toBe(true);
+		});
+	});
 });
+
+function clusterValue() {
+	return get(cluster)!;
+}

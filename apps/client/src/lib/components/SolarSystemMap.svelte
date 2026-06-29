@@ -13,7 +13,7 @@
 		type ScaleConfig
 	} from '$lib/pixi/scaling';
 	import { setupPixi } from '$lib/pixi/setup';
-	import { getEntityMaxSatRadius } from '$lib/utils/stellar';
+	import { getEntityMaxSatRadius, getStarRelativePosition } from '$lib/utils/stellar';
 	import { LAYOUT } from '$lib/theme';
 	import { activeStyle } from '$lib/stores/style';
 	import { clearTextureCache } from '$lib/styles/procedural/textures';
@@ -75,6 +75,20 @@
 	let maxSystemRadius = 0;
 	let selectionGraphics: PIXI.Graphics;
 	let hoverGraphics: PIXI.Graphics;
+
+	function isStar(entity: Entity | null): entity is Star {
+		return Boolean(entity && 'SpectralClass' in entity);
+	}
+
+	function getSelectedSystemStar() {
+		const entity = untrack(() => $selectedEntity as Entity | null);
+		if (!systemData || !isStar(entity)) return null;
+		return systemData.Stars.find((star) => star.Id === entity.Id) ?? null;
+	}
+
+	function formatAu(value: number) {
+		return `${Number.isInteger(value) ? value.toString() : value.toFixed(2)} AU`;
+	}
 	// Screen-space overlay (e.g. CRT scanlines) owned by the active style.
 	let styleOverlay: PIXI.Container | null = null;
 	// Screen-space parallax background owned by the active style (below viewport).
@@ -227,6 +241,7 @@
 	function updateScales() {
 		if (!viewport || !systemData) return;
 		const s = 1 / viewport.scale.x;
+		const isOverview = getSelectedSystemStar() === null;
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const visualRadii = new Map<string, number>();
 
@@ -248,7 +263,7 @@
 				if (r < minVisibleSatOrbit) minVisibleSatOrbit = r;
 			}
 
-			if (star.star.OrbitAu === 0) {
+			if (isOverview && star.star.OrbitAu === 0) {
 				for (const body of systemData.OrbitalBodies) {
 					const r = auToPixels(body.OrbitAu, scaleConfig);
 					if (r * viewport.scale.x > 10) {
@@ -313,6 +328,20 @@
 			} as PIXI.IHitArea;
 		}
 		drawSelection();
+	}
+
+	function renderSystemRegion(
+		region: { InnerRadiusAu: number; OuterRadiusAu: number },
+		parent: PIXI.Container<PIXI.ContainerChild>
+	) {
+		const graphics = new PIXI.Graphics();
+		const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
+		const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
+
+		if (outer > maxSystemRadius) maxSystemRadius = outer;
+
+		$activeStyle.styleRegion(graphics, { innerRadius: inner, outerRadius: outer });
+		parent.addChild(graphics);
 	}
 
 	function drawSelection() {
@@ -442,18 +471,6 @@
 		});
 	}
 
-	function renderRegion(region: { InnerRadiusAu: number; OuterRadiusAu: number }) {
-		if (!viewport) return;
-		const r = new PIXI.Graphics();
-		const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
-		const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
-
-		if (outer > maxSystemRadius) maxSystemRadius = outer;
-
-		$activeStyle.styleRegion(r, { innerRadius: inner, outerRadius: outer });
-		viewport.addChild(r);
-	}
-
 	interface PreserveCamera {
 		centerAu: number;
 		angle: number;
@@ -490,16 +507,27 @@
 			hoverGraphics = new PIXI.Graphics();
 			v2.addChild(hoverGraphics);
 
-			sd.Stars?.forEach((star, i) => {
-				renderStar(star, i, sd!.Stars.length);
-			});
+			const explicitlySelectedStar = getSelectedSystemStar();
+			const selectedStar = explicitlySelectedStar || (sd.Stars.length === 1 ? sd.Stars[0] : null);
 
-			sd.OrbitalBodies?.forEach((body, i) => {
-				renderBody(body, v2, i, sd!.OrbitalBodies.length);
-			});
+			if (selectedStar) {
+				renderStar(selectedStar, 0, 1, { centered: true, renderDetails: true });
+			}
 
-			for (const region of sd.OrbitalRegions || []) {
-				renderRegion(region);
+			if (!explicitlySelectedStar) {
+				if (sd.Stars.length > 1) {
+					sd.Stars?.forEach((star, i) => {
+						renderStar(star, i, sd!.Stars.length, { renderDetails: false });
+					});
+				}
+
+				sd.OrbitalBodies?.forEach((body, i) => {
+					renderBody(body, v2, i, sd!.OrbitalBodies.length);
+				});
+
+				for (const region of sd.OrbitalRegions || []) {
+					renderSystemRegion(region, v2);
+				}
 			}
 
 			updateScales();
@@ -533,11 +561,22 @@
 		});
 	}
 
-	function renderStar(star: Star, index: number, total: number) {
-		const radius = auToPixels(star.OrbitAu, scaleConfig);
-		const angle = total > 1 ? (index / total) * Math.PI * 2 : 0;
-		const worldX = Math.cos(angle) * radius;
-		const worldY = Math.sin(angle) * radius;
+	function renderStar(
+		star: Star,
+		index: number,
+		total: number,
+		options: { centered?: boolean; renderDetails?: boolean } = {}
+	) {
+		const distanceAu = star.CompanionDistanceAu ?? star.OrbitAu;
+		const angleRad = star.CompanionAngleRad ?? (total > 1 ? (index / total) * Math.PI * 2 : 0);
+		const radius = auToPixels(distanceAu, scaleConfig);
+		const { x: worldX, y: worldY } = options.centered
+			? { x: 0, y: 0 }
+			: getStarRelativePosition({
+					distanceAu,
+					angleRad,
+					auToPixels: (au) => auToPixels(au, scaleConfig)
+				});
 		const maxSatRadius = getLocalEntityMaxSatRadius(star);
 
 		if (Math.hypot(worldX, worldY) + maxSatRadius > maxSystemRadius) {
@@ -549,7 +588,7 @@
 		const orbitContainer = new PIXI.Container();
 		v.addChild(orbitContainer);
 
-		if (star.OrbitAu > 0) {
+		if (!options.centered && distanceAu > 0) {
 			const orbit = new PIXI.Graphics();
 			orbit.eventMode = 'static';
 			orbit.cursor = 'pointer';
@@ -610,8 +649,9 @@
 			hoverGraphics.clear();
 		});
 
+		const labelText = distanceAu > 0 ? `${star.Name} (${formatAu(distanceAu)})` : star.Name;
 		const label = new PIXI.Text({
-			text: star.Name,
+			text: labelText,
 			style: $activeStyle.labelStyle('star')
 		});
 		label.anchor.set(0.5, 0);
@@ -628,16 +668,18 @@
 			maxSatRadius
 		});
 
-		star.Satellites?.forEach((body, i) => {
-			renderBody(body, starCenter, i, star.Satellites.length, worldX, worldY, star.Id);
-		});
+		if (options.renderDetails) {
+			star.Satellites?.forEach((body, i) => {
+				renderBody(body, starCenter, i, star.Satellites.length, worldX, worldY, star.Id);
+			});
 
-		for (const region of star.OrbitalRegions || []) {
-			const r = new PIXI.Graphics();
-			const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
-			const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
-			$activeStyle.styleRegion(r, { innerRadius: inner, outerRadius: outer });
-			starCenter.addChild(r);
+			for (const region of star.OrbitalRegions || []) {
+				const r = new PIXI.Graphics();
+				const inner = auToPixels(region.InnerRadiusAu, scaleConfig);
+				const outer = auToPixels(region.OuterRadiusAu, scaleConfig);
+				$activeStyle.styleRegion(r, { innerRadius: inner, outerRadius: outer });
+				starCenter.addChild(r);
+			}
 		}
 	}
 
@@ -726,7 +768,7 @@
 		});
 
 		const label = new PIXI.Text({
-			text: body.Name,
+			text: `${body.Name} (${formatAu(body.OrbitAu)})`,
 			style: $activeStyle.labelStyle('body')
 		});
 		label.anchor.set(0.5, 0);
@@ -785,6 +827,9 @@
 
 	$effect(() => {
 		if ($selectedEntity !== undefined) {
+			if (viewport && systemData) {
+				queueMicrotask(() => renderSystem());
+			}
 			drawSelection();
 		}
 	});

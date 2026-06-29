@@ -880,3 +880,14 @@
   - Implemented Pixi.js renderer for Cluster and Solar System views.
   - Created Rust backend with JSON persistence.
 - **Files Affected**: Entire repository scaffolding.
+
+### 2026-06-29 - Star system view overhaul
+
+- Added main-star-relative companion star distances and angles to generated star systems.
+- Split system rendering into multi-star overview and per-star detail views with AU orbit labels.
+- Restored overview rendering for system-wide orbital bodies and regions with regression coverage.
+
+### 2026-06-29 - Star system detail visibility fix
+
+- Restored default planet visibility for single-star system detail views after the overview split.
+- Added regression coverage matching the PDF-style overview/detail separation.

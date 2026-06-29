@@ -1,6 +1,24 @@
 import type { SolarSystem, Star, OrbitalBody } from '$lib/types/stellar';
 import type { ScaleConfig } from '$lib/pixi/scaling';
 
+interface StarRelativePositionInput {
+	distanceAu: number;
+	angleRad: number;
+	auToPixels: (au: number) => number;
+}
+
+export function getStarRelativePosition({
+	distanceAu,
+	angleRad,
+	auToPixels
+}: StarRelativePositionInput) {
+	const radius = auToPixels(distanceAu);
+	return {
+		x: Math.cos(angleRad) * radius,
+		y: Math.sin(angleRad) * radius
+	};
+}
+
 export function getUniquePortals(systems: SolarSystem[]) {
 	const uniquePortals = new Map<string, { from: string; to: string }>();
 	for (const system of systems) {

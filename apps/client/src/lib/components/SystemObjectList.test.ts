@@ -23,6 +23,8 @@ const mockCluster: StarCluster = {
 					RadiusSol: 1,
 					MassSol: 1,
 					OrbitAu: 0,
+					CompanionDistanceAu: 0,
+					CompanionAngleRad: 0,
 					OrbitalRegions: [],
 					Satellites: [
 						{
