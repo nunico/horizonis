@@ -762,6 +762,12 @@
 		};
 	}
 
+	function returnToCluster() {
+		selectedEntity.set(null);
+		activeSystemId.set(null);
+		viewMode.set('cluster');
+	}
+
 	function setMode(mode: 'linear' | 'log') {
 		if (scaleConfig.mode === mode) return;
 
@@ -804,7 +810,7 @@
 	<div class="absolute top-20 left-4 flex gap-2">
 		<button
 			class="px-4 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 border border-slate-700 transition-colors"
-			onclick={() => viewMode.set('cluster')}
+			onclick={returnToCluster}
 		>
 			Back to Cluster
 		</button>

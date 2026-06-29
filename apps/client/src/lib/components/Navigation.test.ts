@@ -33,6 +33,14 @@ const mockCluster: StarCluster = {
 	]
 };
 
+const { mockNativeConfirm } = vi.hoisted(() => ({
+	mockNativeConfirm: vi.fn()
+}));
+
+vi.mock('$lib/platform/confirm', () => ({
+	nativeConfirm: mockNativeConfirm
+}));
+
 describe('Navigation component', () => {
 	beforeEach(() => {
 		cluster.set(mockCluster);
@@ -40,6 +48,7 @@ describe('Navigation component', () => {
 		activeSystemId.set(null);
 		selectedEntity.set(null);
 		vi.clearAllMocks();
+		mockNativeConfirm.mockResolvedValue(null);
 	});
 
 	it('renders Cluster breadcrumb by default', () => {
@@ -211,6 +220,68 @@ describe('Navigation component', () => {
 		vi.useRealTimers();
 	});
 
+	it('connects the search combobox to the active result for assistive technology', async () => {
+		cluster.set({
+			Name: 'Multi',
+			Systems: [
+				{
+					Id: 'a',
+					Name: 'Sol One',
+					X: 0,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				},
+				{
+					Id: 'b',
+					Name: 'Sol Two',
+					X: 0,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+		vi.useFakeTimers();
+		render(Navigation);
+
+		const input = screen.getByRole('combobox');
+		await fireEvent.focus(input);
+		await fireEvent.input(input, { target: { value: 'Sol' } });
+		vi.advanceTimersByTime(200);
+		await tick();
+
+		expect(input).toHaveAttribute('aria-autocomplete', 'list');
+		expect(input).toHaveAttribute('aria-activedescendant', 'search-result-system-a');
+		expect(screen.getByRole('option', { name: /sol one/i })).toHaveAttribute(
+			'id',
+			'search-result-system-a'
+		);
+
+		await fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+		expect(input).toHaveAttribute('aria-activedescendant', 'search-result-system-b');
+		vi.useRealTimers();
+	});
+
+	it('announces when a search has no results', async () => {
+		vi.useFakeTimers();
+		render(Navigation);
+
+		const input = screen.getByRole('combobox');
+		await fireEvent.focus(input);
+		await fireEvent.input(input, { target: { value: 'zzz' } });
+		vi.advanceTimersByTime(200);
+		await tick();
+
+		expect(screen.getByRole('status')).toHaveTextContent('No results found for "zzz"');
+		vi.useRealTimers();
+	});
+
 	it('focuses search input when search focus is requested', async () => {
 		render(Navigation);
 		const input = screen.getByPlaceholderText(/search systems/i);
@@ -243,6 +314,24 @@ describe('Navigation component', () => {
 		await fireEvent.click(screen.getByRole('button', { name: 'Generate' }));
 
 		expect(generateNewCluster).toHaveBeenCalled();
+	});
+
+	it('regenerates after native confirmation accepts', async () => {
+		mockNativeConfirm.mockResolvedValue(true);
+		render(Navigation);
+
+		await fireEvent.click(screen.getByLabelText('Generate New Cluster'));
+		await tick();
+
+		expect(mockNativeConfirm).toHaveBeenCalledWith({
+			title: 'Generate a new cluster?',
+			message: 'This replaces your current cluster. You can undo it right after.',
+			confirmLabel: 'Generate',
+			cancelLabel: 'Cancel',
+			kind: 'warning'
+		});
+		expect(generateNewCluster).toHaveBeenCalled();
+		expect(screen.queryByText('Generate a new cluster?')).not.toBeInTheDocument();
 	});
 
 	it('does not regenerate when the dialog is cancelled', async () => {

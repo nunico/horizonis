@@ -105,13 +105,13 @@ describe('Inspector component', () => {
 		expect(get(selectedEntity)).toBeNull();
 	});
 
-	it('moves focus to the panel (not the name input) on open', async () => {
+	it('moves focus to the name input and exposes modal semantics on open', async () => {
 		selectedEntity.set(get(cluster)!.Systems[0]);
 		render(Inspector);
 
 		const input = screen.getByDisplayValue('Old Name');
 		const dialog = screen.getByRole('dialog');
-		expect(document.activeElement).toBe(dialog);
-		expect(document.activeElement).not.toBe(input);
+		expect(dialog).toHaveAttribute('aria-modal', 'true');
+		expect(document.activeElement).toBe(input);
 	});
 });

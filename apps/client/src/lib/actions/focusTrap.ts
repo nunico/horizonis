@@ -1,3 +1,4 @@
+const AUTOFOCUS = '[data-autofocus], [autofocus]';
 const FOCUSABLE =
 	'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -17,11 +18,15 @@ export function focusTrap(node: HTMLElement) {
 			(el) => !el.hasAttribute('disabled')
 		);
 
-	// Move focus into the dialog (prefer the container itself if focusable).
-	if (node.hasAttribute('tabindex')) {
-		node.focus();
-	} else {
-		focusable()[0]?.focus();
+	const autofocus = node.querySelector<HTMLElement>(AUTOFOCUS);
+	autofocus?.focus?.();
+	if (document.activeElement !== autofocus) {
+		const first = focusable()[0];
+		if (first) {
+			first.focus();
+		} else {
+			node.focus();
+		}
 	}
 
 	function handleKeydown(e: KeyboardEvent) {

@@ -103,6 +103,7 @@
 		role="dialog"
 		tabindex="-1"
 		aria-labelledby="inspector-title"
+		aria-modal="true"
 		class="fixed top-20 right-4 left-4 w-auto sm:left-auto sm:w-80 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-5rem)] z-40"
 	>
 		<div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
@@ -127,6 +128,7 @@
 				>
 				<input
 					id="name"
+					data-autofocus
 					bind:value={entity.Name}
 					class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100 focus:outline-none focus:border-sky-500 transition-colors"
 				/>
