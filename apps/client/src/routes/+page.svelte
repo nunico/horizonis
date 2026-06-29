@@ -10,6 +10,7 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import SystemList from '$lib/components/SystemList.svelte';
+	import SystemObjectList from '$lib/components/SystemObjectList.svelte';
 	import Announcer from '$lib/components/Announcer.svelte';
 
 	let error = $state<string | null>(null);
@@ -42,6 +43,7 @@
 			{/if}
 		{:else}
 			<SolarSystemMap />
+			<SystemObjectList />
 		{/if}
 		<Inspector />
 		<HelpOverlay />

@@ -15,6 +15,7 @@ pub fn run() {
         .manage(AppState {
             cluster: Mutex::new(None),
         })
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             commands::get_cluster,

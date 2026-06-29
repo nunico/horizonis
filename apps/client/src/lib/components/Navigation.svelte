@@ -9,6 +9,7 @@
 	import { recordSnapshot } from '$lib/stores/history';
 	import { nextIndex } from '$lib/utils/listNav';
 	import { get } from 'svelte/store';
+	import { nativeConfirm } from '$lib/platform/confirm';
 	import ConfirmDialog from './ConfirmDialog.svelte';
 	import StylePicker from './StylePicker.svelte';
 
@@ -110,6 +111,15 @@
 		searchResultsOpen.set(false);
 	}
 
+	function searchResultId(result: SearchResult) {
+		return `search-result-${result.type}-${result.id}`;
+	}
+
+	function activeSearchResultId() {
+		if (!$searchResultsOpen || searchResults.length === 0) return undefined;
+		return searchResultId(searchResults[Math.min(activeIndex, searchResults.length - 1)]);
+	}
+
 	function handleSearchKeydown(e: KeyboardEvent) {
 		if (!searchResults.length) return;
 		if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -150,6 +160,22 @@
 		} finally {
 			regenerating = false;
 			showRegenerateConfirm = false;
+		}
+	}
+
+	async function requestRegenerate() {
+		const accepted = await nativeConfirm({
+			title: 'Generate a new cluster?',
+			message: 'This replaces your current cluster. You can undo it right after.',
+			confirmLabel: 'Generate',
+			cancelLabel: 'Cancel',
+			kind: 'warning'
+		});
+
+		if (accepted === true) {
+			await confirmRegenerate();
+		} else if (accepted === null) {
+			showRegenerateConfirm = true;
 		}
 	}
 </script>
@@ -214,6 +240,8 @@
 				role="combobox"
 				aria-expanded={$searchResultsOpen && searchResults.length > 0}
 				aria-controls="search-results"
+				aria-autocomplete="list"
+				aria-activedescendant={activeSearchResultId()}
 				class="w-40 sm:w-64 bg-slate-950/50 border border-slate-800 rounded-md py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all placeholder:text-slate-600"
 			/>
 			<div
@@ -231,6 +259,7 @@
 			>
 				{#each searchResults as result, i (result.id)}
 					<button
+						id={searchResultId(result)}
 						onclick={() => selectResult(result)}
 						onmousemove={() => (activeIndex = i)}
 						role="option"
@@ -254,6 +283,8 @@
 
 		{#if $searchResultsOpen && searchQuery.length > 1 && searchResults.length === 0}
 			<div
+				role="status"
+				aria-live="polite"
 				class="absolute top-full mt-2 left-0 w-80 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl p-4 text-center z-[60]"
 			>
 				<p class="text-sm text-slate-500">No results found for "{searchQuery}"</p>
@@ -263,7 +294,7 @@
 		<StylePicker />
 
 		<button
-			onclick={() => (showRegenerateConfirm = true)}
+			onclick={requestRegenerate}
 			class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
 			title="Generate New Cluster"
 			aria-label="Generate New Cluster"

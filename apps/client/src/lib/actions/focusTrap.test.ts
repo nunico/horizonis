@@ -31,10 +31,17 @@ describe('focusTrap action', () => {
 		document.body.innerHTML = '';
 	});
 
-	it('focuses the dialog container on mount', () => {
-		const { dialog } = buildDialog();
+	it('focuses an explicitly marked autofocus control on mount', () => {
+		const { dialog, first } = buildDialog();
+		first.setAttribute('data-autofocus', '');
 		focusTrap(dialog);
-		expect(document.activeElement).toBe(dialog);
+		expect(document.activeElement).toBe(first);
+	});
+
+	it('focuses the first focusable child when there is no autofocus control', () => {
+		const { dialog, first } = buildDialog();
+		focusTrap(dialog);
+		expect(document.activeElement).toBe(first);
 	});
 
 	it('wraps Tab from the last element back to the first', () => {
@@ -56,9 +63,9 @@ describe('focusTrap action', () => {
 	});
 
 	it('restores focus to the trigger when destroyed', () => {
-		const { dialog } = buildDialog();
+		const { dialog, first } = buildDialog();
 		const trap = focusTrap(dialog);
-		expect(document.activeElement).toBe(dialog);
+		expect(document.activeElement).toBe(first);
 
 		trap.destroy();
 		expect(document.activeElement).toBe(trigger);

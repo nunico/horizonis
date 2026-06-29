@@ -47,5 +47,8 @@
 			"version": "26.3.0",
 			"onFail": "download"
 		}
+	},
+	"dependencies": {
+		"@tauri-apps/plugin-dialog": "^2.7.1"
 	}
 }

@@ -1,5 +1,19 @@
 # Changelog
 
+###### [2026-06-29] - Update Horizonis UX implementation
+
+- **Summary**: Standardize Horizonis UX: window sizing, navigation state, focus trapping, dialogs, and accessibility.
+- **Changes**:
+  - Set desktop window default/min size and center on startup.
+  - Clear back-to-cluster state consistently across navigation flows.
+  - Implement `focusTrap` `data-autofocus`/`first-focusable`; align Inspector `aria-modal` and `data-autofocus`.
+  - Use native Tauri dialog confirmations with web fallback; configure dialog plugin capability.
+  - Update search combobox ARIA: active descendant, autocomplete, and status announcements.
+  - Add keyboard-accessible `SystemObjectList` for stars, bodies, and nested satellites.
+  - Add/updated tests and validations; confirm `pnpm`/`cargo`/checks passing.
+- **Files Affected**: apps/shell/*, apps/web/src/lib/*, apps/client/src/lib/*, apps/web-e2e/tests/*.
+- **Context**: None.
+
 ###### [2026-06-19] - Fix horizonis-client Vitest suite (localStorage, gitignore)
 
 - **Summary**: Fixed 37 failing horizonis-client tests caused by Node 26 experimental localStorage shadowing jsdom's implementation.

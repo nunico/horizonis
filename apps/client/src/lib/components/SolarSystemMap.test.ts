@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/svelte';
+import { fireEvent, render } from '@testing-library/svelte';
+import { get } from 'svelte/store';
 import SolarSystemMap from './SolarSystemMap.svelte';
 import { cluster } from '$lib/stores/clusterData';
-import { activeSystemId } from '$lib/stores/appState';
+import { activeSystemId, selectedEntity, viewMode } from '$lib/stores/appState';
 import * as PIXI from 'pixi.js';
 import { Viewport } from 'pixi-viewport';
 
@@ -175,6 +176,8 @@ describe('SolarSystemMap component', () => {
 		};
 		cluster.set(mockCluster);
 		activeSystemId.set('sys1');
+		selectedEntity.set(null);
+		viewMode.set('system');
 	});
 
 	it('initializes PIXI application and viewport on mount', async () => {
@@ -233,5 +236,18 @@ describe('SolarSystemMap component', () => {
 		await vi.waitFor(() => {
 			expect(mockActiveStyle.createBackground).toHaveBeenCalled();
 		});
+	});
+
+	it('clears system state when returning to the cluster', async () => {
+		const selectedStar = get(cluster)?.Systems?.[0]?.Stars?.[0] ?? null;
+		selectedEntity.set(selectedStar);
+
+		const { getByRole } = render(SolarSystemMap);
+
+		await fireEvent.click(getByRole('button', { name: 'Back to Cluster' }));
+
+		expect(get(viewMode)).toBe('cluster');
+		expect(get(activeSystemId)).toBeNull();
+		expect(get(selectedEntity)).toBeNull();
 	});
 });
