@@ -1,5 +1,28 @@
 # Changelog
 
+###### [2026-07-01] - Implement sidebar-aware viewport centering and centroid-based spatial bounds
+
+- **Summary**: Fixed camera centering in StarMap and SolarSystemMap to account for sidebar overlay; improved spatial grid calculation to use centroid instead of bounding-box midpoint.
+- **Changes**:
+  - StarMap `renderCluster`: apply horizontal camera offset using `sidebarWidth/2/scale` to center cluster at visible content area.
+  - Remove stale Clamp plugin before `setZoom` to prevent pre-render-resize snap during initial zoom.
+  - SolarSystemMap `getSystemCameraCenter`: apply equivalent sidebar offset for system-centered framing.
+  - SpatialGrid `calculateBounds`: changed from bounding-box midpoint `(minX+maxX)/2` to centroid (mean position) for accurate visual centering.
+  - Added `clusterSidebarWidthPx: 256` and `systemSidebarWidthPx: 304` layout constants to `theme.ts`.
+  - StarMap/SolarSystemMap `updateZoomLimits`: use visible content area (viewport minus sidebar width) for min-scale.
+  - Tests: verify `plugins.remove('clamp')` → `setZoom` → `clamp` ordering; assert camera center and final clamp bounds.
+- **Files Affected**: apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/StarMap.test.ts, apps/client/src/lib/components/SolarSystemMap.svelte, apps/client/src/lib/components/SolarSystemMap.test.ts, apps/client/src/lib/theme.ts, apps/client/src/lib/utils/spatial.ts
+- **Context**: Sidebar overlay shifts the visible center; previous centering used screen center (0,0), causing clusters to appear off-center right of the sidebar. Centroid calculation ensures outlier systems do not skew the visual center.
+
+###### [2026-07-01] - Fix cluster map viewport centering in Tauri desktop app
+
+- **Summary**: Fixed cluster map viewport off-centre issue in Tauri's WKWebView caused by spurious resize events and stale clamps.
+- **Changes**:
+  - Removed stale viewport clamp before camera-reset sequence in `renderCluster` to prevent position snapping.
+  - Removed diagnostic console.log from viewport centering code.
+- **Files Affected**: apps/client/src/lib/components/StarMap.svelte, apps/client/src/lib/components/StarMap.test.ts
+- **Context**: Tauri's WKWebView fires a resize event after pixi-viewport's resize handler is registered but before bounds calculation, causing the clamp to use stale `(0,0)` center. Removing the clamp before re-applying updated bounds via `setZoom` → `moveCenter` → `updateZoomLimits` sequence prevents the camera from snapping to the wrong position.
+
 ###### [2026-06-29] - Update Horizonis UX implementation
 
 - **Summary**: Standardize Horizonis UX: window sizing, navigation state, focus trapping, dialogs, and accessibility.

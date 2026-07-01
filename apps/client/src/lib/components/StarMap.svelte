@@ -362,14 +362,16 @@
 		}
 	}
 
-	function updateZoomLimits() {
+	function updateZoomLimits(options: { updateClamp?: boolean } = {}) {
 		if (!viewport || !$cluster) return;
 		const sw = viewport.screenWidth;
 		const sh = viewport.screenHeight;
 		const scale = viewport.scale.x;
 
+		const visibleWidth = Math.max(sw - LAYOUT.clusterSidebarWidthPx, 1);
 		const visibleHeight = sh - LAYOUT.navbarHeightPx;
-		const minScale = (0.8 * (Math.min(sw, visibleHeight) / 2)) / Math.max(maxClusterRadius, 100);
+		const minScale =
+			(0.8 * (Math.min(visibleWidth, visibleHeight) / 2)) / Math.max(maxClusterRadius, 100);
 
 		let maxScale = 10;
 		if (focusedSystem) {
@@ -382,19 +384,28 @@
 			lastMaxScale = maxScale;
 		}
 
+		if (options.updateClamp === false) return;
+
+		const center = getClusterCameraCenter(scale);
 		const hwx = sw / 2 / scale;
 		const hwy = sh / 2 / scale;
-		const offY = 28 / scale;
+		const leftOverlayPadding = LAYOUT.clusterSidebarWidthPx / scale;
+		const topOverlayPadding = LAYOUT.navbarHeightPx / scale;
 
 		viewport.clamp({
-			left: Math.min(clusterCenter.x - hwx, clusterCenter.x - maxClusterRadius),
-			right: Math.max(clusterCenter.x + hwx, clusterCenter.x + maxClusterRadius),
-			top: Math.min(
-				clusterCenter.y - offY - hwy,
-				clusterCenter.y - maxClusterRadius - LAYOUT.navbarHeightPx / scale
-			),
-			bottom: Math.max(clusterCenter.y - offY + hwy, clusterCenter.y + maxClusterRadius)
+			underflow: 'center',
+			left: Math.min(center.x - hwx, clusterCenter.x - maxClusterRadius - leftOverlayPadding),
+			right: Math.max(center.x + hwx, clusterCenter.x + maxClusterRadius),
+			top: Math.min(center.y - hwy, clusterCenter.y - maxClusterRadius - topOverlayPadding),
+			bottom: Math.max(center.y + hwy, clusterCenter.y + maxClusterRadius)
 		});
+	}
+
+	function getClusterCameraCenter(scale: number) {
+		return {
+			x: clusterCenter.x,
+			y: clusterCenter.y - LAYOUT.navbarHeightPx / 2 / scale
+		};
 	}
 
 	function drawPortals() {
@@ -593,14 +604,25 @@
 		createSystems();
 
 		updateScales();
-		updateZoomLimits();
+		updateZoomLimits({ updateClamp: false });
 
 		if (resetCamera) {
+			// Remove any stale clamp from a previous render or a spurious resize that
+			// fired before calculateClusterBounds() ran (e.g. WKWebView initial layout).
+			// Without this, the stale clamp fires inside setZoom's internal moveCenter
+			// and again during our explicit moveCenter, snapping the camera off-centre.
+			// The correct clamp is re-established by updateZoomLimits() afterwards.
+			viewport.plugins.remove('clamp');
 			viewport.setZoom(lastMinScale, true);
-			viewport.moveCenter(clusterCenter.x, clusterCenter.y - 28 / lastMinScale);
+			const center = getClusterCameraCenter(lastMinScale);
+			viewport.moveCenter(center.x, center.y);
+			updateZoomLimits();
+			updateScales();
 		} else if (prevCenter && prevZoom !== null) {
 			viewport.setZoom(prevZoom);
 			viewport.moveCenter(prevCenter.x, prevCenter.y);
+			updateZoomLimits();
+			updateScales();
 		}
 
 		setClusterReady(true);

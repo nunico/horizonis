@@ -70,7 +70,7 @@ vi.mock('pixi.js', () => {
 		this.renderer = {
 			on: vi.fn(),
 			off: vi.fn(),
-			events: {},
+			events: { pointer: { global: null } },
 			background: { color: 0 },
 			generateTexture: vi.fn(() => ({}))
 		};
@@ -153,14 +153,20 @@ vi.mock('pixi-viewport', () => ({
 		this.pinch = vi.fn().mockReturnThis();
 		this.wheel = vi.fn().mockReturnThis();
 		this.decelerate = vi.fn().mockReturnThis();
-		this.moveCenter = vi.fn();
+		this.moveCenter = vi.fn((x: number, y: number) => {
+			this.center = { x, y };
+		});
 		this.on = vi.fn();
 		this.addChild = vi.fn();
 		this.removeChildren = vi.fn().mockReturnValue([]);
 		this.resize = vi.fn();
-		this.setZoom = vi.fn();
+		this.setZoom = vi.fn((scale: number) => {
+			this.scale = { x: scale, y: scale };
+		});
 		this.clampZoom = vi.fn();
 		this.clamp = vi.fn();
+		this.screenWidth = 800;
+		this.screenHeight = 600;
 		this.scale = { x: 1, y: 1 };
 		this.center = { x: 0, y: 0 };
 		return this;
@@ -211,6 +217,81 @@ describe('SolarSystemMap component', () => {
 			expect(PIXI.Application).toHaveBeenCalled();
 			expect(Viewport).toHaveBeenCalled();
 		});
+	});
+
+	it('centers the initial camera on the system origin before interaction', async () => {
+		// Arrange / Act
+		render(SolarSystemMap);
+
+		// Assert
+		let viewportInstance: unknown;
+		await vi.waitFor(() => {
+			viewportInstance = vi.mocked(Viewport).mock.results[0].value;
+			expect(
+				(viewportInstance as { moveCenter: ReturnType<typeof vi.fn> }).moveCenter
+			).toHaveBeenCalled();
+		});
+
+		const viewportMock = viewportInstance as {
+			moveCenter: ReturnType<typeof vi.fn>;
+			setZoom: ReturnType<typeof vi.fn>;
+			clamp: ReturnType<typeof vi.fn>;
+		};
+		const clampConfig = viewportMock.clamp.mock.lastCall?.[0] as {
+			underflow?: string;
+			left: number;
+			right: number;
+			top: number;
+			bottom: number;
+		};
+
+		expect(viewportMock.setZoom.mock.invocationCallOrder.at(-1)!).toBeLessThan(
+			viewportMock.clamp.mock.invocationCallOrder.at(-1)!
+		);
+		expect(viewportMock.moveCenter).toHaveBeenLastCalledWith(
+			expect.closeTo(0, 2),
+			expect.closeTo(-14.11, 2)
+		);
+		expect(clampConfig).toEqual(
+			expect.objectContaining({
+				underflow: 'center'
+			})
+		);
+		expect(clampConfig.left).toBeLessThan(0);
+		expect(clampConfig.right).toBeGreaterThan(0);
+		expect(clampConfig.top).toBeLessThan(-14.11);
+		expect(clampConfig.bottom).toBeGreaterThan(-14.11);
+	});
+
+	it('keeps zoomed-in pan bounds clear of the fixed object overlay', async () => {
+		// Arrange / Act
+		render(SolarSystemMap);
+
+		let viewportInstance: unknown;
+		await vi.waitFor(() => {
+			viewportInstance = vi.mocked(Viewport).mock.results[0].value;
+			expect((viewportInstance as { clamp: ReturnType<typeof vi.fn> }).clamp).toHaveBeenCalled();
+		});
+
+		const viewportMock = viewportInstance as {
+			on: ReturnType<typeof vi.fn>;
+			clamp: ReturnType<typeof vi.fn>;
+			scale: { x: number; y: number };
+		};
+		viewportMock.clamp.mockClear();
+		viewportMock.scale = { x: 4, y: 4 };
+		const zoomedHandler = viewportMock.on.mock.calls.find(([event]) => event === 'zoomed')?.[1] as
+			| (() => void)
+			| undefined;
+		zoomedHandler?.();
+
+		// Assert
+		expect(viewportMock.clamp).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				left: expect.closeTo(-115.05, 2),
+				top: expect.closeTo(-82, 2)
+			})
+		);
 	});
 
 	it('destroys PIXI application on unmount', async () => {

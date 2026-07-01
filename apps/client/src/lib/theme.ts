@@ -77,6 +77,10 @@ export function getBodyTypeColor(bodyType: string): number {
 export const LAYOUT = {
 	/** Height of the fixed top navigation bar (Tailwind `h-14`). */
 	navbarHeightPx: 56,
+	/** Fixed cluster-list overlay width plus its left offset (`w-60 left-4`). */
+	clusterSidebarWidthPx: 256,
+	/** Fixed system-object overlay width plus its left offset (`w-72 left-4`). */
+	systemSidebarWidthPx: 304,
 	/** Spatial-grid cell size used for nearest-system lookups. */
 	spatialGridSize: 200
 } as const;

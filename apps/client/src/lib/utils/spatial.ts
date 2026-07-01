@@ -46,17 +46,15 @@ export class SpatialGrid<T extends SpatialItem> {
 			maxX = -Infinity,
 			minY = Infinity,
 			maxY = -Infinity;
-
 		for (const item of items) {
 			if (item.X < minX) minX = item.X;
 			if (item.X > maxX) maxX = item.X;
 			if (item.Y < minY) minY = item.Y;
 			if (item.Y > maxY) maxY = item.Y;
 		}
-
 		const center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
-		let maxRadius = 0;
 
+		let maxRadius = 0;
 		for (const item of items) {
 			const dist = Math.hypot(item.X - center.x, item.Y - center.y);
 			if (dist > maxRadius) maxRadius = dist;

@@ -73,6 +73,7 @@
 	let lastMinScale = 0;
 	let lastMaxScale = 0;
 	let maxSystemRadius = 0;
+	let mainStarWorld = { x: 0, y: 0 };
 	let selectionGraphics: PIXI.Graphics;
 	let hoverGraphics: PIXI.Graphics;
 
@@ -439,14 +440,16 @@
 		}
 	}
 
-	function updateZoomLimits() {
+	function updateZoomLimits(options: { updateClamp?: boolean } = {}) {
 		if (!viewport || !systemData) return;
 		const sw = viewport.screenWidth;
 		const sh = viewport.screenHeight;
 		const scale = viewport.scale.x;
 
+		const visibleWidth = Math.max(sw - LAYOUT.systemSidebarWidthPx, 1);
 		const visibleHeight = sh - LAYOUT.navbarHeightPx;
-		const minScale = (0.8 * (Math.min(sw, visibleHeight) / 2)) / Math.max(maxSystemRadius, 100);
+		const minScale =
+			(0.8 * (Math.min(visibleWidth, visibleHeight) / 2)) / Math.max(maxSystemRadius, 100);
 
 		let maxScale = 50;
 		if (focusedObject) {
@@ -459,16 +462,28 @@
 			lastMaxScale = maxScale;
 		}
 
+		if (options.updateClamp === false) return;
+
+		const center = getSystemCameraCenter(scale);
 		const hwx = sw / 2 / scale;
 		const hwy = sh / 2 / scale;
-		const offY = 28 / scale;
+		const leftOverlayPadding = LAYOUT.systemSidebarWidthPx / scale;
+		const topOverlayPadding = LAYOUT.navbarHeightPx / scale;
 
 		viewport.clamp({
-			left: Math.min(0 - hwx, -maxSystemRadius),
-			right: Math.max(0 + hwx, maxSystemRadius),
-			top: Math.min(0 - offY - hwy, -maxSystemRadius - LAYOUT.navbarHeightPx / scale),
-			bottom: Math.max(0 - offY + hwy, maxSystemRadius)
+			underflow: 'center',
+			left: Math.min(center.x - hwx, mainStarWorld.x - maxSystemRadius - leftOverlayPadding),
+			right: Math.max(center.x + hwx, mainStarWorld.x + maxSystemRadius),
+			top: Math.min(center.y - hwy, mainStarWorld.y - maxSystemRadius - topOverlayPadding),
+			bottom: Math.max(center.y + hwy, mainStarWorld.y + maxSystemRadius)
 		});
+	}
+
+	function getSystemCameraCenter(scale: number) {
+		return {
+			x: mainStarWorld.x,
+			y: mainStarWorld.y - LAYOUT.navbarHeightPx / 2 / scale
+		};
 	}
 
 	interface PreserveCamera {
@@ -530,8 +545,10 @@
 				}
 			}
 
+			mainStarWorld = { x: starNodes[0]?.worldX ?? 0, y: starNodes[0]?.worldY ?? 0 };
+
 			updateScales();
-			updateZoomLimits();
+			updateZoomLimits({ updateClamp: false });
 
 			if (preserve) {
 				// Re-frame the same AU position/zoom after the pixel mapping changed.
@@ -542,9 +559,14 @@
 				const r = auToPixels(preserve.centerAu, scaleConfig);
 				v2.setZoom(newScale, true);
 				v2.moveCenter(Math.cos(preserve.angle) * r, Math.sin(preserve.angle) * r);
+				updateZoomLimits();
+				updateScales();
 			} else {
 				v2.setZoom(lastMinScale, true);
-				v2.moveCenter(0, 0 - 28 / lastMinScale);
+				const center = getSystemCameraCenter(lastMinScale);
+				v2.moveCenter(center.x, center.y);
+				updateZoomLimits();
+				updateScales();
 			}
 
 			// Signal readiness as soon as initial layout is applied (microtask)

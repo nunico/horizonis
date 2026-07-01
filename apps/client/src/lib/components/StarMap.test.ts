@@ -62,7 +62,7 @@ vi.mock('pixi.js', () => {
 		this.renderer = {
 			on: vi.fn(),
 			off: vi.fn(),
-			events: {},
+			events: { pointer: { global: null } },
 			background: { color: 0 },
 			generateTexture: vi.fn(() => ({}))
 		};
@@ -121,19 +121,26 @@ vi.mock('pixi-viewport', () => ({
 		this.pinch = vi.fn().mockReturnThis();
 		this.wheel = vi.fn().mockReturnThis();
 		this.decelerate = vi.fn().mockReturnThis();
-		this.moveCenter = vi.fn();
+		this.moveCenter = vi.fn((x: number, y: number) => {
+			this.center = { x, y };
+		});
 		this.on = vi.fn();
 		this.addChild = vi.fn();
 		this.removeChildren = vi.fn().mockReturnValue([]);
 		this.resize = vi.fn();
-		this.setZoom = vi.fn();
+		this.setZoom = vi.fn((scale: number) => {
+			this.scale = { x: scale, y: scale };
+		});
 		this.clampZoom = vi.fn();
 		this.clamp = vi.fn();
 		this.toWorld = vi.fn((p: { x: number; y: number }) => ({ x: p.x, y: p.y }));
 		this.plugins = {
 			pause: vi.fn(),
-			resume: vi.fn()
+			resume: vi.fn(),
+			remove: vi.fn()
 		};
+		this.screenWidth = 800;
+		this.screenHeight = 600;
 		this.scale = { x: 1, y: 1 };
 		this.center = { x: 0, y: 0 };
 		return this;
@@ -228,6 +235,136 @@ describe('StarMap component', () => {
 		expect(systemNode.eventMode).toBe('static');
 		expect(systemNode.cursor).toBe('pointer');
 		expect(systemNode.on).toHaveBeenCalledWith('pointerdown', expect.any(Function));
+	});
+
+	it('centers the initial camera on the rendered cluster before interaction', async () => {
+		// Arrange
+		cluster.set({
+			Name: 'Wide Cluster',
+			Systems: [
+				{
+					Id: 'left',
+					Name: 'Left',
+					X: 0,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				},
+				{
+					Id: 'right',
+					Name: 'Right',
+					X: 1000,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+
+		// Act
+		render(StarMap);
+
+		// Assert
+		let viewportInstance: unknown;
+		await vi.waitFor(() => {
+			viewportInstance = vi.mocked(Viewport).mock.results[0].value;
+			expect(
+				(viewportInstance as { moveCenter: ReturnType<typeof vi.fn> }).moveCenter
+			).toHaveBeenCalled();
+		});
+
+		const viewportMock = viewportInstance as {
+			moveCenter: ReturnType<typeof vi.fn>;
+			setZoom: ReturnType<typeof vi.fn>;
+			clamp: ReturnType<typeof vi.fn>;
+			plugins: { remove: ReturnType<typeof vi.fn> };
+			scale: { x: number };
+		};
+
+		// Stale clamp must be removed before setZoom (which calls moveCenter internally)
+		// to prevent a clamp set during a pre-render resize from snapping the camera.
+		expect(viewportMock.plugins.remove).toHaveBeenCalledWith('clamp');
+		expect(viewportMock.plugins.remove.mock.invocationCallOrder.at(-1)!).toBeLessThan(
+			viewportMock.setZoom.mock.invocationCallOrder.at(-1)!
+		);
+		expect(viewportMock.setZoom.mock.invocationCallOrder.at(-1)!).toBeLessThan(
+			viewportMock.clamp.mock.invocationCallOrder.at(-1)!
+		);
+		expect(viewportMock.moveCenter).toHaveBeenLastCalledWith(
+			expect.closeTo(500, 2),
+			expect.closeTo(-69.49, 2)
+		);
+		expect(viewportMock.clamp).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				underflow: 'center',
+				left: expect.closeTo(-675.29, 2),
+				right: expect.closeTo(1492.65, 2),
+				top: expect.closeTo(-813.97, 2),
+				bottom: expect.closeTo(675.0, 2)
+			})
+		);
+	});
+
+	it('keeps zoomed-in pan bounds clear of the fixed cluster overlay', async () => {
+		// Arrange
+		cluster.set({
+			Name: 'Wide Cluster',
+			Systems: [
+				{
+					Id: 'left',
+					Name: 'Left',
+					X: 0,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				},
+				{
+					Id: 'right',
+					Name: 'Right',
+					X: 1000,
+					Y: 0,
+					Stars: [],
+					OrbitalBodies: [],
+					OrbitalRegions: [],
+					Portals: []
+				}
+			]
+		});
+
+		// Act
+		render(StarMap);
+
+		let viewportInstance: unknown;
+		await vi.waitFor(() => {
+			viewportInstance = vi.mocked(Viewport).mock.results[0].value;
+			expect((viewportInstance as { clamp: ReturnType<typeof vi.fn> }).clamp).toHaveBeenCalled();
+		});
+
+		const viewportMock = viewportInstance as {
+			on: ReturnType<typeof vi.fn>;
+			clamp: ReturnType<typeof vi.fn>;
+			scale: { x: number; y: number };
+		};
+		viewportMock.clamp.mockClear();
+		viewportMock.scale = { x: 4, y: 4 };
+		const zoomedHandler = viewportMock.on.mock.calls.find(([event]) => event === 'zoomed')?.[1] as
+			| (() => void)
+			| undefined;
+		zoomedHandler?.();
+
+		// Assert
+		expect(viewportMock.clamp).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				left: expect.closeTo(-104, 2),
+				top: expect.closeTo(-554, 2)
+			})
+		);
 	});
 
 	it('gives system nodes an explicit hit area so they stay clickable regardless of style', async () => {
