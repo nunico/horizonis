@@ -293,7 +293,8 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
         }
 
         let num_bodies = rng.random_range(0..8);
-        let mut current_orbit = 0.3 * stars[i].mass_sol.sqrt() * rng.random_range(0.8..1.2);
+        let initial_orbit = 0.3 * stars[i].mass_sol.sqrt() * rng.random_range(0.8..1.2);
+        let mut current_orbit = initial_orbit;
         for j in 0..num_bodies {
             current_orbit *= rng.random_range(1.3..1.9);
             if current_orbit > stable_limit {
@@ -321,6 +322,28 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
                     outer_radius_au: outer,
                     region_type: "Asteroid Belt".to_string(),
                 });
+            }
+        }
+
+        // Every star gets at least one planet or asteroid field, when the
+        // stable region around it is large enough to hold one.
+        if stars[i].satellites.is_empty() && stars[i].orbital_regions.is_empty() {
+            if initial_orbit <= stable_limit {
+                stars[i]
+                    .satellites
+                    .push(generate_body(rng, 0, initial_orbit));
+            } else {
+                let inner = stable_limit * rng.random_range(0.3..0.6);
+                let outer = (inner + rng.random_range(0.1..0.3) * stable_limit).min(stable_limit);
+                if outer > inner {
+                    let star_name = stars[i].name.clone();
+                    stars[i].orbital_regions.push(OrbitalRegion {
+                        name: format!("{} Asteroid Belt", star_name),
+                        inner_radius_au: inner,
+                        outer_radius_au: outer,
+                        region_type: "Asteroid Belt".to_string(),
+                    });
+                }
             }
         }
     }
@@ -656,6 +679,23 @@ mod tests {
 
                 for body in &system.orbital_bodies {
                     assert_positive_body_invariants(body);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_every_star_has_a_planet_or_asteroid_field() {
+        for seed in 0_u64..512 {
+            let cluster = generate_cluster(seed);
+            for system in &cluster.systems {
+                for star in &system.stars {
+                    assert!(
+                        !star.satellites.is_empty() || !star.orbital_regions.is_empty(),
+                        "star {} in system {} has neither a planet nor an asteroid field",
+                        star.name,
+                        system.name
+                    );
                 }
             }
         }
