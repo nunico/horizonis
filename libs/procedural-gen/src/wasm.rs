@@ -1,12 +1,14 @@
 use crate::generation;
-use crate::models::StarCluster;
+use crate::models::{GenerationSettings, StarCluster};
 use crate::routing;
 use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub fn generate_cluster(seed: u64) -> Result<JsValue, JsValue> {
-    let cluster = generation::generate_cluster(seed);
+pub fn generate_cluster(seed: u64, settings: JsValue) -> Result<JsValue, JsValue> {
+    let settings: GenerationSettings = serde_wasm_bindgen::from_value(settings)
+        .map_err(|e| JsValue::from_str(&format!("Invalid settings: {}", e)))?;
+    let cluster = generation::generate_cluster(seed, &settings);
     serde_wasm_bindgen::to_value(&cluster).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
