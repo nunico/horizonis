@@ -3,10 +3,19 @@
 	import { cluster } from '$lib/stores/clusterData';
 	import { performRegenerate, requestRegenerate } from '$lib/actions/regenerate';
 	import type { Star, OrbitalBody } from '$lib/types/stellar';
-	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle, RotateCw } from 'lucide-svelte';
+	import {
+		ChevronRight,
+		ArrowLeft,
+		Home,
+		Search,
+		HelpCircle,
+		RotateCw,
+		Settings
+	} from 'lucide-svelte';
 	import { INTERACTION, LAYOUT } from '$lib/theme';
 	import { helpOpen, searchResultsOpen, searchFocusSignal } from '$lib/stores/ui';
 	import { nextIndex } from '$lib/utils/listNav';
+	import { resolve } from '$app/paths';
 	import ConfirmDialog from './ConfirmDialog.svelte';
 	import StylePicker from './StylePicker.svelte';
 
@@ -271,6 +280,15 @@
 		{/if}
 
 		<StylePicker />
+
+		<a
+			href={resolve('/settings')}
+			class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
+			title="Generation settings"
+			aria-label="Generation settings"
+		>
+			<Settings size={20} aria-hidden="true" />
+		</a>
 
 		<button
 			onclick={requestRegen}

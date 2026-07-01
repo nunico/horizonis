@@ -59,6 +59,13 @@ describe('Navigation component', () => {
 		expect(screen.queryByLabelText('Go back')).not.toBeInTheDocument();
 	});
 
+	it('renders a link to the generation settings page', () => {
+		render(Navigation);
+
+		const link = screen.getByRole('link', { name: /generation settings/i });
+		expect(link).toHaveAttribute('href', '/settings');
+	});
+
 	it('renders system name when activeSystemId is set and found in cluster', () => {
 		activeSystemId.set('sys-1');
 		viewMode.set('system');
