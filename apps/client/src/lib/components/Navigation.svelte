@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { viewMode, activeSystemId, selectedEntity } from '$lib/stores/appState';
-	import { cluster, generateNewCluster } from '$lib/stores/clusterData';
+	import { cluster } from '$lib/stores/clusterData';
+	import { performRegenerate, requestRegenerate } from '$lib/actions/regenerate';
 	import type { Star, OrbitalBody } from '$lib/types/stellar';
 	import { ChevronRight, ArrowLeft, Home, Search, HelpCircle, RotateCw } from 'lucide-svelte';
 	import { INTERACTION, LAYOUT } from '$lib/theme';
 	import { helpOpen, searchResultsOpen, searchFocusSignal } from '$lib/stores/ui';
-	import { toast } from '$lib/stores/toast';
-	import { recordSnapshot } from '$lib/stores/history';
 	import { nextIndex } from '$lib/utils/listNav';
-	import { get } from 'svelte/store';
-	import { nativeConfirm } from '$lib/platform/confirm';
 	import ConfirmDialog from './ConfirmDialog.svelte';
 	import StylePicker from './StylePicker.svelte';
 
@@ -149,34 +146,16 @@
 
 	async function confirmRegenerate() {
 		regenerating = true;
-		const previous = get(cluster);
-		try {
-			await generateNewCluster();
-			if (previous) recordSnapshot(previous);
-			goToCluster();
-			toast.success('New cluster generated — press Ctrl/Cmd+Z to undo');
-		} catch {
-			// generateNewCluster already surfaces an error toast.
-		} finally {
-			regenerating = false;
-			showRegenerateConfirm = false;
-		}
+		await performRegenerate(goToCluster);
+		regenerating = false;
+		showRegenerateConfirm = false;
 	}
 
-	async function requestRegenerate() {
-		const accepted = await nativeConfirm({
-			title: 'Generate a new cluster?',
-			message: 'This replaces your current cluster. You can undo it right after.',
-			confirmLabel: 'Generate',
-			cancelLabel: 'Cancel',
-			kind: 'warning'
+	async function requestRegen() {
+		await requestRegenerate({
+			onDone: goToCluster,
+			onShowConfirm: () => (showRegenerateConfirm = true)
 		});
-
-		if (accepted === true) {
-			await confirmRegenerate();
-		} else if (accepted === null) {
-			showRegenerateConfirm = true;
-		}
 	}
 </script>
 
@@ -294,7 +273,7 @@
 		<StylePicker />
 
 		<button
-			onclick={requestRegenerate}
+			onclick={requestRegen}
 			class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
 			title="Generate New Cluster"
 			aria-label="Generate New Cluster"
