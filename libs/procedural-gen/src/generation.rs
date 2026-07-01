@@ -1,4 +1,7 @@
-use crate::models::{BodyType, OrbitalBody, OrbitalRegion, Portal, SolarSystem, Star, StarCluster};
+use crate::models::{
+    BodyType, GenerationSettings, OrbitalBody, OrbitalRegion, Portal, SolarSystem, Star,
+    StarCluster,
+};
 use delaunator::{triangulate, Point};
 use rand::prelude::*;
 use rand::rngs::StdRng;
@@ -68,9 +71,11 @@ const SPECTRAL_CLASSES: &[(&str, f32, f32)] = &[
     ("M5V", 0.2, 0.25),
 ];
 
-pub fn generate_cluster(seed: u64) -> StarCluster {
+pub fn generate_cluster(seed: u64, settings: &GenerationSettings) -> StarCluster {
+    let settings = settings.sanitized();
     let mut rng = StdRng::seed_from_u64(seed);
-    let system_count = rng.random_range(15..25);
+    let system_count =
+        rng.random_range(settings.system_count_min..settings.system_count_max) as usize;
     let mut systems = Vec::with_capacity(system_count);
 
     // Generate system positions and basic data
@@ -87,7 +92,7 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
         let x = rng.random_range(-1500.0..1500.0);
         let y = rng.random_range(-1500.0..1500.0);
 
-        systems.push(generate_solar_system(&mut rng, name, x, y));
+        systems.push(generate_solar_system(&mut rng, name, x, y, &settings));
     }
 
     // Generate portals using Delaunay triangulation
@@ -203,13 +208,18 @@ pub fn generate_cluster(seed: u64) -> StarCluster {
     }
 }
 
-fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> SolarSystem {
+fn generate_solar_system(
+    rng: &mut impl Rng,
+    name: String,
+    x: f32,
+    y: f32,
+    settings: &GenerationSettings,
+) -> SolarSystem {
     let id = gen_uuid(rng);
 
     // Determine number of stars
-    let num_stars = if rng.random_bool(0.2) {
-        // 20% binary/trinary
-        if rng.random_bool(0.7) {
+    let num_stars = if rng.random_bool(settings.multi_star_chance as f64) {
+        if rng.random_bool((1.0 - settings.trinary_ratio) as f64) {
             2
         } else {
             3
@@ -292,7 +302,11 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
             stable_limit = min_dist * 0.35;
         }
 
-        let num_bodies = rng.random_range(0..8);
+        let num_bodies = if settings.max_bodies_per_star == 0 {
+            0
+        } else {
+            rng.random_range(0..settings.max_bodies_per_star)
+        };
         let initial_orbit = 0.3 * stars[i].mass_sol.sqrt() * rng.random_range(0.8..1.2);
         let mut current_orbit = initial_orbit;
         for j in 0..num_bodies {
@@ -302,11 +316,11 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
             }
             stars[i]
                 .satellites
-                .push(generate_body(rng, j, current_orbit));
+                .push(generate_body(rng, j as usize, current_orbit));
         }
 
         // Generate star-level regions
-        if rng.random_bool(0.5) {
+        if rng.random_bool(settings.asteroid_belt_chance as f64) {
             let last_orbit = stars[i]
                 .satellites
                 .last()
@@ -325,14 +339,18 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
             }
         }
 
-        // Every star gets at least one planet or asteroid field, when the
-        // stable region around it is large enough to hold one.
+        // Every star gets at least one planet or asteroid field, but only
+        // through mechanisms the caller has actually left enabled: a
+        // max_bodies_per_star of 0 or an asteroid_belt_chance of 0.0 is an
+        // explicit request for "none", so the fallback must not override it.
         if stars[i].satellites.is_empty() && stars[i].orbital_regions.is_empty() {
-            if initial_orbit <= stable_limit {
+            let can_place_planet =
+                settings.max_bodies_per_star > 0 && initial_orbit <= stable_limit;
+            if can_place_planet {
                 stars[i]
                     .satellites
                     .push(generate_body(rng, 0, initial_orbit));
-            } else {
+            } else if settings.asteroid_belt_chance > 0.0 {
                 let inner = stable_limit * rng.random_range(0.3..0.6);
                 let outer = (inner + rng.random_range(0.1..0.3) * stable_limit).min(stable_limit);
                 if outer > inner {
@@ -351,11 +369,14 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
     // Circumbinary / System-wide bodies
     let mut orbital_bodies = Vec::new();
     if num_stars > 1 {
-        let mut current_orbit = stars.iter().map(|s| s.orbit_au.abs()).fold(0.0, f32::max) * 2.5;
-        let num_circumbinary = rng.random_range(0..4);
-        for i in 0..num_circumbinary {
-            current_orbit *= rng.random_range(1.3..1.8);
-            orbital_bodies.push(generate_body(rng, i, current_orbit));
+        if !settings.disallow_circumbinary_bodies {
+            let mut current_orbit =
+                stars.iter().map(|s| s.orbit_au.abs()).fold(0.0, f32::max) * 2.5;
+            let num_circumbinary = rng.random_range(0..4);
+            for i in 0..num_circumbinary {
+                current_orbit *= rng.random_range(1.3..1.8);
+                orbital_bodies.push(generate_body(rng, i, current_orbit));
+            }
         }
     } else {
         if rng.random_bool(0.3) {
@@ -371,7 +392,7 @@ fn generate_solar_system(rng: &mut impl Rng, name: String, x: f32, y: f32) -> So
 
     // Generate orbital regions (asteroid belts)
     let mut orbital_regions = Vec::new();
-    if rng.random_bool(0.6) {
+    if rng.random_bool(settings.asteroid_belt_chance as f64) {
         let base_orbit = if !orbital_bodies.is_empty() {
             orbital_bodies[0].orbit_au * 0.7
         } else if !stars[0].satellites.is_empty() {
@@ -640,28 +661,28 @@ mod tests {
 
         #[test]
         fn test_generate_cluster_same_seed_returns_identical_results(seed in any::<u64>()) {
-            let first = generate_cluster(seed);
-            let second = generate_cluster(seed);
+            let first = generate_cluster(seed, &GenerationSettings::default());
+            let second = generate_cluster(seed, &GenerationSettings::default());
 
             prop_assert_eq!(cluster_signature(&first), cluster_signature(&second));
         }
 
         #[test]
         fn test_generate_cluster_seeded_structure_has_system_count_in_range(seed in any::<u64>()) {
-            let cluster = generate_cluster(seed);
+            let cluster = generate_cluster(seed, &GenerationSettings::default());
 
             prop_assert!((15..=25).contains(&cluster.systems.len()));
         }
 
         #[test]
         fn test_generate_cluster_seeded_portals_keep_every_system_reachable(seed in any::<u64>()) {
-            let cluster = generate_cluster(seed);
+            let cluster = generate_cluster(seed, &GenerationSettings::default());
             assert_cluster_is_connected(&cluster);
         }
 
         #[test]
         fn test_generate_cluster_seeded_bodies_obey_physical_invariants(seed in any::<u64>()) {
-            let cluster = generate_cluster(seed);
+            let cluster = generate_cluster(seed, &GenerationSettings::default());
 
             for system in &cluster.systems {
                 assert_non_overlapping_orbits(&system.orbital_bodies);
@@ -687,7 +708,7 @@ mod tests {
     #[test]
     fn test_generate_cluster_every_star_has_a_planet_or_asteroid_field() {
         for seed in 0_u64..512 {
-            let cluster = generate_cluster(seed);
+            let cluster = generate_cluster(seed, &GenerationSettings::default());
             for system in &cluster.systems {
                 for star in &system.stars {
                     assert!(
@@ -706,7 +727,7 @@ mod tests {
         let mut found_multi_star_system = false;
 
         for seed in 0_u64..512 {
-            let cluster = generate_cluster(seed);
+            let cluster = generate_cluster(seed, &GenerationSettings::default());
             for system in &cluster.systems {
                 if system.stars.len() < 2 {
                     continue;
@@ -763,7 +784,7 @@ mod tests {
         let mut found_multi_star_system = false;
 
         for seed in 0_u64..512 {
-            let cluster = generate_cluster(seed);
+            let cluster = generate_cluster(seed, &GenerationSettings::default());
             for system in &cluster.systems {
                 if system.stars.len() < 2 {
                     continue;
@@ -795,5 +816,215 @@ mod tests {
             found_multi_star_system,
             "expected at least one generated multi-star system"
         );
+    }
+
+    #[test]
+    fn test_generate_cluster_respects_custom_system_count_range() {
+        let settings = GenerationSettings {
+            system_count_min: 3,
+            system_count_max: 6,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            assert!(
+                (3..6).contains(&cluster.systems.len()),
+                "system count {} outside configured range",
+                cluster.systems.len()
+            );
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_max_bodies_per_star_is_never_exceeded() {
+        let settings = GenerationSettings {
+            max_bodies_per_star: 3,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                for star in &system.stars {
+                    assert!(
+                        star.satellites.len() <= 3,
+                        "star {} exceeded max_bodies_per_star",
+                        star.name
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_zero_max_bodies_per_star_yields_no_satellites() {
+        let settings = GenerationSettings {
+            max_bodies_per_star: 0,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                for star in &system.stars {
+                    assert!(star.satellites.is_empty());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_zero_asteroid_belt_chance_yields_no_regions() {
+        let settings = GenerationSettings {
+            asteroid_belt_chance: 0.0,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                assert!(system.orbital_regions.is_empty());
+                for star in &system.stars {
+                    assert!(star.orbital_regions.is_empty());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_full_asteroid_belt_chance_yields_regions_where_feasible() {
+        let settings = GenerationSettings {
+            asteroid_belt_chance: 1.0,
+            ..GenerationSettings::default()
+        };
+        let mut found_system_region = false;
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                if !system.orbital_regions.is_empty() {
+                    found_system_region = true;
+                }
+            }
+        }
+        assert!(
+            found_system_region,
+            "expected at least one system-wide asteroid belt"
+        );
+    }
+
+    #[test]
+    fn test_generate_cluster_no_bodies_and_no_belts_does_not_panic() {
+        let settings = GenerationSettings {
+            max_bodies_per_star: 0,
+            asteroid_belt_chance: 0.0,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..50 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                for star in &system.stars {
+                    assert!(star.satellites.is_empty());
+                    assert!(star.orbital_regions.is_empty());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_zero_multi_star_chance_yields_single_star_systems() {
+        let settings = GenerationSettings {
+            multi_star_chance: 0.0,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                assert_eq!(system.stars.len(), 1);
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_full_multi_star_chance_yields_only_multi_star_systems() {
+        let settings = GenerationSettings {
+            multi_star_chance: 1.0,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                assert!(system.stars.len() >= 2);
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_zero_trinary_ratio_yields_only_binaries() {
+        let settings = GenerationSettings {
+            multi_star_chance: 1.0,
+            trinary_ratio: 0.0,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                assert_eq!(system.stars.len(), 2);
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_full_trinary_ratio_yields_only_trinaries() {
+        let settings = GenerationSettings {
+            multi_star_chance: 1.0,
+            trinary_ratio: 1.0,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                assert_eq!(system.stars.len(), 3);
+            }
+        }
+    }
+
+    #[test]
+    fn test_generate_cluster_disallow_circumbinary_bodies_empties_system_wide_bodies() {
+        let settings = GenerationSettings {
+            multi_star_chance: 1.0,
+            disallow_circumbinary_bodies: true,
+            ..GenerationSettings::default()
+        };
+        for seed in 0_u64..200 {
+            let cluster = generate_cluster(seed, &settings);
+            for system in &cluster.systems {
+                assert!(system.stars.len() >= 2);
+                assert!(system.orbital_bodies.is_empty());
+            }
+        }
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(32))]
+
+        #[test]
+        fn test_generate_cluster_arbitrary_settings_never_panics(
+            seed in any::<u64>(),
+            system_count_min in 0u32..50,
+            system_count_max in 0u32..50,
+            multi_star_chance in -1.0f32..2.0,
+            trinary_ratio in -1.0f32..2.0,
+            max_bodies_per_star in 0u32..20,
+            asteroid_belt_chance in -1.0f32..2.0,
+            disallow_circumbinary_bodies in any::<bool>(),
+        ) {
+            let settings = GenerationSettings {
+                system_count_min,
+                system_count_max,
+                multi_star_chance,
+                trinary_ratio,
+                max_bodies_per_star,
+                asteroid_belt_chance,
+                disallow_circumbinary_bodies,
+            };
+            let _ = generate_cluster(seed, &settings);
+        }
     }
 }
