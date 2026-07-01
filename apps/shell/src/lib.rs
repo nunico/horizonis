@@ -22,7 +22,9 @@ pub fn run() {
             commands::get_system,
             commands::save_cluster,
             commands::generate_cluster,
-            commands::find_portal_route
+            commands::find_portal_route,
+            commands::get_generation_settings,
+            commands::save_generation_settings
         ])
         .run(tauri::generate_context!())
         .map_err(|e| {

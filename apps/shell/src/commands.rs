@@ -1,6 +1,6 @@
 use crate::storage::StorageManager;
 use crate::AppState;
-use procedural_gen::{compute_route, SolarSystem, StarCluster};
+use procedural_gen::{compute_route, GenerationSettings, SolarSystem, StarCluster};
 use tauri::{AppHandle, State};
 use uuid::Uuid;
 
@@ -33,14 +33,31 @@ pub fn generate_cluster(
     app_handle: AppHandle,
     state: State<'_, AppState>,
     seed: Option<u64>,
+    settings: Option<GenerationSettings>,
 ) -> Result<StarCluster, String> {
     let seed = seed.unwrap_or_else(rand::random::<u64>);
-    let cluster = procedural_gen::generate_cluster(seed);
+    let settings = settings.unwrap_or_default();
+    let cluster = procedural_gen::generate_cluster(seed, &settings);
 
     // Save to disk and update cache
     save_cluster(app_handle, state, cluster.clone())?;
 
     Ok(cluster)
+}
+
+#[tauri::command]
+pub fn get_generation_settings(app_handle: AppHandle) -> Result<GenerationSettings, String> {
+    let storage = StorageManager::new(&app_handle)?;
+    storage.load_settings()
+}
+
+#[tauri::command]
+pub fn save_generation_settings(
+    app_handle: AppHandle,
+    settings: GenerationSettings,
+) -> Result<(), String> {
+    let storage = StorageManager::new(&app_handle)?;
+    storage.save_settings(&settings)
 }
 
 #[tauri::command]
