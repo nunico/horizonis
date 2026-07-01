@@ -52,6 +52,18 @@ describe('settings page', () => {
 		expect(screen.getByText(/minimum must be less than or equal to maximum/i)).toBeInTheDocument();
 	});
 
+	it('disables Save & Generate when max planets per star is cleared', async () => {
+		render(SettingsPage);
+
+		const maxBodies = screen.getByLabelText(/max planets per star/i);
+		await fireEvent.input(maxBodies, { target: { value: '' } });
+
+		expect(screen.getByRole('button', { name: /save & generate/i })).toBeDisabled();
+		expect(
+			screen.getByText(/max planets per star must be a non-negative number/i)
+		).toBeInTheDocument();
+	});
+
 	it('saves settings and requests regeneration on Save & Generate', async () => {
 		render(SettingsPage);
 

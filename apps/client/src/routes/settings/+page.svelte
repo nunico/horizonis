@@ -20,8 +20,8 @@
 		if (local.SystemCountMin > local.SystemCountMax) {
 			list.push('Minimum must be less than or equal to maximum systems.');
 		}
-		if (local.MaxBodiesPerStar < 0) {
-			list.push('Max planets per star cannot be negative.');
+		if (!Number.isFinite(local.MaxBodiesPerStar) || local.MaxBodiesPerStar < 0) {
+			list.push('Max planets per star must be a non-negative number.');
 		}
 		return list;
 	});
