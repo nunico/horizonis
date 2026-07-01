@@ -1,28 +1,14 @@
-import { writable } from 'svelte/store';
-import { TauriStorage } from '$lib/storage/tauri';
-import { BrowserStorage } from '$lib/storage/browser';
-import type { StorageProvider } from '$lib/storage';
+import { get, writable } from 'svelte/store';
+import { getStorageProvider, _resetStorageProvider } from '$lib/storage/provider';
 import type { StarCluster } from '$lib/types/stellar';
 import { toast } from '$lib/stores/toast';
+import { generationSettings } from '$lib/stores/generationSettings';
+
 export const cluster = writable<StarCluster | null>(null);
 export const isInitialized = writable(false);
 
-let storage: StorageProvider | null = null;
-
 export function _resetStorage() {
-	storage = null;
-}
-
-async function getStorage() {
-	if (storage) return storage;
-
-	// @ts-expect-error - Tauri global
-	if (window.__TAURI_INTERNALS__) {
-		storage = new TauriStorage();
-	} else {
-		storage = new BrowserStorage();
-	}
-	return storage;
+	_resetStorageProvider();
 }
 
 export async function initWasm() {
@@ -47,21 +33,21 @@ export async function initWasm() {
 
 export async function loadCluster() {
 	console.log('Loading cluster...');
-	const provider = await getStorage();
+	const provider = await getStorageProvider();
 	try {
 		const data = await provider.getCluster();
 		console.log('Cluster loaded from storage');
 		cluster.set(applyE2EFixtureIfNeeded(data));
 	} catch (e) {
 		console.warn('Failed to load cluster, generating new one:', e);
-		const newCluster = await provider.generateCluster();
+		const newCluster = await provider.generateCluster(undefined, get(generationSettings));
 		console.log('New cluster generated');
 		cluster.set(applyE2EFixtureIfNeeded(newCluster));
 	}
 }
 
 export async function saveCluster(data: StarCluster): Promise<boolean> {
-	const provider = await getStorage();
+	const provider = await getStorageProvider();
 	try {
 		await provider.saveCluster(data);
 		cluster.set(data);
@@ -75,9 +61,9 @@ export async function saveCluster(data: StarCluster): Promise<boolean> {
 
 export async function generateNewCluster(seed?: bigint) {
 	console.log('Generating new cluster...');
-	const provider = await getStorage();
+	const provider = await getStorageProvider();
 	try {
-		const newCluster = await provider.generateCluster(seed);
+		const newCluster = await provider.generateCluster(seed, get(generationSettings));
 		console.log('New cluster generated successfully');
 		cluster.set(newCluster);
 		return newCluster;

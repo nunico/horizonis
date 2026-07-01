@@ -8,6 +8,7 @@ import {
 	_resetStorage
 } from './clusterData';
 import { toasts, clearToasts } from './toast';
+import { defaultGenerationSettings } from '$lib/types/generationSettings';
 
 // Mock procedural-gen
 vi.mock('procedural-gen', () => ({
@@ -81,7 +82,10 @@ describe('clusterData store', () => {
 		await loadCluster();
 
 		expect(invoke).toHaveBeenCalledWith('get_cluster');
-		expect(invoke).toHaveBeenCalledWith('generate_cluster', { seed: null });
+		expect(invoke).toHaveBeenCalledWith('generate_cluster', {
+			seed: null,
+			settings: defaultGenerationSettings
+		});
 		expect(get(cluster)).toEqual(generatedData);
 	});
 
@@ -139,7 +143,7 @@ describe('clusterData store', () => {
 
 		await generateNewCluster(seed);
 
-		expect(generate_cluster).toHaveBeenCalledWith(seed);
+		expect(generate_cluster).toHaveBeenCalledWith(seed, defaultGenerationSettings);
 		expect(get(cluster)).toEqual({ Name: 'Generated', Systems: [] });
 	});
 });
